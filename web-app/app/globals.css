@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+.no-dark-mode-text {
+  color: white !important;
+}
+
+.dark .no-dark-mode-text {
+  color: white !important;
+}
+
+.custom-file-input::-webkit-file-upload-button {
+  display: none;
+}
+
+.custom-file-input::file-selector-button {
+  display: none;
+}
+
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+    color: #71717a;  /* zinc-500 for light mode */
+}
+
+.dark input[type="date"]::-webkit-datetime-edit-text,
+.dark input[type="date"]::-webkit-datetime-edit-month-field,
+.dark input[type="date"]::-webkit-datetime-edit-day-field,
+.dark input[type="date"]::-webkit-datetime-edit-year-field {
+    color: #a1a1aa;  /* zinc-400 for dark mode */
+}
+
+/* Changes color when a date is selected */
+input[type="date"]:valid::-webkit-datetime-edit-text,
+input[type="date"]:valid::-webkit-datetime-edit-month-field,
+input[type="date"]:valid::-webkit-datetime-edit-day-field,
+input[type="date"]:valid::-webkit-datetime-edit-year-field {
+    color: currentColor;
+}
+
+.no-hover-highlight option:hover {
+  background-color: inherit !important;
+}
+
+.fc-event {
+  cursor: pointer !important;
+}
+
+.fc-more-popover {
+  z-index: 999 !important; /* Ensure the popover isn't too high */
+}
+
+.modal-overlay {
+  z-index: 10000 !important; /* Modal overlay should always be higher */
+}
+
+.modal-content {
+  z-index: 10001 !important; /* Modal content should be above the overlay */
+}
+
+.react-datepicker-popper {
+  z-index: 9999 !important;
+}
+
+/* Calendar event styling */
+.fc-daygrid-block-event .fc-event-main {
+  color: rgb(var(--foreground-rgb)) !important;
+}
+
+.fc-daygrid-dot-event .fc-event-title {
+  color: rgb(var(--foreground-rgb)) !important;
+}
+
+.fc-event-title {
+  color: rgb(var(--foreground-rgb)) !important;
+}
+
+.fc-daygrid-block-event .fc-event-main {
+  color: rgb(var(--foreground-rgb)) !important;
+}
+
+.dark .fc-daygrid-block-event .fc-event-main {
+  color: white !important;
+}
