@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -25,6 +25,14 @@ import {
 } from "../../../handlers/new/jobs";
 
 export default function NewJobPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NewJobContent />
+    </Suspense>
+  );
+}
+
+function NewJobContent() {
   type JobType = string;
   const router = useRouter();
   const searchParams = useSearchParams();

@@ -1,11 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import LargeJobFrame from "../../../components/job/LargeJobFrame";
 import { useSearchParams } from "next/navigation";
 import { JobDetailView, TaskView, MaterialView } from "../../types/views";
 
 export default function ClosedJobsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ClosedJobsContent />
+    </Suspense>
+  );
+}
+
+function ClosedJobsContent() {
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(
     searchParams?.get("search") || ""
