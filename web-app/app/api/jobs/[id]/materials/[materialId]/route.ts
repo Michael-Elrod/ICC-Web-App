@@ -5,7 +5,7 @@ import { MaterialUpdatePayload } from '@/app/types/database';
 import { addBusinessDays } from '@/app/utils';
 import { RowDataPacket } from 'mysql2';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/lib/auth";
 
 export async function PATCH(
   request: Request,

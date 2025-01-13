@@ -4,7 +4,7 @@ import pool from '@/app/lib/db';
 import { TaskUpdatePayload } from '@/app/types/database';
 import { RowDataPacket } from 'mysql2';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/lib/auth";
 import { addBusinessDays } from '@/app/utils';
 
 export async function PATCH(

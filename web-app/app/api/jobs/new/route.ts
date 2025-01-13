@@ -5,7 +5,7 @@ import db from "../../../lib/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import { NewJob } from "@/app/types/database";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/lib/auth";
 
 export async function POST(request: Request) {
   try {

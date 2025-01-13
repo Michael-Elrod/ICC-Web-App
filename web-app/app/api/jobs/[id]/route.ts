@@ -4,7 +4,7 @@ import pool from "@/app/lib/db";
 import { RowDataPacket } from "mysql2";
 import { JobUpdatePayload } from "@/app/types/database";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/lib/auth";
 
 // Interfaces
 interface JobDetails extends RowDataPacket {
