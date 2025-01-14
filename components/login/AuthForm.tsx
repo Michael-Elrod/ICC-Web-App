@@ -48,24 +48,15 @@ export default function AuthForm() {
       setIsLoading(true);
       try {
         // ONLY try the test endpoint
-        console.log("Testing direct login...");
-        const loginTest = await fetch('/api/login-test', {
+        console.log("Testing simple endpoint...");
+        const simpleTest = await fetch('/api/test-simple', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: e.currentTarget.email.value,
-            password: e.currentTarget.password.value,
-          })
+          body: JSON.stringify({ test: true })
         });
         
-        const testResult = await loginTest.json();
-        console.log('Login test result:', testResult);
-   
-        if (testResult.success) {
-          router.replace("/jobs");
-        } else {
-          setError(testResult.error || "Login failed");
-        }
+        const simpleResult = await simpleTest.json();
+        console.log('Simple test result:', simpleResult);
    
         // NextAuth signin removed/commented out
         /*
