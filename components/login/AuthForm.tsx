@@ -47,23 +47,14 @@ export default function AuthForm() {
     if (isLogin) {
       setIsLoading(true);
       try {
-        // Try the simple test first
-        console.log("Testing simple endpoint...");
-        const simpleTest = await fetch('/api/test-simple', {
+        // Check environment variables first
+        console.log("Testing environment variables...");
+        const envTest = await fetch('/api/env-test', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         });
-        const simpleResult = await simpleTest.json();
-        console.log('Simple test result:', simpleResult);
-  
-        // Try the simple database test
-        console.log("Testing simple database connection...");
-        const dbSimpleTest = await fetch('/api/db-simple', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        const dbSimpleResult = await dbSimpleTest.json();
-        console.log('Simple database test result:', dbSimpleResult);
+        const envResult = await envTest.json();
+        console.log('Environment test result:', envResult);
   
       } catch (error) {
         console.error("Test error:", error);
