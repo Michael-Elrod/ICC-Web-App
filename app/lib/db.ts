@@ -21,10 +21,7 @@ const pool = global.mysqlPool || mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
   enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
-  timezone: 'auto',
-  supportBigNumbers: true,
-  bigNumberStrings: true
+  keepAliveInitialDelay: 0
 });
 
 pool.getConnection()
