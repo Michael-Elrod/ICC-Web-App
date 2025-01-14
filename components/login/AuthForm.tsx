@@ -52,20 +52,18 @@ export default function AuthForm() {
         const simpleTest = await fetch('/api/test-simple', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ test: true })
         });
         const simpleResult = await simpleTest.json();
         console.log('Simple test result:', simpleResult);
   
-        // Now try the database test
-        console.log("Testing database connection...");
-        const dbTest = await fetch('/api/login-test', {
+        // Try the simple database test
+        console.log("Testing simple database connection...");
+        const dbSimpleTest = await fetch('/api/db-simple', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ test: true })
         });
-        const dbResult = await dbTest.json();
-        console.log('Database test result:', dbResult);
+        const dbSimpleResult = await dbSimpleTest.json();
+        console.log('Simple database test result:', dbSimpleResult);
   
       } catch (error) {
         console.error("Test error:", error);
