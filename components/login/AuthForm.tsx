@@ -47,13 +47,16 @@ export default function AuthForm() {
     if (isLogin) {
       setIsLoading(true);
       try {
+        console.log("Attempting login...");
         const result = await signIn("credentials", {
           email: e.currentTarget.email.value,
           password: e.currentTarget.password.value,
           redirect: false,
         });
+        console.log("SignIn response:", result);
 
         if (result?.error) {
+          console.log("Result has error:", result.error);
           if (result.error.includes("No account found")) {
             setEmailError(result.error);
           } else if (result.error.includes("Incorrect password")) {
@@ -62,10 +65,13 @@ export default function AuthForm() {
             setError(result.error);
           }
         } else if (result?.ok) {
+          console.log("Login successful, redirecting...");
           router.replace("/jobs");
         }
       } catch (error) {
-        console.error("Login error:", error);
+        console.error("Detailed login error:", error);
+        console.log("Error type:", typeof error);
+        console.log("Error stringified:", JSON.stringify(error));
         setError("An error occurred during login");
       } finally {
         setIsLoading(false);
