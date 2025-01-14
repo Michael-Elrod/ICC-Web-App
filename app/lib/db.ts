@@ -1,4 +1,3 @@
-// app/lib/db.ts
 import mysql from 'mysql2/promise';
 
 if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_NAME) {
@@ -18,8 +17,23 @@ const pool = global.mysqlPool || mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
   enableKeepAlive: true,
-  keepAliveInitialDelay: 0
+  keepAliveInitialDelay: 0,
+  ssl: {
+    rejectUnauthorized: true
+  }
 });
+
+// Test the connection during initialization
+if (!global.mysqlPool) {
+  pool.getConnection()
+    .then(connection => {
+      console.log('Database connected successfully');
+      connection.release();
+    })
+    .catch(err => {
+      console.error('Error connecting to the database:', err);
+    });
+}
 
 if (process.env.NODE_ENV === 'development') {
   global.mysqlPool = pool;
