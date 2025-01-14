@@ -3,10 +3,29 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import pool from "@/app/lib/db";
 
+// Check required environment variables
+const requiredEnvVars = [
+  'NEXTAUTH_URL',
+  'NEXTAUTH_SECRET',
+  'DB_HOST',
+  'DB_USER',
+  'DB_PASSWORD',
+  'DB_NAME'
+];
+
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    throw new Error(`Missing required environment variable: ${envVar}`);
+  }
+}
+
+console.log('Initializing auth configuration');
+
 export const authOptions: NextAuthOptions = {
   debug: true,
   providers: [
     CredentialsProvider({
+      id: "credentials",
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
@@ -26,7 +45,7 @@ export const authOptions: NextAuthOptions = {
             "SELECT * FROM app_user WHERE user_email = ?",
             [credentials.email]
           );
-          console.log('Database response:', rows);
+          console.log('Database response received');
       
           const user = (rows as any[])[0];
           if (!user) {
@@ -39,13 +58,13 @@ export const authOptions: NextAuthOptions = {
             credentials.password,
             user.password
           );
-          console.log('Password match result:', passwordMatch);
+          console.log('Password check complete');
       
           if (!passwordMatch) {
             throw new Error("Incorrect password");
           }
       
-          return {
+          const userObject = {
             id: user.user_id.toString(),
             type: user.user_type,
             user_email: user.user_email,
@@ -53,9 +72,11 @@ export const authOptions: NextAuthOptions = {
             user_last_name: user.user_last_name,
             user_phone: user.user_phone,
           };
+
+          console.log('Authorization successful');
+          return userObject;
         } catch (error: any) {
-          console.error("Detailed authorization error:", {
-            error,
+          console.error("Authorization error:", {
             message: error.message,
             stack: error.stack
           });
@@ -94,52 +115,63 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       try {
         if (session.user) {
-          console.log('Session callback started', { token });
+          console.log('Session callback started');
           
-          const [rows] = await pool.execute(
-            "SELECT * FROM app_user WHERE user_id = ?",
-            [token.id]
-          );
-          
-          console.log('Session database query result:', rows);
-          
-          const freshUserData = (rows as any[])[0];
-          
-          if (freshUserData) {
+          try {
+            const [rows] = await pool.execute(
+              "SELECT * FROM app_user WHERE user_id = ?",
+              [token.id]
+            );
+            
+            console.log('Session database query complete');
+            
+            const freshUserData = (rows as any[])[0];
+            
+            if (freshUserData) {
+              session.user = {
+                id: token.id,
+                type: token.type,
+                firstName: freshUserData.user_first_name,
+                lastName: freshUserData.user_last_name,
+                phone: freshUserData.user_phone,
+                email: freshUserData.user_email,
+              };
+            } else {
+              console.warn('No fresh user data found, using token data');
+              session.user = {
+                id: token.id,
+                type: token.type,
+                firstName: token.firstName,
+                lastName: token.lastName,
+                phone: token.phone,
+                email: token.email,
+              };
+            }
+          } catch (dbError) {
+            console.error("Database error in session callback:", dbError);
+            // Fallback to token data
             session.user = {
               id: token.id,
               type: token.type,
-              firstName: freshUserData.user_first_name,
-              lastName: freshUserData.user_last_name,
-              phone: freshUserData.user_phone,
-              email: freshUserData.user_email,
+              firstName: token.firstName,
+              lastName: token.lastName,
+              phone: token.phone,
+              email: token.email,
             };
-          } else {
-            console.warn('No fresh user data found for token:', token);
-            // Fallback to token data
-            session.user.id = token.id;
-            session.user.type = token.type;
-            session.user.firstName = token.firstName;
-            session.user.lastName = token.lastName;
-            session.user.phone = token.phone;
-            session.user.email = token.email;
           }
         }
         return session;
       } catch (error) {
-        console.error("Detailed session error:", {
-          error,
-          token,
-          sessionUser: session.user
-        });
-        // Fallback to token data instead of failing
-        if (session.user) {
-          session.user.id = token.id;
-          session.user.type = token.type;
-          session.user.firstName = token.firstName;
-          session.user.lastName = token.lastName;
-          session.user.phone = token.phone;
-          session.user.email = token.email;
+        console.error("Session callback error:", error);
+        if (session.user && token) {
+          session.user = {
+            id: token.id,
+            type: token.type,
+            firstName: token.firstName,
+            lastName: token.lastName,
+            phone: token.phone,
+            email: token.email,
+          };
         }
         return session;
       }
@@ -155,19 +187,27 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   events: {
     signIn({ user, account, profile, isNewUser }) {
-      console.log('Successful sign in:', { user, account, isNewUser });
+      console.log('Sign in event:', { userId: user.id, isNewUser });
     },
     signOut({ session, token }) {
-      console.log('Sign out:', { session, token });
+      console.log('Sign out event:', { userId: token?.id });
     },
     createUser({ user }) {
-      console.log('User created:', { user });
+      console.log('Create user event:', { userId: user.id });
     },
     linkAccount({ user, account, profile }) {
-      console.log('Account linked:', { user, account, profile });
+      console.log('Link account event:', { userId: user.id });
     },
     session({ session, token }) {
-      console.log('Session created/updated:', { session, token });
+      console.log('Session event:', { userId: token?.id });
     }
   }
 };
+
+// Verify configuration
+console.log('Auth configuration complete. Status:', {
+  providersConfigured: authOptions.providers?.length > 0,
+  callbacksConfigured: !!authOptions.callbacks,
+  secretConfigured: !!authOptions.secret,
+  pagesConfigured: !!authOptions.pages,
+});
