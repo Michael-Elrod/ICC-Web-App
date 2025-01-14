@@ -1,41 +1,39 @@
 import { NextResponse } from 'next/server';
-import pool from "@/app/lib/db";
+import mysql from 'mysql2/promise';
 
 export async function GET() {
   try {
-    const dbConfig = {
+    // Create a temporary connection just for testing
+    const testPool = mysql.createPool({
       host: process.env.DB_HOST,
-      database: process.env.DB_NAME,
       user: process.env.DB_USER,
-      // Don't log the actual password
-      hasPassword: !!process.env.DB_PASSWORD
-    };
-    
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      ssl: {
+        rejectUnauthorized: true
+      }
+    });
+
     // Try to connect
-    await pool.getConnection();
+    const connection = await testPool.getConnection();
+    connection.release();
     
     return NextResponse.json({ 
-      message: 'Database check',
-      dbConfigPresent: dbConfig,
-      authConfig: {
-        hasSecret: !!process.env.NEXTAUTH_SECRET,
-        hasURL: !!process.env.NEXTAUTH_URL,
-        hasJWTSecret: !!process.env.NEXTAUTH_JWT_SECRET
+      message: 'Database connection successful',
+      config: {
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        database: process.env.DB_NAME,
+        hasPassword: !!process.env.DB_PASSWORD
       }
     });
   } catch (error) {
+    // Return detailed error info
     return NextResponse.json({ 
-      error: 'Test failed',
+      error: 'Database connection failed',
       message: error instanceof Error ? error.message : 'Unknown error',
-      // Include env check even on error
-      envCheck: {
-        hasHost: !!process.env.DB_HOST,
-        hasName: !!process.env.DB_NAME,
-        hasUser: !!process.env.DB_USER,
-        hasPass: !!process.env.DB_PASSWORD,
-        hasSecret: !!process.env.NEXTAUTH_SECRET,
-        hasURL: !!process.env.NEXTAUTH_URL
-      }
+      type: error instanceof Error ? error.name : typeof error,
+      stack: error instanceof Error ? error.stack : undefined
     }, { status: 500 });
   }
 }
