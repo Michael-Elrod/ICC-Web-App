@@ -6,7 +6,7 @@ import { Providers as ThemeProviders } from '@/app/providers/ThemeProvider';
 
 export function AuthProviders({ children }: { children: ReactNode }) {
   return (
-    <SessionProvider refetchInterval={0} refetchOnWindowFocus={false}>
+    <SessionProvider>
       <ThemeProviders>{children}</ThemeProviders>
     </SessionProvider>
   );
