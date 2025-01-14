@@ -2,28 +2,45 @@ import { NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 
 export async function GET() {
-  // First, check environment variables
-  const envCheck = {
-    DB_HOST: process.env.DB_HOST,
-    DB_USER: process.env.DB_USER,
-    DB_NAME: process.env.DB_NAME,
-    // Don't include actual password, just check if exists
-    HAS_PASSWORD: !!process.env.DB_PASSWORD
-  };
+  try {
+    // Create configuration explicitly
+    const config = {
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      port: 3306, // Add explicit port
+      ssl: {
+        rejectUnauthorized: true
+      }
+    };
 
-  const dbConfig = {
-    host: process.env.DB_HOST || 'no_host_found',
-    user: process.env.DB_USER || 'no_user_found',
-    database: process.env.DB_NAME || 'no_db_found',
-    hasPassword: !!process.env.DB_PASSWORD,
-    ssl: {
-      rejectUnauthorized: true
-    }
-  };
+    console.log('Attempting connection with config:', {
+      ...config,
+      password: '[REDACTED]' // Don't log the actual password
+    });
 
-  return NextResponse.json({ 
-    envCheck,
-    dbConfig,
-    message: 'Environment check completed'
-  });
+    const testPool = mysql.createPool(config);
+    const connection = await testPool.getConnection();
+    
+    // Try a simple query
+    const [result] = await connection.query('SELECT 1');
+    connection.release();
+    
+    return NextResponse.json({ 
+      message: 'Database connection and query successful',
+      result,
+      config: {
+        ...config,
+        password: undefined // Don't send password in response
+      }
+    });
+  } catch (error) {
+    return NextResponse.json({ 
+      error: 'Database connection failed',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      type: error instanceof Error ? error.name : typeof error,
+      stack: error instanceof Error ? error.stack : undefined
+    }, { status: 500 });
+  }
 }
