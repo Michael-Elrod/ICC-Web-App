@@ -8,21 +8,12 @@ declare global {
   var mysqlPool: mysql.Pool | undefined;
 }
 
-const pool = global.mysqlPool || mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  ssl: {
-    rejectUnauthorized: true
-  },
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0
-});
+// Create connection URL string
+const connectionUrl = `mysql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:3306/${process.env.DB_NAME}?ssl=true`;
 
+const pool = global.mysqlPool || mysql.createPool(connectionUrl);
+
+// Keep the connection testing logic
 pool.getConnection()
   .then(connection => {
     console.log('Database connected successfully');
@@ -33,6 +24,7 @@ pool.getConnection()
     throw err;
   });
 
+// Keep the development mode caching
 if (process.env.NODE_ENV !== 'production') {
   global.mysqlPool = pool;
 }
