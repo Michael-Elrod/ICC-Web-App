@@ -2,40 +2,44 @@ import { NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 
 export async function GET() {
-  // First, let's see exactly what we're working with
   const config = {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    hasPassword: !!process.env.DB_PASSWORD,
+    port: 3306,
+    ssl: process.env.NODE_ENV === 'production' ? {} : undefined  // Simplified SSL config
   };
 
   try {
-    console.log('Config being used:', config);
+    // Create a standalone connection first
+    const connection = await mysql.createConnection(config);
     
-    // Print the full connection object (excluding password)
-    const connectionConfig = {
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      database: process.env.DB_NAME,
-      port: 3306,
-      ssl: {
-        rejectUnauthorized: true,
-        minVersion: 'TLSv1.2'
-      }
-    };
+    // Test the connection
+    const [rows] = await connection.execute('SELECT 1');
+    await connection.end();
 
     return NextResponse.json({ 
-      configCheck: config,
-      connectionConfig: connectionConfig,
-      envHost: process.env.DB_HOST,
-      dbHost: `mysql://${process.env.DB_USER}:****@${process.env.DB_HOST}:3306/${process.env.DB_NAME}`
+      message: 'Connection successful',
+      config: {
+        ...config,
+        password: undefined  // Don't send password in response
+      },
+      result: rows
     });
   } catch (error) {
+    // Return more detailed error info
     return NextResponse.json({ 
-      error: 'Configuration check failed',
-      config: config,
-      message: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Connection failed',
+      config: {
+        ...config,
+        password: undefined
+      },
+      errorDetails: {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        name: error instanceof Error ? error.name : 'Unknown',
+        code: error instanceof Error ? (error as any).code : undefined
+      }
     }, { status: 500 });
   }
 }
