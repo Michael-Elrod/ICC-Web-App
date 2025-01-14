@@ -3,76 +3,53 @@ import { NextResponse } from 'next/server';
 import { authOptions } from "@/app/lib/auth";
 
 async function auth(req: Request) {
-  console.log("Auth endpoint hit", req.url); // Debug log
-  
   try {
-    // Create a copy of the request with explicit headers
-    const modifiedReq = new Request(req.url, {
-      method: req.method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...Object.fromEntries(req.headers.entries())
-      },
-      body: req.body
-    });
-
+    console.log('Auth request to:', req.url);
+    
+    // Create handler but don't execute yet
     const handler = NextAuth(authOptions);
-    
-    console.log("Attempting NextAuth handler"); // Debug log
-    const response = await handler(modifiedReq);
-    console.log("Handler response received"); // Debug log
-    
-    // If we get a response, ensure it's JSON
-    if (response) {
-      // If it's already a Response object, ensure it's properly handled
+    console.log('NextAuth handler created');
+
+    try {
+      // Execute handler with original request
+      const response = await handler(req);
+      console.log('Handler executed, got response type:', typeof response);
+
       if (response instanceof Response) {
-        const responseBody = await response.text();
-        console.log("Response body:", responseBody); // Debug log
-        
+        const bodyText = await response.text();
+        console.log('Response body received, length:', bodyText.length);
+
+        // Ensure we have valid JSON
         try {
-          // Try to parse as JSON to validate
-          JSON.parse(responseBody);
-          
-          return new Response(responseBody, {
+          JSON.parse(bodyText);
+          return new Response(bodyText, {
             status: response.status,
             headers: {
               'Content-Type': 'application/json',
-              'Cache-Control': 'no-store, max-age=0',
+              'Cache-Control': 'no-store'
             }
           });
-        } catch {
-          // If not valid JSON, convert to JSON error response
-          return NextResponse.json(
-            { error: 'Invalid response format' },
-            { status: 500 }
-          );
+        } catch (jsonError) {
+          console.error('JSON parse error:', jsonError);
+          return NextResponse.json({ error: 'Invalid response format' }, { status: 500 });
         }
       }
       
-      // If it's not a Response object, convert it to JSON
-      return NextResponse.json(response);
+      // Handle non-Response objects by converting to JSON
+      return NextResponse.json(response || {});
+
+    } catch (handlerError) {
+      console.error('Handler execution error:', handlerError);
+      return NextResponse.json(
+        { error: 'Auth handler execution failed' },
+        { status: 500 }
+      );
     }
-    
-    // Return empty JSON if no response
-    return NextResponse.json({});
-    
-  } catch (error) {
-    console.error('NextAuth handler error:', error);
-    // Return a proper JSON error response with details in development
+  } catch (routeError) {
+    console.error('Route error:', routeError);
     return NextResponse.json(
-      { 
-        error: 'Authentication error occurred',
-        details: process.env.NODE_ENV === 'development' ? 
-          (error instanceof Error ? error.message : String(error)) : 
-          undefined
-      },
-      { 
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store, max-age=0',
-        }
-      }
+      { error: 'Auth route error' },
+      { status: 500 }
     );
   }
 }
