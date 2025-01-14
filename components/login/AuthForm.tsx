@@ -47,7 +47,7 @@ export default function AuthForm() {
     if (isLogin) {
       setIsLoading(true);
       try {
-        // Check environment variables first
+        // First check environment variables
         console.log("Testing environment variables...");
         const envTest = await fetch('/api/env-test', {
           method: 'POST',
@@ -55,14 +55,34 @@ export default function AuthForm() {
         });
         const envResult = await envTest.json();
         console.log('Environment test result:', envResult);
-  
+    
+        // Then attempt login
+        console.log("Attempting login...");
+        const result = await signIn("credentials", {
+          email: e.currentTarget.email.value,
+          password: e.currentTarget.password.value,
+          redirect: false,
+        });
+        console.log("SignIn response:", result);
+    
+        if (result?.error) {
+          if (result.error.includes("No account found")) {
+            setEmailError(result.error);
+          } else if (result.error.includes("Incorrect password")) {
+            setPasswordError(result.error);
+          } else {
+            setError(result.error);
+          }
+        } else if (result?.ok) {
+          router.replace("/jobs");
+        }
       } catch (error) {
-        console.error("Test error:", error);
-        setError("An error occurred during test");
+        console.error("Login error:", error);
+        setError("An error occurred during login");
       } finally {
         setIsLoading(false);
       }
-  } else {
+    } else {
       // Validate passwords match
       if (formData.signupPassword !== formData.retypePassword) {
         setError("Passwords do not match");
