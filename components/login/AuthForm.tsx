@@ -47,15 +47,6 @@ export default function AuthForm() {
     if (isLogin) {
       setIsLoading(true);
       try {
-        // First check environment variables
-        console.log("Testing environment variables...");
-        const envTest = await fetch('/api/env-test', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        const envResult = await envTest.json();
-        console.log('Environment test result:', envResult);
-    
         // Then attempt login
         console.log("Attempting login...");
         const result = await signIn("credentials", {

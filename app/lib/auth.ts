@@ -3,12 +3,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import pool from "@/app/lib/db";
 
-// Add debug check at the start
-console.log('Auth options loading, env check:', {
-  hasSecret: !!process.env.NEXTAUTH_SECRET,
-  hasURL: !!process.env.NEXTAUTH_URL
-});
-
 if (!process.env.NEXTAUTH_SECRET) {
   throw new Error('NEXTAUTH_SECRET environment variable is not set');
 }
