@@ -14,7 +14,7 @@ const pool = global.mysqlPool || mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   ssl: {
-    rejectUnauthorized: false
+    rejectUnauthorized: true
   },
   waitForConnections: true,
   connectionLimit: 10,
@@ -23,19 +23,17 @@ const pool = global.mysqlPool || mysql.createPool({
   keepAliveInitialDelay: 0
 });
 
-// Test the connection during initialization
-if (!global.mysqlPool) {
-  pool.getConnection()
-    .then(connection => {
-      console.log('Database connected successfully');
-      connection.release();
-    })
-    .catch(err => {
-      console.error('Error connecting to the database:', err);
-    });
-}
+pool.getConnection()
+  .then(connection => {
+    console.log('Database connected successfully');
+    connection.release();
+  })
+  .catch(err => {
+    console.error('Error connecting to the database:', err.message);
+    throw err;
+  });
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV !== 'production') {
   global.mysqlPool = pool;
 }
 
