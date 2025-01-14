@@ -43,11 +43,11 @@ export default function AuthForm() {
     setError("");
     setEmailError("");
     setPasswordError("");
-  
+   
     if (isLogin) {
       setIsLoading(true);
       try {
-        // First try the test endpoint
+        // ONLY try the test endpoint
         console.log("Testing direct login...");
         const loginTest = await fetch('/api/login-test', {
           method: 'POST',
@@ -60,8 +60,15 @@ export default function AuthForm() {
         
         const testResult = await loginTest.json();
         console.log('Login test result:', testResult);
-  
-        // Then try the normal NextAuth login
+   
+        if (testResult.success) {
+          router.replace("/jobs");
+        } else {
+          setError(testResult.error || "Login failed");
+        }
+   
+        // NextAuth signin removed/commented out
+        /*
         console.log("Attempting NextAuth login...");
         const result = await signIn("credentials", {
           email: e.currentTarget.email.value,
@@ -69,7 +76,7 @@ export default function AuthForm() {
           redirect: false,
         });
         console.log("SignIn response:", result);
-  
+   
         if (result?.error) {
           console.log("Result has error:", result.error);
           if (result.error.includes("No account found")) {
@@ -83,11 +90,10 @@ export default function AuthForm() {
           console.log("Login successful, redirecting...");
           router.replace("/jobs");
         }
+        */
       } catch (error) {
-        console.error("Detailed login error:", error);
-        console.log("Error type:", typeof error);
-        console.log("Error stringified:", JSON.stringify(error));
-        setError("An error occurred during login");
+        console.error("Login test error:", error);
+        setError("An error occurred during login test");
       } finally {
         setIsLoading(false);
       }
@@ -97,15 +103,15 @@ export default function AuthForm() {
         setError("Passwords do not match");
         return;
       }
-  
+   
       // Validate email format
       if (!isEmailValid(formData.signupEmail)) {
         setError("Please enter a valid email address");
         return;
       }
-  
+   
       setIsLoading(true);
-  
+   
       try {
         const res = await fetch("/api/register", {
           method: "POST",
@@ -119,29 +125,29 @@ export default function AuthForm() {
             inviteCode: formData.inviteCode,
           }),
         });
-  
+   
         const data = await res.json();
-  
+   
         // Immediately handle any non-200 response
         if (res.status === 400) {
           setEmailError(data.message);
           setIsLoading(false);
           return;
         }
-  
+   
         if (!res.ok) {
           setError(data.message || "Registration failed");
           setIsLoading(false);
           return;
         }
-  
+   
         // Only proceed with sign in if registration was successful
         const result = await signIn("credentials", {
           email: formData.signupEmail,
           password: formData.signupPassword,
           redirect: false,
         });
-  
+   
         if (result?.error) {
           setError(result.error);
         } else if (result?.ok) {
@@ -154,7 +160,7 @@ export default function AuthForm() {
         setIsLoading(false);
       }
     }
-  };
+   };
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
