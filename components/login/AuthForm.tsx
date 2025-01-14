@@ -47,48 +47,33 @@ export default function AuthForm() {
     if (isLogin) {
       setIsLoading(true);
       try {
-        // ONLY try the test endpoint
+        // Try the simple test first
         console.log("Testing simple endpoint...");
         const simpleTest = await fetch('/api/test-simple', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ test: true })
         });
-        
         const simpleResult = await simpleTest.json();
         console.log('Simple test result:', simpleResult);
-   
-        // NextAuth signin removed/commented out
-        /*
-        console.log("Attempting NextAuth login...");
-        const result = await signIn("credentials", {
-          email: e.currentTarget.email.value,
-          password: e.currentTarget.password.value,
-          redirect: false,
+  
+        // Now try the database test
+        console.log("Testing database connection...");
+        const dbTest = await fetch('/api/login-test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ test: true })
         });
-        console.log("SignIn response:", result);
-   
-        if (result?.error) {
-          console.log("Result has error:", result.error);
-          if (result.error.includes("No account found")) {
-            setEmailError(result.error);
-          } else if (result.error.includes("Incorrect password")) {
-            setPasswordError(result.error);
-          } else {
-            setError(result.error);
-          }
-        } else if (result?.ok) {
-          console.log("Login successful, redirecting...");
-          router.replace("/jobs");
-        }
-        */
+        const dbResult = await dbTest.json();
+        console.log('Database test result:', dbResult);
+  
       } catch (error) {
-        console.error("Login test error:", error);
-        setError("An error occurred during login test");
+        console.error("Test error:", error);
+        setError("An error occurred during test");
       } finally {
         setIsLoading(false);
       }
-    } else {
+  } else {
       // Validate passwords match
       if (formData.signupPassword !== formData.retypePassword) {
         setError("Passwords do not match");
