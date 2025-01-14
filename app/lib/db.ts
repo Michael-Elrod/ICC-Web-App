@@ -13,14 +13,14 @@ const pool = global.mysqlPool || mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  ssl: {
+    rejectUnauthorized: false
+  },
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
   enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
-  ssl: {
-    rejectUnauthorized: true
-  }
+  keepAliveInitialDelay: 0
 });
 
 // Test the connection during initialization
