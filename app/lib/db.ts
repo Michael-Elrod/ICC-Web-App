@@ -14,15 +14,17 @@ const pool = global.mysqlPool || mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   ssl: {
-    rejectUnauthorized: true,
-    // Required for AWS RDS
-    minVersion: 'TLSv1.2'
+    minVersion: 'TLSv1.2',
+    rejectUnauthorized: false
   },
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
   enableKeepAlive: true,
-  keepAliveInitialDelay: 0
+  keepAliveInitialDelay: 0,
+  timezone: 'auto',
+  supportBigNumbers: true,
+  bigNumberStrings: true
 });
 
 pool.getConnection()
