@@ -2,42 +2,48 @@ import { NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 
 export async function GET() {
-  // First just check the raw env values
-  const envCheck = {
-    DB_HOST: process.env.DB_HOST || 'not set',
-    DB_USER: process.env.DB_USER || 'not set',
-    DB_NAME: process.env.DB_NAME || 'not set',
-    HAS_DB_PASSWORD: !!process.env.DB_PASSWORD,
-    NODE_ENV: process.env.NODE_ENV || 'not set'
-  };
-
   try {
-    const config = {
-      host: process.env.DB_HOST!,  // Force non-null
+    // Step 1: Create explicit connection options
+    const connectionOptions = {
+      host: process.env.DB_HOST!,
       user: process.env.DB_USER!,
       password: process.env.DB_PASSWORD!,
       database: process.env.DB_NAME!,
       port: 3306,
-      ssl: {}
+      ssl: {
+        minVersion: 'TLSv1.2'
+      },
+      connectTimeout: 20000, // 20 seconds
+      debug: true           // Enable debug logging
     };
 
-    return NextResponse.json({ 
-      envCheck,
-      configBuilt: {
-        ...config,
-        password: '[REDACTED]'
+    // Step 2: Try direct connection
+    console.log('Attempting connection...');
+    const connection = await mysql.createConnection(connectionOptions);
+    
+    console.log('Connection established');
+    const [result] = await connection.query('SELECT 1');
+    await connection.end();
+
+    return NextResponse.json({
+      status: 'success',
+      connectionConfig: {
+        ...connectionOptions,
+        password: undefined
       },
-      rawHost: process.env.DB_HOST
+      result
     });
 
   } catch (error) {
-    return NextResponse.json({ 
-      error: 'Pre-connection check failed',
-      envCheck,
-      errorDetails: {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        name: error instanceof Error ? error.name : 'Unknown',
-      }
+    // Return comprehensive error details
+    return NextResponse.json({
+      status: 'error',
+      type: error instanceof Error ? error.constructor.name : typeof error,
+      message: error instanceof Error ? error.message : String(error),
+      code: error instanceof Error ? (error as any).code : undefined,
+      errno: error instanceof Error ? (error as any).errno : undefined,
+      sqlState: error instanceof Error ? (error as any).sqlState : undefined,
+      sqlMessage: error instanceof Error ? (error as any).sqlMessage : undefined
     }, { status: 500 });
   }
 }
