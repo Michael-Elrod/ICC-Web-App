@@ -3,6 +3,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import pool from "@/app/lib/db";
 
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error('NEXTAUTH_SECRET environment variable is not set');
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -50,14 +54,15 @@ export const authOptions: NextAuthOptions = {
               error.message === "Please enter both email and password") {
             throw error;
           }
+          console.error('Auth error:', error);
           throw new Error("An error occurred during authentication");
         }
       },
     }),
   ],
   pages: {
-    signIn: "/",
-    error: "/auth/error",
+    signIn: '/',
+    error: '/auth/error',
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -82,8 +87,15 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // Handle redirects
+      return url.startsWith(baseUrl) ? url : baseUrl;
+    },
   },
   session: {
     strategy: "jwt",
-  }
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
 };
