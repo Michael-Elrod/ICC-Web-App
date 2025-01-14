@@ -3,11 +3,18 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import pool from "@/app/lib/db";
 
+// Add debug check at the start
+console.log('Auth options loading, env check:', {
+  hasSecret: !!process.env.NEXTAUTH_SECRET,
+  hasURL: !!process.env.NEXTAUTH_URL
+});
+
 if (!process.env.NEXTAUTH_SECRET) {
   throw new Error('NEXTAUTH_SECRET environment variable is not set');
 }
 
 export const authOptions: NextAuthOptions = {
+  debug: true, // Enable debug mode
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -17,10 +24,12 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log('Missing credentials');
           throw new Error("Please enter both email and password");
         }
       
         try {
+          console.log('Attempting database query for:', credentials.email);
           const [rows] = await pool.execute(
             "SELECT * FROM app_user WHERE user_email = ?",
             [credentials.email]
@@ -28,18 +37,22 @@ export const authOptions: NextAuthOptions = {
       
           const user = (rows as any[])[0];
           if (!user) {
+            console.log('No user found');
             throw new Error("No account found with this email");
           }
       
+          console.log('Checking password');
           const passwordMatch = await compare(
             credentials.password,
             user.password
           );
       
           if (!passwordMatch) {
+            console.log('Password mismatch');
             throw new Error("Incorrect password");
           }
-      
+          
+          console.log('Login successful');
           return {
             id: user.user_id.toString(),
             type: user.user_type,
@@ -49,12 +62,12 @@ export const authOptions: NextAuthOptions = {
             user_phone: user.user_phone,
           };
         } catch (error: any) {
+          console.error('Auth error:', error);
           if (error.message === "No account found with this email" ||
               error.message === "Incorrect password" ||
               error.message === "Please enter both email and password") {
             throw error;
           }
-          console.error('Auth error:', error);
           throw new Error("An error occurred during authentication");
         }
       },
@@ -66,6 +79,7 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
+      console.log('JWT callback:', { hasUser: !!user });
       if (user) {
         token.id = user.id;
         token.type = user.type;
@@ -77,6 +91,7 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
+      console.log('Session callback:', { hasToken: !!token });
       if (session.user) {
         session.user.id = token.id;
         session.user.type = token.type;
@@ -87,15 +102,9 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    async redirect({ url, baseUrl }) {
-      // Handle redirects
-      return url.startsWith(baseUrl) ? url : baseUrl;
-    },
   },
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
 };
