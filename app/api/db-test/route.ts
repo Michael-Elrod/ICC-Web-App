@@ -2,10 +2,20 @@ import { NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 
 export async function GET() {
+  const dbConfig = {
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    database: process.env.DB_NAME,
+    ssl: {
+      rejectUnauthorized: true
+    }
+  };
+
   try {
-    // Create a temporary connection just for testing
+    console.log('Attempting connection to:', process.env.DB_HOST);
+    
     const testPool = mysql.createPool({
-      host: process.env.DB_HOST,
+      host: process.env.DB_HOST, // Should be your RDS endpoint
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
@@ -20,20 +30,14 @@ export async function GET() {
     
     return NextResponse.json({ 
       message: 'Database connection successful',
-      config: {
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        database: process.env.DB_NAME,
-        hasPassword: !!process.env.DB_PASSWORD
-      }
+      configUsed: dbConfig
     });
   } catch (error) {
-    // Return detailed error info
     return NextResponse.json({ 
       error: 'Database connection failed',
+      configAttempted: dbConfig,
       message: error instanceof Error ? error.message : 'Unknown error',
-      type: error instanceof Error ? error.name : typeof error,
-      stack: error instanceof Error ? error.stack : undefined
+      type: error instanceof Error ? error.name : typeof error
     }, { status: 500 });
   }
 }
