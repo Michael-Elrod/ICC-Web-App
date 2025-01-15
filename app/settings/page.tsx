@@ -1,7 +1,7 @@
-// app/settings/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import PasswordChangeModal from "@/components/util/PasswordModal";
 
@@ -14,6 +14,38 @@ const SettingsHeader: React.FC<{ title: string }> = ({ title }) => {
     </header>
   );
 };
+
+export default function SettingsPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/");
+    }
+  }, [status, router]);
+
+  // Show loading state while checking authentication
+  if (status === "loading") {
+    return <div className="flex justify-center items-center min-h-screen">
+      Loading...
+    </div>;
+  }
+
+  // Don't render anything if not authenticated
+  if (!session) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <SettingsHeader title="Settings" />
+      <main className="flex-1 flex justify-center items-center">
+        <SettingsForm />
+      </main>
+    </div>
+  );
+}
 
 const SettingsForm: React.FC = () => {
   const { data: session, update: updateSession } = useSession();
@@ -58,19 +90,22 @@ const SettingsForm: React.FC = () => {
         throw new Error(data.error || 'Failed to update profile');
       }
   
-      // Force a complete session refresh
-      await updateSession({
-        ...session,
-        user: {
-          ...session?.user,
-          firstName: formData.get('firstName') as string,
-          lastName: formData.get('lastName') as string,
-          phone: formData.get('phone') as string,
-          email: formData.get('email') as string,
-        }
-      });
-  
-      setSuccessMessage('Profile updated successfully');
+      try {
+        await updateSession({
+          ...session,
+          user: {
+            ...session?.user,
+            firstName: formData.get('firstName') as string,
+            lastName: formData.get('lastName') as string,
+            phone: formData.get('phone') as string,
+            email: formData.get('email') as string,
+          }
+        });
+        setSuccessMessage('Profile updated successfully');
+      } catch (error) {
+        console.error('Session update error:', error);
+        setError('Failed to update session');
+      }
     } catch (error) {
       console.error('Update error:', error);
       setError(error instanceof Error ? error.message : 'An error occurred');
@@ -81,12 +116,19 @@ const SettingsForm: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await signOut({
+      setIsLoading(true);
+      await signOut({ 
         callbackUrl: "/",
-        redirect: true,
+        redirect: false
       });
+      
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = "/";
     } catch (error) {
       console.error("Logout error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -241,9 +283,32 @@ const SettingsForm: React.FC = () => {
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full bg-red-500 text-white py-2 rounded-md shadow-sm hover:bg-red-600 transition duration-300 font-bold"
+            disabled={isLoading}
+            className="w-full bg-red-500 text-white py-2 rounded-md shadow-sm hover:bg-red-600 transition duration-300 font-bold disabled:opacity-50"
           >
-            Logout
+            {isLoading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+                Logging out...
+              </span>
+            ) : (
+              "Logout"
+            )}
           </button>
         </form>
       </div>
@@ -256,14 +321,3 @@ const SettingsForm: React.FC = () => {
     </>
   );
 };
-
-export default function SettingsPage() {
-  return (
-    <div className="flex flex-col min-h-screen">
-      <SettingsHeader title="Settings" />
-      <main className="flex-1 flex justify-center items-center">
-        <SettingsForm />
-      </main>
-    </div>
-  );
-}
