@@ -17,20 +17,30 @@ const nextConfig = {
     }
     return config;
   },
-  // Add this section
   headers: async () => {
     return [
       {
         source: '/api/auth/:path*',
         headers: [
           { key: 'Content-Type', value: 'application/json' },
+          { key: 'Access-Control-Allow-Credentials', value: 'true' }, // Added
           { key: 'Access-Control-Allow-Origin', value: '*' },
           { key: 'Access-Control-Allow-Methods', value: 'GET,POST,OPTIONS' },
-          { key: 'Access-Control-Allow-Headers', value: 'Content-Type' }
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' } // Modified
         ],
       }
     ]
+  },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/api/auth/:path*',
+          destination: '/api/auth/:path*'
+        }
+      ]
+    }
   }
 };
 
-export default nextConfig;
+module.exports = nextConfig;
