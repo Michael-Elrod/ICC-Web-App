@@ -50,6 +50,8 @@ export default function JobDetailPage() {
   const [collapsedPhases, setCollapsedPhases] = useState<Set<number>>(
     new Set()
   );
+  const hasAdminAccess =
+    session?.user?.type === "Owner" || session?.user?.type === "Admin";
 
   const handleJobTerminate = async () => {
     try {
@@ -98,13 +100,13 @@ export default function JobDetailPage() {
     try {
       let updatedPhase: PhaseView | null = null;
       let otherUpdatedPhases: PhaseView[] = [];
-  
+
       const getLatestDate = (
         tasks: TaskView[],
         materials: MaterialView[]
       ): string => {
         let latestDate = new Date(-8640000000000000);
-  
+
         tasks.forEach((task) => {
           const taskStart = createLocalDate(task.task_startdate);
           const taskEnd = addBusinessDays(taskStart, task.task_duration - 1);
@@ -112,46 +114,46 @@ export default function JobDetailPage() {
             latestDate = taskEnd;
           }
         });
-  
+
         materials.forEach((material) => {
           const materialDate = createLocalDate(material.material_duedate);
           if (materialDate > latestDate) {
             latestDate = materialDate;
           }
         });
-  
+
         return formatToDateString(latestDate);
       };
-  
+
       const getEarliestDate = (
         tasks: TaskView[],
         materials: MaterialView[]
       ): string => {
         let earliestDate = new Date(8640000000000000);
-  
+
         tasks.forEach((task) => {
           const taskStart = createLocalDate(task.task_startdate);
           if (taskStart < earliestDate) {
             earliestDate = taskStart;
           }
         });
-  
+
         materials.forEach((material) => {
           const materialDate = createLocalDate(material.material_duedate);
           if (materialDate < earliestDate) {
             earliestDate = materialDate;
           }
         });
-  
+
         return formatToDateString(earliestDate);
       };
-  
+
       setJob((prevJob) => {
         if (!prevJob) return null;
-  
+
         const phaseIndex = prevJob.phases.findIndex((p) => p.id === phaseId);
         if (phaseIndex === -1) return prevJob;
-  
+
         const updatedPhases = [...prevJob.phases];
         const currentPhase: PhaseView = {
           ...updatedPhases[phaseIndex],
@@ -159,11 +161,11 @@ export default function JobDetailPage() {
           materials: [...updatedPhases[phaseIndex].materials],
           notes: [...updatedPhases[phaseIndex].notes],
         };
-  
+
         if (updates.title !== currentPhase.name) {
           currentPhase.name = updates.title;
         }
-  
+
         if (updates.daysDiff) {
           currentPhase.tasks = currentPhase.tasks.map((task) => {
             const newDate = formatToDateString(
@@ -172,13 +174,13 @@ export default function JobDetailPage() {
                 updates.daysDiff!
               )
             );
-  
+
             return {
               ...task,
               task_startdate: newDate,
             };
           });
-  
+
           currentPhase.materials = currentPhase.materials.map((material) => {
             const newDate = formatToDateString(
               addBusinessDays(
@@ -186,14 +188,14 @@ export default function JobDetailPage() {
                 updates.daysDiff!
               )
             );
-  
+
             return {
               ...material,
               material_duedate: newDate,
             };
           });
         }
-  
+
         if (updates.extend > 0) {
           currentPhase.tasks = currentPhase.tasks.map((task) => {
             const newDuration = task.task_duration + (updates.extend - 1);
@@ -202,8 +204,8 @@ export default function JobDetailPage() {
               task_duration: newDuration,
             };
           });
-          console.log('Updated phase tasks:', currentPhase.tasks);
-  
+          console.log("Updated phase tasks:", currentPhase.tasks);
+
           currentPhase.materials = currentPhase.materials.map((material) => {
             const newDate = formatToDateString(
               addBusinessDays(
@@ -211,14 +213,14 @@ export default function JobDetailPage() {
                 updates.extend
               )
             );
-  
+
             return {
               ...material,
               material_duedate: newDate,
             };
           });
         }
-  
+
         const { startDate, endDate } = calculatePhaseDates(
           currentPhase.tasks,
           currentPhase.materials
@@ -226,7 +228,7 @@ export default function JobDetailPage() {
         currentPhase.startDate = startDate;
         currentPhase.endDate = endDate;
         updatedPhases[phaseIndex] = currentPhase;
-  
+
         if (updates.extendFuturePhases && updates.extend > 0) {
           for (let i = phaseIndex + 1; i < updatedPhases.length; i++) {
             const phase: PhaseView = {
@@ -235,7 +237,7 @@ export default function JobDetailPage() {
               materials: [...updatedPhases[i].materials],
               notes: [...updatedPhases[i].notes],
             };
-  
+
             phase.tasks = phase.tasks.map((task) => {
               const newDate = formatToDateString(
                 addBusinessDays(
@@ -243,13 +245,13 @@ export default function JobDetailPage() {
                   updates.extend
                 )
               );
-  
+
               return {
                 ...task,
                 task_startdate: newDate,
               };
             });
-  
+
             phase.materials = phase.materials.map((material) => {
               const newDate = formatToDateString(
                 addBusinessDays(
@@ -257,36 +259,36 @@ export default function JobDetailPage() {
                   updates.extend
                 )
               );
-  
+
               return {
                 ...material,
                 material_duedate: newDate,
               };
             });
-  
+
             phase.startDate = getEarliestDate(phase.tasks, phase.materials);
             phase.endDate = getLatestDate(phase.tasks, phase.materials);
             updatedPhases[i] = phase;
           }
         }
-  
+
         updatedPhase = currentPhase;
         otherUpdatedPhases = updates.extendFuturePhases
           ? updatedPhases.slice(phaseIndex + 1)
           : [];
-  
+
         return {
           ...prevJob,
           phases: updatedPhases,
         };
       });
-  
+
       if (!updatedPhase) {
         throw new Error("Failed to update phase: Phase data is null");
       }
-  
+
       const phase = updatedPhase as PhaseView;
-  
+
       await fetch(`/api/jobs/${params.id}/phases/${phaseId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -295,13 +297,12 @@ export default function JobDetailPage() {
           startDate: phase.startDate,
           extend: updates.extend,
           extendFuturePhases: updates.extendFuturePhases,
-          daysDiff: updates.daysDiff
+          daysDiff: updates.daysDiff,
         }),
       });
-  
+
       // Add page reload after successful update
       window.location.reload();
-  
     } catch (error) {
       console.error("Error updating phase:", error);
       throw error;
@@ -1168,6 +1169,7 @@ export default function JobDetailPage() {
               onNoteDelete={handleNoteDelete}
               jobStartDate={job.job_startdate}
               onPhaseUpdate={handlePhaseUpdate}
+              userType={session?.user?.type}
             />
           );
         })}
@@ -1255,26 +1257,28 @@ export default function JobDetailPage() {
             <h1 className="text-3xl font-bold">{job.jobName}</h1>
             <span className="text-lg text-gray-600">{job.dateRange}</span>
           </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setActiveModal("edit")}
-              className="px-4 py-2 bg-gray-500 text-white rounded font-bold hover:bg-gray-600 transition-colors"
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => setShowCopyModal(true)}
-              className="px-4 py-2 bg-blue-500 text-white rounded font-bold hover:bg-blue-600 transition-colors"
-            >
-              Copy Job
-            </button>
-            <button
-              onClick={() => setShowTerminateModal(true)}
-              className="px-4 py-2 bg-red-500 text-white rounded font-bold hover:bg-red-600 transition-colors"
-            >
-              Terminate Job
-            </button>
-          </div>
+          {hasAdminAccess && (
+            <div className="flex gap-3">
+              <button
+                onClick={() => setActiveModal("edit")}
+                className="px-4 py-2 bg-gray-500 text-white rounded font-bold hover:bg-gray-600 transition-colors"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => setShowCopyModal(true)}
+                className="px-4 py-2 bg-blue-500 text-white rounded font-bold hover:bg-blue-600 transition-colors"
+              >
+                Copy Job
+              </button>
+              <button
+                onClick={() => setShowTerminateModal(true)}
+                className="px-4 py-2 bg-red-500 text-white rounded font-bold hover:bg-red-600 transition-colors"
+              >
+                Terminate Job
+              </button>
+            </div>
+          )}
         </div>
       </header>
 

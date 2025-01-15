@@ -29,6 +29,7 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
   onNoteDelete,
   jobStartDate,
   onPhaseUpdate,
+  userType,
 }) => {
   const params = useParams();
   const jobId = params?.id as string;
@@ -40,7 +41,7 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
   const [activeNoteModal, setActiveNoteModal] = useState<string | null>(null);
   const [editNoteDetails, setEditNoteDetails] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  // Format dates for display
+  const hasAdminAccess = userType === 'Owner' || userType === 'Admin';
   const startDate = createLocalDate(phase.startDate).toLocaleDateString(
     "en-US",
     {
@@ -150,24 +151,26 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
         </div>
 
         <div className="flex items-center gap-4">
-          <button
-            onClick={() => setIsEditModalOpen(true)}
-            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          {hasAdminAccess && (
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              />
-            </svg>
-          </button>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+            </button>
+          )}
           <button
             onClick={onToggleCollapse}
             className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"

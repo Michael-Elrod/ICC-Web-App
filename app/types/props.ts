@@ -97,6 +97,7 @@ export interface DetailPhaseCardProps {
       }>;
     }
   ) => Promise<void>;
+  userType?: string;
 }
 
 export interface PhaseCardProps {

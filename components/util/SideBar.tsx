@@ -6,9 +6,14 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FaCirclePlus } from "react-icons/fa6";
 import { FaBriefcase, FaCalendar, FaAddressBook, FaCog } from "react-icons/fa";
+import { useSession } from "next-auth/react";
 
 const SideBar = () => {
   const router = useRouter();
+  const { data: session } = useSession();
+  
+  // Check if user has permission to create new jobs
+  const canCreateJobs = session?.user?.type === 'Owner' || session?.user?.type === 'Admin';
 
   return (
     <nav className="fixed left-0 top-0 w-12 h-screen p-4 flex flex-col items-center justify-between bg-zinc-800 transition-colors duration-200">
@@ -19,11 +24,13 @@ const SideBar = () => {
               <FaBriefcase size={28} />
             </Link>
           </li>
-          <li>
-            <Link href="/jobs/new" className="text-zinc-300 hover:text-white">
-              <FaCirclePlus size={28} />
-            </Link>
-          </li>
+          {canCreateJobs && (
+            <li>
+              <Link href="/jobs/new" className="text-zinc-300 hover:text-white">
+                <FaCirclePlus size={28} />
+              </Link>
+            </li>
+          )}
           <li>
             <Link href="/calendar" className="text-zinc-300 hover:text-white">
               <FaCalendar size={28} />

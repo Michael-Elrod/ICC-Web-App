@@ -4,7 +4,7 @@ import { compare } from "bcryptjs";
 import pool from "@/app/lib/db";
 
 export const authOptions: NextAuthOptions = {
-  debug: true,
+  debug: false,
   providers: [
     CredentialsProvider({
       name: "Credentials",
