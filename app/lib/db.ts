@@ -1,9 +1,5 @@
 import mysql from 'mysql2/promise';
 
-if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_NAME) {
-  throw new Error('Database configuration not found');
-}
-
 declare global {
   var mysqlPool: mysql.Pool | undefined;
 }
@@ -26,11 +22,9 @@ const pool = global.mysqlPool || mysql.createPool({
 
 pool.getConnection()
   .then(connection => {
-    console.log('Database connected successfully');
     connection.release();
   })
   .catch(err => {
-    console.error('Error connecting to the database:', err.message);
     throw err;
   });
 

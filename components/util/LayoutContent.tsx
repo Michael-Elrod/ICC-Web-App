@@ -2,8 +2,8 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import SideBar from './util/SideBar';
-import DarkModeToggle from './util/DarkModeToggle';
+import SideBar from './SideBar';
+import DarkModeToggle from './DarkModeToggle';
 
 export default function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

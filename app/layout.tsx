@@ -1,7 +1,7 @@
 import { AuthProviders } from './providers/AuthProvider';
 import { Work_Sans } from "next/font/google";
 import "./globals.css";
-import LayoutContent from "@/components/LayoutContent";
+import LayoutContent from "@/components/util/LayoutContent";
 
 const workSans = Work_Sans({ 
   subsets: ["latin"],

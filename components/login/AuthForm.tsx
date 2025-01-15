@@ -47,14 +47,11 @@ export default function AuthForm() {
     if (isLogin) {
       setIsLoading(true);
       try {
-        // Then attempt login
-        console.log("Attempting login...");
         const result = await signIn("credentials", {
           email: e.currentTarget.email.value,
           password: e.currentTarget.password.value,
           redirect: false,
         });
-        console.log("SignIn response:", result);
     
         if (result?.error) {
           if (result.error.includes("No account found")) {
