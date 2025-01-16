@@ -103,13 +103,16 @@ export default function ContactsPage() {
               </select>
             </div>
 
-            <button
-              onClick={() => setIsInviteModalOpen(true)}
-              className="px-4 py-2 bg-blue-500 text-white font-medium rounded-md 
-        hover:bg-blue-600 transition-colors"
-            >
-              Invite
-            </button>
+            {(session?.user?.type === "Owner" ||
+              session?.user?.type === "Admin") && (
+              <button
+                onClick={() => setIsInviteModalOpen(true)}
+                className="px-4 py-2 bg-blue-500 text-white font-medium rounded-md 
+      hover:bg-blue-600 transition-colors"
+              >
+                Invite
+              </button>
+            )}
           </div>
 
           {/* Rest of the search input remains the same */}
@@ -138,14 +141,20 @@ export default function ContactsPage() {
               {filteredUsers.map((user) => (
                 <div
                   key={user.user_id}
-                  onClick={() => setSelectedUser(user)}
-                  className="cursor-pointer transition-all rounded-lg
-                    hover:bg-blue-50 dark:hover:bg-blue-900/20
-                    hover:shadow-md dark:hover:shadow-zinc-900
-                    hover:scale-[1.01]
-                    hover:border-blue-200 dark:hover:border-blue-800
-                    border border-transparent
-                    transform-gpu"
+                  onClick={() => {
+                    if (
+                      session?.user?.type === "Owner" ||
+                      session?.user?.type === "Admin"
+                    ) {
+                      setSelectedUser(user);
+                    }
+                  }}
+                  className={`${
+                    session?.user?.type === "Owner" ||
+                    session?.user?.type === "Admin"
+                      ? "cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:shadow-md dark:hover:shadow-zinc-900 hover:scale-[1.01] hover:border-blue-200 dark:hover:border-blue-800"
+                      : ""
+                  } transition-all rounded-lg border border-transparent transform-gpu`}
                 >
                   <ContactCard
                     user_id={user.user_id}

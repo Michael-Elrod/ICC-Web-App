@@ -49,7 +49,8 @@ export default function SettingsPage() {
 
 const SettingsForm: React.FC = () => {
   const { data: session, update: updateSession } = useSession();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -65,7 +66,7 @@ const SettingsForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsUpdating(true);
     setError(null);
     setSuccessMessage(null);
     
@@ -110,13 +111,13 @@ const SettingsForm: React.FC = () => {
       console.error('Update error:', error);
       setError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
-      setIsLoading(false);
+      setIsUpdating(false);
     }
   };
 
   const handleLogout = async () => {
     try {
-      setIsLoading(true);
+      setIsLoggingOut(true);
       await signOut({ 
         callbackUrl: "/",
         redirect: false
@@ -128,7 +129,7 @@ const SettingsForm: React.FC = () => {
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
-      setIsLoading(false);
+      setIsLoggingOut(false);
     }
   };
 
@@ -244,10 +245,10 @@ const SettingsForm: React.FC = () => {
   
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isUpdating}
             className="w-full bg-green-500 text-white py-2 rounded-md shadow-sm hover:bg-green-600 transition duration-300 mb-3 font-bold disabled:opacity-50"
           >
-            {isLoading ? (
+            {isUpdating ? (
               <span className="flex items-center justify-center">
                 <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
                   <circle
@@ -283,10 +284,10 @@ const SettingsForm: React.FC = () => {
           <button
             type="button"
             onClick={handleLogout}
-            disabled={isLoading}
+            disabled={isLoggingOut}
             className="w-full bg-red-500 text-white py-2 rounded-md shadow-sm hover:bg-red-600 transition duration-300 font-bold disabled:opacity-50"
           >
-            {isLoading ? (
+            {isLoggingOut ? (
               <span className="flex items-center justify-center">
                 <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
                   <circle
