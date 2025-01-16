@@ -3,6 +3,16 @@ const nextConfig = {
   experimental: {
     optimizeCss: true
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'icc-image-bucket.s3.us-east-1.amazonaws.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
   webpack: (config, { isServer }) => {
     if (!isServer && config.optimization.splitChunks) {
       config.optimization.splitChunks.cacheGroups = {
@@ -23,10 +33,10 @@ const nextConfig = {
         source: '/api/auth/:path*',
         headers: [
           { key: 'Content-Type', value: 'application/json' },
-          { key: 'Access-Control-Allow-Credentials', value: 'true' }, // Added
+          { key: 'Access-Control-Allow-Credentials', value: 'true' },
           { key: 'Access-Control-Allow-Origin', value: '*' },
           { key: 'Access-Control-Allow-Methods', value: 'GET,POST,OPTIONS' },
-          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' } // Modified
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' }
         ],
       }
     ]

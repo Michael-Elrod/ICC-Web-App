@@ -27,6 +27,7 @@ import {
   MaterialView,
   UserView,
   Tab,
+  FloorPlan,
 } from "../../types/views";
 
 export default function JobDetailPage() {
@@ -973,6 +974,14 @@ export default function JobDetailPage() {
           })
         );
 
+        // Transform floor plans
+        const transformedFloorplans = data.job.floorplans?.map(
+          (floorplan: any): FloorPlan => ({
+            url: floorplan.floorplan_url,
+            name: `Floor Plan ${floorplan.floorplan_id}`,
+          })
+        ) || [];
+
         const transformedJob: JobDetailView = {
           id: data.job.job_id,
           jobName: data.job.job_title,
@@ -981,6 +990,7 @@ export default function JobDetailPage() {
           currentWeek: data.job.current_week,
           tasks: transformedTasks,
           materials: transformedMaterials,
+          floorplans: transformedFloorplans,
           phases: data.job.phases.map(
             (phase: any): PhaseView => ({
               id: phase.id,
@@ -1177,20 +1187,19 @@ export default function JobDetailPage() {
     );
   };
 
-  const defaultFloorplans = Array(5)
-    .fill({
-      url: "/placeholder-floorplan.jpg",
-      name: "Sample Floorplan",
-    })
-    .map((plan, index) => ({
-      ...plan,
-      name: `Sample Floorplan ${index + 1}`,
-    }));
-
   const renderFloorPlan = () => {
+    if (!job.floorplans.length) {
+      return (
+        <CardFrame>
+          <div className="text-center py-8">
+            No floor plans available for this job.
+          </div>
+        </CardFrame>
+      );
+    }
     return (
       <CardFrame>
-        <FloorplanViewer floorplans={defaultFloorplans} mode="embedded" />
+        <FloorplanViewer floorplans={job.floorplans} mode="embedded" />
       </CardFrame>
     );
   };

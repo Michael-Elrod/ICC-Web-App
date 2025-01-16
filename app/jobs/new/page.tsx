@@ -53,6 +53,7 @@ function NewJobContent() {
     jobLocation: "",
     description: "",
     selectedClient: null as { user_id: number } | null,
+    floorPlans: [] as File[]
   });
 
   useEffect(() => {
@@ -307,29 +308,24 @@ function NewJobContent() {
   const handleSubmitJob = async () => {
     try {
       setIsSubmitting(true);
-
+  
       // Check job title first
       if (!jobDetails.jobTitle?.trim()) {
-        const jobDetailsElement = document.getElementById(
-          "job-details-section"
-        );
+        const jobDetailsElement = document.getElementById("job-details-section");
         if (jobDetailsElement) {
-          jobDetailsElement.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
+          jobDetailsElement.scrollIntoView({ behavior: "smooth", block: "center" });
         }
         setJobDetailsErrors({ jobTitle: "Job title is required" });
         throw new Error("Job title is required");
       }
-
+  
       // Then check for invalid items in phases
       const invalidItem = findFirstInvalidItem(phases);
       if (invalidItem) {
         // Expand the phase containing the invalid item
         const updatedPhases = [...phases];
         const phase = updatedPhases[invalidItem.phaseIndex];
-
+  
         // Expand the specific item
         if (invalidItem.type === "task") {
           phase.tasks[invalidItem.itemIndex].isExpanded = true;
@@ -338,9 +334,9 @@ function NewJobContent() {
         } else if (invalidItem.type === "note") {
           phase.notes[invalidItem.itemIndex].isExpanded = true;
         }
-
+  
         setPhases(updatedPhases);
-
+  
         // Scroll to the element
         setTimeout(() => {
           const element = document.getElementById(invalidItem.elementId);
@@ -348,56 +344,91 @@ function NewJobContent() {
             element.scrollIntoView({ behavior: "smooth", block: "center" });
           }
         }, 100);
-
-        throw new Error(
-          `Please complete all required fields for ${invalidItem.type}`
-        );
+  
+        throw new Error(`Please complete all required fields for ${invalidItem.type}`);
       }
-
+  
       if (!startDate) {
         throw new Error("Start date is required");
       }
-
-      const formData = {
-        jobTitle: jobDetails.jobTitle.trim(),
-        startDate,
-        jobLocation: jobDetails.jobLocation?.trim() || "",
-        description: jobDetails.description?.trim() || "",
-        selectedClient: jobDetails.selectedClient,
-        phases: phases.map((phase) => ({
-          title: phase.title.trim(),
-          startDate: phase.startDate,
-          description: phase.description?.trim() || "",
-          tasks: phase.tasks.map((task) => ({
-            title: task.title.trim(),
-            startDate: task.startDate,
-            duration: task.duration.toString(),
-            details: task.details?.trim() || "",
-            selectedContacts: task.selectedContacts || [],
-          })),
-          materials: phase.materials.map((material) => ({
-            ...material,
-            title: material.title.trim(),
-            details: material.details?.trim() || "",
-            selectedContacts: material.selectedContacts || [],
-          })),
-          notes: phase.notes.map((note) => ({
-            ...note,
-            content: note.content.trim(),
-          })),
+  
+      // Create FormData object
+      const formData = new FormData();
+      
+      // Append basic job details
+      formData.append('jobTitle', jobDetails.jobTitle.trim());
+      formData.append('startDate', startDate);
+      formData.append('jobLocation', jobDetails.jobLocation?.trim() || '');
+      formData.append('description', jobDetails.description?.trim() || '');
+      
+      // Append client if exists
+      if (jobDetails.selectedClient) {
+        formData.append('client', JSON.stringify(jobDetails.selectedClient));
+      }
+      
+      // Append each floor plan file
+      if (jobDetails.floorPlans && jobDetails.floorPlans.length > 0) {
+        jobDetails.floorPlans.forEach((file) => {
+          formData.append('floorPlans', file);
+        });
+      }
+      
+      // Transform and append phases
+      const transformedPhases = phases.map(phase => ({
+        title: phase.title.trim(),
+        startDate: phase.startDate,
+        description: phase.description?.trim() || '',
+        tasks: phase.tasks.map(task => ({
+          title: task.title.trim(),
+          startDate: task.startDate,
+          duration: task.duration.toString(),
+          details: task.details?.trim() || '',
+          assignedUsers: task.selectedContacts?.map(contact => 
+            // Using the id property instead of user_id
+            parseInt(contact.id)
+          ) || []
         })),
-      };
-
-      const jobData = transformFormDataToNewJob(formData);
-      const response = await createJob(jobData);
-
-      if (!response.jobId) {
+        materials: phase.materials.map(material => ({
+          title: material.title.trim(),
+          dueDate: material.dueDate,
+          details: material.details?.trim() || '',
+          assignedUsers: material.selectedContacts?.map(contact => 
+            // Using the id property instead of user_id
+            parseInt(contact.id)
+          ) || []
+        })),
+        notes: phase.notes.map(note => ({
+          content: note.content.trim()
+        }))
+      }));
+      
+      formData.append('phases', JSON.stringify(transformedPhases));
+  
+      const response = await fetch('/api/jobs/new', {
+        method: 'POST',
+        body: formData
+      });
+  
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create job');
+      }
+  
+      const data = await response.json();
+      
+      if (!data.jobId) {
         throw new Error("Failed to get job ID from server");
       }
-
-      router.push(`/jobs/${response.jobId}`);
+  
+      router.push(`/jobs/${data.jobId}`);
     } catch (error) {
       console.error("Error creating job:", error);
+      setIsSubmitting(false);
+      if (error instanceof Error) {
+        // You might want to show this error to the user through your UI
+        console.error(error.message);
+      }
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -584,12 +615,14 @@ function NewJobContent() {
               jobLocation,
               description,
               selectedClient,
+              floorPlans,
             }) => {
               setJobDetails({
                 jobTitle,
                 jobLocation: jobLocation || "",
                 description: description || "",
                 selectedClient: selectedClient || null,
+                floorPlans: floorPlans || []
               });
               setJobDetailsErrors({});
             }}

@@ -72,21 +72,18 @@ export async function GET(
     const connection = await pool.getConnection();
 
     try {
-      // Get basic job info
+      // Get basic job info (same as before)
       const [jobRows] = await connection.query<JobDetails[]>(
-        `
-        SELECT 
+        `SELECT 
           j.job_id,
           j.job_title,
           j.job_startdate,
           j.job_location,
           j.job_description,
-          -- Let job start date be used as-is for initial range
           j.job_startdate as job_startdate,
           CEIL(DATEDIFF(CURDATE(), j.job_startdate) / 7) + 1 as current_week
         FROM job j
-        WHERE j.job_id = ?
-      `,
+        WHERE j.job_id = ?`,
         [params.id]
       );
 
@@ -95,6 +92,17 @@ export async function GET(
       }
 
       const job = jobRows[0];
+
+      // New query to get floor plans
+      const [floorplans] = await connection.query<RowDataPacket[]>(
+        `SELECT 
+          floorplan_id,
+          floorplan_url
+        FROM job_floorplan
+        WHERE job_id = ?
+        ORDER BY floorplan_id`,
+        [params.id]
+      );
 
       // Get phases with their tasks, materials, and notes
       const [phases] = await connection.query<Phase[]>(
@@ -415,6 +423,7 @@ export async function GET(
         phases: enhancedPhases,
         tasks: transformedTasks,
         materials: transformedMaterials,
+        floorplans: floorplans,
         date_range: `${new Date(job.job_startdate).toLocaleDateString('en-US', {
           month: 'numeric',
           day: 'numeric',

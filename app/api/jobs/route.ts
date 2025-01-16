@@ -49,6 +49,11 @@ interface Job extends RowDataPacket {
   current_week: number;
 }
 
+interface Floorplan extends RowDataPacket {
+  floorplan_id: number;
+  floorplan_url: string;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const view = searchParams.get('view') || 'overview';
@@ -291,6 +296,17 @@ export async function GET(request: Request) {
             ORDER BY p.phase_startdate
         `, [job.job_id]);
 
+        const [floorplans] = await connection.query<Floorplan[]>(`
+          SELECT 
+            floorplan_id,
+            floorplan_url
+          FROM job_floorplan
+          WHERE job_id = ?
+          ORDER BY floorplan_id
+        `, [job.job_id]);
+
+        console.log('Raw floorplans from DB:', floorplans);
+
         // Combine task and material counts
         const overdue = (taskCounts[0]?.overdue || 0) + (materialCounts[0]?.overdue || 0);
         const nextSevenDays = (taskCounts[0]?.next_seven_days || 0) + (materialCounts[0]?.next_seven_days || 0);
@@ -318,6 +334,12 @@ export async function GET(request: Request) {
             users: []
           })),
           workers: workers.map((w: Worker) => w.user_full_name),
+          floorplans: floorplans.length > 0
+          ? floorplans.map(fp => ({
+              url: fp.floorplan_url,
+              name: `Floor Plan ${fp.floorplan_id}`
+            }))
+          : [],
           overdue,
           nextSevenDays,
           sevenDaysPlus: beyondSevenDays,

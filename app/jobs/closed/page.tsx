@@ -19,15 +19,6 @@ function ClosedJobsContent() {
     searchParams?.get("search") || ""
   );
   const [jobs, setJobs] = useState<JobDetailView[]>([]);
-  const defaultFloorplans = Array(5)
-  .fill({
-    url: "/placeholder-floorplan.jpg",
-    name: "Sample Floorplan",
-  })
-  .map((plan, index) => ({
-    ...plan,
-    name: `Sample Floorplan ${index + 1}`,
-  }));
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -58,22 +49,27 @@ function ClosedJobsContent() {
             users: material.users || [],
           }));
 
+          const transformedFloorplans =
+            job.floorplans?.map((floorplan: any) => ({
+              url: floorplan.floorplan_url,
+              name: `Floor Plan ${floorplan.floorplan_id}`,
+            })) || [];
+
           return {
             id: job.job_id,
             jobName: job.job_title,
             job_startdate: job.job_startdate,
             dateRange: job.date_range,
             currentWeek: job.current_week,
-            // Store transformed tasks and materials at job level
             tasks: transformedTasks,
             materials: transformedMaterials,
+            floorplans: transformedFloorplans,
             phases: job.phases.map((phase: any) => ({
               id: phase.id,
               name: phase.name,
               startDate: phase.startDate,
               endDate: phase.endDate,
               color: phase.color,
-              // Filter the already transformed tasks and materials
               tasks: transformedTasks.filter(
                 (task: TaskView) => task.phase_id === phase.id
               ),
@@ -116,41 +112,45 @@ function ClosedJobsContent() {
     setJobs((prevJobs) =>
       prevJobs.map((job) => {
         if (job.id !== jobId) return job;
-  
-        const updatedTasks = type === "task" 
-          ? job.tasks.map((task) =>
-              task.task_id === itemId
-                ? { ...task, task_status: newStatus }
-                : task
-            )
-          : job.tasks;
-  
-        const updatedMaterials = type === "material"
-          ? job.materials.map((material) =>
-              material.material_id === itemId
-                ? { ...material, material_status: newStatus }
-                : material
-            )
-          : job.materials;
-  
-        const updatedPhases = job.phases.map((phase) => ({
-          ...phase,
-          tasks: type === "task"
-            ? phase.tasks.map((task) =>
+
+        const updatedTasks =
+          type === "task"
+            ? job.tasks.map((task) =>
                 task.task_id === itemId
                   ? { ...task, task_status: newStatus }
                   : task
               )
-            : phase.tasks,
-          materials: type === "material"
-            ? phase.materials.map((material) =>
+            : job.tasks;
+
+        const updatedMaterials =
+          type === "material"
+            ? job.materials.map((material) =>
                 material.material_id === itemId
                   ? { ...material, material_status: newStatus }
                   : material
               )
-            : phase.materials,
+            : job.materials;
+
+        const updatedPhases = job.phases.map((phase) => ({
+          ...phase,
+          tasks:
+            type === "task"
+              ? phase.tasks.map((task) =>
+                  task.task_id === itemId
+                    ? { ...task, task_status: newStatus }
+                    : task
+                )
+              : phase.tasks,
+          materials:
+            type === "material"
+              ? phase.materials.map((material) =>
+                  material.material_id === itemId
+                    ? { ...material, material_status: newStatus }
+                    : material
+                )
+              : phase.materials,
         }));
-  
+
         return {
           ...job,
           tasks: updatedTasks,
@@ -187,7 +187,7 @@ function ClosedJobsContent() {
           tasks={job.tasks}
           materials={job.materials}
           contacts={job.contacts}
-          floorplans={defaultFloorplans}
+          floorplans={job.floorplans}
           onStatusUpdate={(itemId, type, newStatus) =>
             handleStatusUpdate(job.id, itemId, type, newStatus)
           }

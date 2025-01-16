@@ -1,4 +1,10 @@
 // types/views.ts
+
+export interface FloorPlan {
+  url: string;
+  name: string;
+}
+
 export interface JobCardView {
   job_id: number;
   job_title: string;
@@ -20,6 +26,7 @@ export interface JobDetailView {
   tasks: TaskView[];
   materials: MaterialView[];
   contacts: string[];
+  floorplans: FloorPlan[];
 }
 
 export interface PhaseView {

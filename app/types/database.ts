@@ -162,6 +162,7 @@ export interface NewJob {
       content: string;
     }[];
   }>;
+  floorPlans?: File[];
 }
 
 export interface TaskUpdatePayload {

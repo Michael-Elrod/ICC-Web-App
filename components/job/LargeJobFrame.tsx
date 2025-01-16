@@ -96,8 +96,13 @@ const LargeJobFrame: React.FC<LargeJobFrameProps> = ({
         </select>
 
         <button
-          onClick={() => setShowFloorplanModal(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2 w-64 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 rounded shadow leading-tight focus:outline-none focus:shadow-outline dark:text-white"
+          onClick={() => floorplans.length > 0 && setShowFloorplanModal(true)}
+          className={`flex items-center justify-center gap-2 px-4 py-2 w-64 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded shadow leading-tight focus:outline-none focus:shadow-outline dark:text-white ${
+            !floorplans.length
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:border-zinc-400 dark:hover:border-zinc-500"
+          }`}
+          disabled={!floorplans.length}
         >
           <svg
             className="w-5 h-5"

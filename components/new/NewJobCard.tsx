@@ -5,6 +5,7 @@ import { User } from "../../app/types/database";
 import CardFrame from "../util/CardFrame";
 import ClientSearchSelect from "./ClientSearch";
 import NewClientModal from "./NewClientModal";
+import { validateFiles } from "@/app/lib/s3";
 
 interface NewJobCardProps {
   jobType: string;
@@ -15,6 +16,7 @@ interface NewJobCardProps {
     jobLocation?: string;
     description?: string;
     selectedClient?: { user_id: number } | null;
+    floorPlans?: File[];
   }) => void;
 }
 
@@ -31,6 +33,8 @@ export default function NewJobCard({
   const [jobLocation, setJobLocation] = useState("");
   const [description, setDescription] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [floorPlans, setFloorPlans] = useState<File[]>([]);
+  const [uploadStatus, setUploadStatus] = useState<string>("");
 
   useEffect(() => {
     if (externalErrors) {
@@ -42,19 +46,14 @@ export default function NewJobCard({
     const baseClass = "mt-1 block w-full border rounded-md shadow-sm p-2";
     const errorClass = "border-red-500";
     const normalClass = "border-zinc-300";
-    const darkModeClass =
-      "dark:bg-zinc-800 dark:text-white dark:border-zinc-600";
-
-    const typeSpecificClass =
-      type === "file"
-        ? `file:mr-4 file:py-0.5 file:px-4 file:rounded-md file:border-0 
+    const darkModeClass = "dark:bg-zinc-800 dark:text-white dark:border-zinc-600";
+    const typeSpecificClass = type === "file"
+      ? `file:mr-4 file:py-0.5 file:px-4 file:rounded-md file:border-0 
          file:text-sm file:font-bold file:bg-zinc-500 file:text-white 
          hover:file:bg-zinc-700 file:transition-colors file:h-[26px] file:mt-[4px]`
-        : "";
+      : "";
 
-    return `${baseClass} ${
-      errors[fieldName] ? errorClass : normalClass
-    } ${darkModeClass} ${typeSpecificClass}`.trim();
+    return `${baseClass} ${errors[fieldName] ? errorClass : normalClass} ${darkModeClass} ${typeSpecificClass}`.trim();
   };
 
   const handleClientSelect = (client: User | null) => {
@@ -64,7 +63,32 @@ export default function NewJobCard({
       jobLocation,
       description,
       selectedClient: client ? { user_id: client.user_id } : null,
+      floorPlans,
     });
+  };
+
+  const handleFloorPlanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      try {
+        const files = Array.from(e.target.files);
+        validateFiles(files);
+        setFloorPlans(files);
+        setUploadStatus(`${files.length} file${files.length > 1 ? 's' : ''} selected`);
+        
+        onJobDetailsChange({
+          jobTitle,
+          jobLocation,
+          description,
+          selectedClient,
+          floorPlans: files,
+        });
+      } catch (error) {
+        if (error instanceof Error) {
+          setUploadStatus(error.message);
+          setErrors(prev => ({ ...prev, floorPlan: error.message }));
+        }
+      }
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -75,6 +99,7 @@ export default function NewJobCard({
         jobLocation,
         description,
         selectedClient,
+        floorPlans,
       });
     }
     setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -87,6 +112,7 @@ export default function NewJobCard({
       jobLocation: value,
       description,
       selectedClient,
+      floorPlans,
     });
   };
 
@@ -97,6 +123,7 @@ export default function NewJobCard({
       jobLocation,
       description: value,
       selectedClient,
+      floorPlans,
     });
   };
 
@@ -120,11 +147,9 @@ export default function NewJobCard({
     <div id="job-details-section" className="space-y-4">
       <CardFrame>
         <div className="space-y-4">
+          {/* Title Input */}
           <div>
-            <label
-              htmlFor="jobTitle"
-              className="block text-sm font-medium text-zinc-700 dark:text-white"
-            >
+            <label htmlFor="jobTitle" className="block text-sm font-medium text-zinc-700 dark:text-white">
               Title
             </label>
             <input
@@ -141,12 +166,10 @@ export default function NewJobCard({
             )}
           </div>
 
+          {/* Location and Floor Plan Inputs */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label
-                htmlFor="jobLocation"
-                className="block text-sm font-medium text-zinc-700 dark:text-white"
-              >
+              <label htmlFor="jobLocation" className="block text-sm font-medium text-zinc-700 dark:text-white">
                 Location
               </label>
               <input
@@ -159,33 +182,29 @@ export default function NewJobCard({
               />
             </div>
             <div>
-              <label
-                htmlFor="jobImage"
-                className="block text-sm font-medium text-zinc-700 dark:text-white"
-              >
-                Floorplan
+              <label htmlFor="floorPlan" className="block text-sm font-medium text-zinc-700 dark:text-white">
+                Floor Plans
               </label>
               <div className="relative">
                 <input
                   type="file"
-                  id="jobImage"
+                  id="floorPlan"
                   accept="image/*"
-                  className={`${getInputClassName(
-                    "jobImage",
-                    "file"
-                  )} custom-file-input opacity-0 absolute inset-0 w-full h-full cursor-pointer`}
+                  multiple
+                  onChange={handleFloorPlanChange}
+                  className={`${getInputClassName("floorPlan", "file")} custom-file-input opacity-0 absolute inset-0 w-full h-full cursor-pointer`}
                 />
-                <div
-                  className={`${getInputClassName(
-                    "jobImage"
-                  )} pointer-events-none text-zinc-500 dark:text-zinc-400`}
-                >
-                  Click to upload image...
+                <div className={`${getInputClassName("floorPlan")} pointer-events-none text-zinc-500 dark:text-zinc-400`}>
+                  {uploadStatus || "Select floor plan images..."}
                 </div>
               </div>
+              {errors.floorPlan && (
+                <p className="text-red-500 text-xs mt-1">{errors.floorPlan}</p>
+              )}
             </div>
           </div>
 
+          {/* Client Selection */}
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="flex-grow">
@@ -204,11 +223,9 @@ export default function NewJobCard({
             </div>
           </div>
 
+          {/* Description Input */}
           <div>
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-zinc-700 dark:text-white"
-            >
+            <label htmlFor="description" className="block text-sm font-medium text-zinc-700 dark:text-white">
               Description
             </label>
             <textarea
@@ -223,6 +240,7 @@ export default function NewJobCard({
         </div>
       </CardFrame>
 
+      {/* New Client Modal */}
       <NewClientModal
         isOpen={showNewClientForm}
         onClose={() => setShowNewClientForm(false)}
@@ -233,6 +251,7 @@ export default function NewJobCard({
             jobLocation,
             description,
             selectedClient: { user_id: client.user_id },
+            floorPlans,
           });
           setShowNewClientForm(false);
         }}
