@@ -101,3 +101,10 @@ input[type="date"]:valid::-webkit-datetime-edit-year-field {
 .dark .fc-daygrid-block-event .fc-event-main {
   color: white !important;
 }
+
+.sticky-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 9999;
+}

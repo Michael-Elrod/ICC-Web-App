@@ -1,19 +1,23 @@
 // components/LayoutContent.tsx
-'use client';
+"use client";
 
-import { usePathname } from 'next/navigation';
-import SideBar from './SideBar';
-import DarkModeToggle from './DarkModeToggle';
+import { usePathname } from "next/navigation";
+import SideBar from "./SideBar";
+import DarkModeToggle from "./DarkModeToggle";
 
 export default function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/';
 
   return (
-    <div className="flex min-h-screen">
+    <div className="min-h-screen relative">
       {!isLoginPage && <SideBar />}
-      <div className={`flex-1 ${!isLoginPage ? 'ml-12' : ''} p-8`}>
-        <DarkModeToggle />
+      <div className={`${!isLoginPage ? 'md:ml-12' : ''} p-4 sm:p-8 pb-24 md:pb-8`}>
+        <div className="relative w-full mb-4">
+          <div className="absolute right-0 top-0">
+            <DarkModeToggle />
+          </div>
+        </div>
         {children}
       </div>
     </div>

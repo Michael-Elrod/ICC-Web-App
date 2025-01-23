@@ -61,7 +61,6 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      console.log('JWT callback:', { hasUser: !!user });
       if (user) {
         token.id = user.id;
         token.type = user.type;
@@ -73,7 +72,6 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      console.log('Session callback:', { hasToken: !!token });
       if (session.user) {
         session.user.id = token.id;
         session.user.type = token.type;

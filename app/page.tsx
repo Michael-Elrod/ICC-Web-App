@@ -16,7 +16,7 @@ export default function Home() {
   }, [session, router]);
 
   return (
-    <main className="flex justify-center items-center min-h-screen bg-white dark:bg-zinc-900">
+    <main className="flex justify-center items-center min-h-screen bg-white dark:bg-zinc-900 px-4">
       <AuthForm />
     </main>
   );

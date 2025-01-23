@@ -43,7 +43,7 @@ export default function AuthForm() {
     setError("");
     setEmailError("");
     setPasswordError("");
-   
+
     if (isLogin) {
       setIsLoading(true);
       try {
@@ -52,7 +52,7 @@ export default function AuthForm() {
           password: e.currentTarget.password.value,
           redirect: false,
         });
-    
+
         if (result?.error) {
           if (result.error.includes("No account found")) {
             setEmailError(result.error);
@@ -76,15 +76,15 @@ export default function AuthForm() {
         setError("Passwords do not match");
         return;
       }
-   
+
       // Validate email format
       if (!isEmailValid(formData.signupEmail)) {
         setError("Please enter a valid email address");
         return;
       }
-   
+
       setIsLoading(true);
-   
+
       try {
         const res = await fetch("/api/register", {
           method: "POST",
@@ -98,29 +98,29 @@ export default function AuthForm() {
             inviteCode: formData.inviteCode,
           }),
         });
-   
+
         const data = await res.json();
-   
+
         // Immediately handle any non-200 response
         if (res.status === 400) {
           setEmailError(data.message);
           setIsLoading(false);
           return;
         }
-   
+
         if (!res.ok) {
           setError(data.message || "Registration failed");
           setIsLoading(false);
           return;
         }
-   
+
         // Only proceed with sign in if registration was successful
         const result = await signIn("credentials", {
           email: formData.signupEmail,
           password: formData.signupPassword,
           redirect: false,
         });
-   
+
         if (result?.error) {
           setError(result.error);
         } else if (result?.ok) {
@@ -133,7 +133,7 @@ export default function AuthForm() {
         setIsLoading(false);
       }
     }
-   };
+  };
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
@@ -144,8 +144,8 @@ export default function AuthForm() {
 
   return (
     <div
-      className={`bg-white dark:bg-zinc-800 p-8 rounded-lg shadow-lg transition-all duration-300 ease-in-out ${
-        isLogin ? "w-96" : "w-96 h-auto"
+      className={`bg-white dark:bg-zinc-800 p-8 rounded-lg shadow-lg transition-all duration-300 ease-in-out w-full max-w-sm mx-auto ${
+        isLogin ? "h-auto" : "h-auto"
       }`}
     >
       <h2 className="text-3xl font-extrabold mb-6 text-center">

@@ -305,8 +305,6 @@ export async function GET(request: Request) {
           ORDER BY floorplan_id
         `, [job.job_id]);
 
-        console.log('Raw floorplans from DB:', floorplans);
-
         // Combine task and material counts
         const overdue = (taskCounts[0]?.overdue || 0) + (materialCounts[0]?.overdue || 0);
         const nextSevenDays = (taskCounts[0]?.next_seven_days || 0) + (materialCounts[0]?.next_seven_days || 0);

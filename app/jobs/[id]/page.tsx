@@ -205,7 +205,6 @@ export default function JobDetailPage() {
               task_duration: newDuration,
             };
           });
-          console.log("Updated phase tasks:", currentPhase.tasks);
 
           currentPhase.materials = currentPhase.materials.map((material) => {
             const newDate = formatToDateString(
