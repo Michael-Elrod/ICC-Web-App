@@ -122,6 +122,7 @@ export default function ClientSearchSelect({
           aria-expanded={isOpen}
           aria-haspopup="listbox"
           role="combobox"
+          aria-controls="client-search-listbox"
         />
 
         {loading && (
@@ -132,6 +133,7 @@ export default function ClientSearchSelect({
 
         {isOpen && (
           <div
+            id="client-search-listbox"
             className="absolute w-full mt-1 bg-white dark:bg-zinc-800 border 
                        border-zinc-300 dark:border-zinc-600 rounded-md shadow-lg 
                        max-h-32 overflow-auto z-50"
