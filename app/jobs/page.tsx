@@ -67,7 +67,8 @@ export default function JobsPage() {
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors whitespace-nowrap"
           disabled={selectedJobs.length === 0}
         >
-          View Selected Jobs ({selectedJobs.length})
+          <span className="hidden sm:inline">View Selected Jobs</span>
+          <span className="sm:hidden">Selected</span> ({selectedJobs.length})
         </button>
       </div>
 

@@ -13,30 +13,34 @@ interface StatusBarProps {
   };
 }
 
-const StatusBar: React.FC<StatusBarProps> = ({ 
-  label, 
-  items, 
+const StatusBar: React.FC<StatusBarProps> = ({
+  label,
+  items,
   withLegend = false,
   isDueBar = false,
-  dueItems 
+  dueItems,
 }) => {
   if (isDueBar && dueItems) {
-    const total = dueItems.overdue + dueItems.nextSevenDays + dueItems.sevenDaysPlus;
-    
+    const total =
+      dueItems.overdue + dueItems.nextSevenDays + dueItems.sevenDaysPlus;
+
     return (
       <div className="mb-4">
         <div className="w-full">
-          <h3 className="text-lg font-medium mb-2">{label}</h3>
+          <h3 className="text-lg font-medium text-center sm:text-left">
+            {label}
+          </h3>
           <div className="relative w-full">
-            <div className="absolute top-[-30px] left-0 right-0 flex justify-center">
-              <div className="flex space-x-4">
+            <div className="absolute top-[-30px] left-0 right-0">
+              <div className="flex justify-center space-x-4">
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-red-500 mr-2"></div>
                   <span>Overdue</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-yellow-500 mr-2"></div>
-                  <span>Next 7 days</span>
+                  <span className="hidden sm:inline">Next 7 Days</span>
+                  <span className="sm:hidden">&lt; 7 Days</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-green-500 mr-2"></div>
@@ -44,19 +48,23 @@ const StatusBar: React.FC<StatusBarProps> = ({
                 </div>
               </div>
             </div>
-            <div className="h-6 bg-gray-200 rounded-full overflow-hidden flex">
+            <div className="h-6 bg-gray-200 rounded-full overflow-hidden flex mt-8 sm:mt-0">
               {dueItems.overdue > 0 && (
                 <div
                   className="bg-red-500 flex items-center justify-center"
                   style={{ width: `${(dueItems.overdue / total) * 100}%` }}
                 >
-                  <span className="text-xs font-bold text-white">{dueItems.overdue}</span>
+                  <span className="text-xs font-bold text-white">
+                    {dueItems.overdue}
+                  </span>
                 </div>
               )}
               {dueItems.nextSevenDays > 0 && (
                 <div
                   className="bg-yellow-500 flex items-center justify-center"
-                  style={{ width: `${(dueItems.nextSevenDays / total) * 100}%` }}
+                  style={{
+                    width: `${(dueItems.nextSevenDays / total) * 100}%`,
+                  }}
                 >
                   <span className="text-xs font-bold text-white">
                     {dueItems.nextSevenDays}
@@ -66,7 +74,9 @@ const StatusBar: React.FC<StatusBarProps> = ({
               {dueItems.sevenDaysPlus > 0 && (
                 <div
                   className="bg-green-500 flex items-center justify-center"
-                  style={{ width: `${(dueItems.sevenDaysPlus / total) * 100}%` }}
+                  style={{
+                    width: `${(dueItems.sevenDaysPlus / total) * 100}%`,
+                  }}
                 >
                   <span className="text-xs font-bold text-white">
                     {dueItems.sevenDaysPlus}
@@ -109,18 +119,21 @@ const StatusBar: React.FC<StatusBarProps> = ({
   return (
     <div className="mb-4">
       <div className="w-full">
-        <h3 className="text-lg font-medium mb-2">{label}</h3>
+        <h3 className="text-lg font-medium text-center sm:text-left">
+          {label}
+        </h3>
         <div className="relative w-full">
           {withLegend && (
-            <div className="absolute top-[-30px] left-0 right-0 flex justify-center">
-              <div className="flex space-x-4">
+            <div className="absolute top-[-30px] left-0 right-0">
+              <div className="flex justify-center space-x-4">
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-red-500 mr-2"></div>
                   <span>Incomplete</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-yellow-500 mr-2"></div>
-                  <span>In Progress</span>
+                  <span className="hidden sm:inline">In Progress</span>
+                  <span className="sm:hidden">Progress</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-green-500 mr-2"></div>
@@ -129,7 +142,11 @@ const StatusBar: React.FC<StatusBarProps> = ({
               </div>
             </div>
           )}
-          <div className="w-full h-6 relative rounded-full bg-gray-200 overflow-hidden flex">
+          <div
+            className={`w-full h-6 relative rounded-full bg-gray-200 overflow-hidden flex ${
+              withLegend ? "mt-8 sm:mt-0" : "mt-2 sm:mt-0"
+            }`}
+          >
             {/* Incomplete */}
             <div
               className="bg-red-500 h-full flex items-center justify-center text-white text-sm font-bold"

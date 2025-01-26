@@ -145,6 +145,7 @@ export default function CalendarPage() {
                 end: endDate.toISOString().split("T")[0],
                 color: phaseColor,
                 order: 1,
+                allDay: true,
                 display: "block",
                 extendedProps: {
                   phaseId: phase.phase_id,
@@ -261,7 +262,7 @@ export default function CalendarPage() {
 
   const renderEventContent = (eventInfo: EventContentArg) => {
     const isComplete = eventInfo.event.extendedProps.status === "Complete";
-    
+
     return (
       <div
         style={{
@@ -328,25 +329,40 @@ export default function CalendarPage() {
 
       <Legend items={legendItems} />
 
-      <div style={{ height: "calc(100vh - 200px)", padding: "16px" }}>
+      <div
+        style={{ height: "calc(100vh - 200px)", padding: "16px" }}
+        className="[&_.fc-toolbar]:flex [&_.fc-toolbar]:flex-col [&_.fc-toolbar]:md:flex-row [&_.fc-toolbar]:gap-4
+                [&_.fc-toolbar-title]:order-1 [&_.fc-toolbar-title]:w-full [&_.fc-toolbar-title]:text-center 
+                [&_.fc-toolbar-chunk]:order-2 [&_.fc-toolbar-chunk]:flex [&_.fc-toolbar-chunk]:justify-center 
+                [&_.fc-toolbar-chunk]:w-full [&_.fc-toolbar-chunk]:gap-2 
+                [&_.fc-toolbar]:md:order-none"
+      >
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
           headerToolbar={{
             left: "prev,next today",
             center: "title",
-            right: "dayGridMonth,dayGridWeek,dayGridDay",
+            right: "dayGridMonth,customWeek,customDay",
           }}
           views={{
-            dayGridWeek: {
+            dayGridMonth: {
+              displayEventTime: false,
+            },
+            customWeek: {
+              type: "dayGrid",
+              duration: { weeks: 1 },
+              buttonText: "week",
               dayHeaderFormat: {
                 weekday: "short",
                 month: "numeric",
                 day: "numeric",
               },
-              dayMinWidth: 120,
             },
-            dayGridDay: {
+            customDay: {
+              type: "dayGrid",
+              duration: { days: 1 },
+              buttonText: "day",
               dayHeaderFormat: {
                 weekday: "long",
                 month: "long",
@@ -358,9 +374,8 @@ export default function CalendarPage() {
           eventDisplay="block"
           events={events}
           eventContent={renderEventContent}
-          slotMinTime="00:00:00"
-          slotMaxTime="24:00:00"
-          displayEventEnd={true}
+          displayEventEnd={false}
+          displayEventTime={false}
           dayMaxEvents={5}
           eventOrder="order,title"
           eventOrderStrict={true}

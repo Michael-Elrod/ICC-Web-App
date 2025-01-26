@@ -9,10 +9,10 @@ export default function JobDetailLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen">
-      <div className="flex-1">
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="px-4 py-6 sm:px-0">
+    <div className="flex min-h-screen w-full">
+      <div className="flex-1 w-full">
+        <main className="w-full max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          <div className="w-full">
             {children}
           </div>
         </main>

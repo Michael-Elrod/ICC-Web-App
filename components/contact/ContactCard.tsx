@@ -16,11 +16,11 @@ const ContactCard: React.FC<ContactCardProps> = ({
 
   return (
     <CardFrame noMargin>
-      <div className="grid grid-cols-3 items-center">
+      <div className="flex flex-col sm:grid sm:grid-cols-3 items-center gap-2">
         {showCheckbox && <input type="checkbox" className="mr-4" />}
-        <span className="text-lg">{fullName}</span>
+        <span className="text-lg text-center sm:text-left">{fullName}</span>
         <span className="text-lg text-center">{formattedPhone}</span>
-        <span className="text-lg text-right">{user_email}</span>
+        <span className="text-lg text-center sm:text-right">{user_email}</span>
       </div>
     </CardFrame>
   );

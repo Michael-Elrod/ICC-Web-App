@@ -49,10 +49,11 @@ function ActiveJobsContent() {
             users: material.users || [],
           }));
 
-          const transformedFloorplans = job.floorplans?.map((floorplan: any) => ({
-            url: floorplan.url,
-            name: floorplan.name
-          })) || [];
+          const transformedFloorplans =
+            job.floorplans?.map((floorplan: any) => ({
+              url: floorplan.url,
+              name: floorplan.name,
+            })) || [];
 
           return {
             id: job.job_id,
@@ -161,37 +162,39 @@ function ActiveJobsContent() {
   };
 
   return (
-    <>
+    <div className="px-0 sm:px-4 md:px-0">
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Search jobs (comma-separated for multiple)"
+          placeholder="Search jobs.."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full px-4 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
-      {filteredJobs.map((job) => (
-        <LargeJobFrame
-          key={job.id}
-          id={job.id}
-          jobName={job.jobName}
-          job_startdate={job.job_startdate}
-          dateRange={job.dateRange}
-          currentWeek={job.currentWeek.toString()}
-          phases={job.phases}
-          overdue={job.overdue}
-          sevenDaysPlus={job.sevenDaysPlus}
-          nextSevenDays={job.nextSevenDays}
-          tasks={job.tasks}
-          materials={job.materials}
-          contacts={job.contacts}
-          floorplans={job.floorplans}
-          onStatusUpdate={(itemId, type, newStatus) =>
-            handleStatusUpdate(job.id, itemId, type, newStatus)
-          }
-        />
-      ))}
-    </>
+      <div className="overflow-x-hidden sm:overflow-visible">
+        {filteredJobs.map((job) => (
+          <LargeJobFrame
+            key={job.id}
+            id={job.id}
+            jobName={job.jobName}
+            job_startdate={job.job_startdate}
+            dateRange={job.dateRange}
+            currentWeek={job.currentWeek.toString()}
+            phases={job.phases}
+            overdue={job.overdue}
+            sevenDaysPlus={job.sevenDaysPlus}
+            nextSevenDays={job.nextSevenDays}
+            tasks={job.tasks}
+            materials={job.materials}
+            contacts={job.contacts}
+            floorplans={job.floorplans}
+            onStatusUpdate={(itemId, type, newStatus) =>
+              handleStatusUpdate(job.id, itemId, type, newStatus)
+            }
+          />
+        ))}
+      </div>
+    </div>
   );
 }

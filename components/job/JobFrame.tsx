@@ -24,24 +24,24 @@ const JobFrame: React.FC<JobFrameProps> = ({
   return (
     <CardFrame>
       <div
-        className="flex items-center cursor-pointer"
+        className="flex flex-col sm:flex-row items-center cursor-pointer gap-2 sm:gap-0"
         onClick={() => onSelect(job_id.toString())}
       >
-        <input
-          type="checkbox"
-          className="mr-4"
-          checked={isSelected}
-          onChange={() => onSelect(job_id.toString())}
-          onClick={(e) => e.stopPropagation()}
-        />
-        <div className="w-1/4">
+        <div className="flex items-center w-full sm:w-1/4">
+          <input
+            type="checkbox"
+            className="mr-4"
+            checked={isSelected}
+            onChange={() => onSelect(job_id.toString())}
+            onClick={(e) => e.stopPropagation()}
+          />
           <h3 className="text-lg font-medium truncate">{job_title}</h3>
         </div>
-        <div className="flex-1 flex items-center">
-          <div className="flex-1 flex mr-4">
+        <div className="w-full sm:flex-1 flex items-center">
+          <div className="flex-1 flex mr-4 min-w-[150px]">
             {overdue_count > 0 && (
               <div
-                className={`bg-red-500 flex justify-center items-center text-white ${
+                className={`bg-red-500 flex justify-center items-center text-white min-w-[40px] ${
                   overdue_count === total ? "rounded" : "rounded-l"
                 }`}
                 style={{
@@ -54,7 +54,7 @@ const JobFrame: React.FC<JobFrameProps> = ({
             )}
             {next_week_count > 0 && (
               <div
-                className={`bg-yellow-500 flex justify-center items-center text-white ${
+                className={`bg-yellow-500 flex justify-center items-center text-white min-w-[40px] ${
                   overdue_count === 0 ? "rounded-l" : ""
                 } ${
                   overdue_count + next_week_count === total ? "rounded-r" : ""
@@ -69,7 +69,7 @@ const JobFrame: React.FC<JobFrameProps> = ({
             )}
             {later_weeks_count > 0 && (
               <div
-                className={`bg-green-500 flex justify-center items-center text-white ${
+                className={`bg-green-500 flex justify-center items-center text-white min-w-[40px] ${
                   overdue_count + next_week_count === 0 ? "rounded-l" : ""
                 } rounded-r`}
                 style={{
@@ -87,7 +87,7 @@ const JobFrame: React.FC<JobFrameProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             View
-          </Link>{" "}
+          </Link>
         </div>
       </div>
     </CardFrame>

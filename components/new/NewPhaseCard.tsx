@@ -59,25 +59,25 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
   }) => {
     let updatedTasks = [...phase.tasks];
     let updatedMaterials = [...phase.materials];
-  
+
     if (updates.adjustItems && typeof updates.daysDiff === "number") {
       if (updates.extend > 0) {
         // Update current phase
         updatedTasks = phase.tasks.map((task) => ({
           ...task,
-          duration: (parseInt(task.duration) + updates.extend).toString()
+          duration: (parseInt(task.duration) + updates.extend).toString(),
         }));
-  
+
         updatedMaterials = phase.materials.map((material) => {
           const materialDate = createLocalDate(material.dueDate);
           return {
             ...material,
             dueDate: formatToDateString(
               addBusinessDays(materialDate, updates.extend)
-            )
+            ),
           };
         });
-  
+
         if (updates.extendFuturePhases) {
           onUpdate(
             {
@@ -86,7 +86,7 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
               startDate: updates.startDate,
               tasks: updatedTasks,
               materials: updatedMaterials,
-            }, 
+            },
             updates.extend,
             true
           );
@@ -97,18 +97,21 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
           ...task,
           startDate: formatToDateString(
             addBusinessDays(createLocalDate(task.startDate), updates.daysDiff!)
-          )
+          ),
         }));
-  
+
         updatedMaterials = phase.materials.map((material) => ({
           ...material,
           dueDate: formatToDateString(
-            addBusinessDays(createLocalDate(material.dueDate), updates.daysDiff!)
-          )
+            addBusinessDays(
+              createLocalDate(material.dueDate),
+              updates.daysDiff!
+            )
+          ),
         }));
       }
     }
-  
+
     onUpdate(
       {
         ...phase,
@@ -199,34 +202,10 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
           {/* Title and Description Section */}
           <div className="flex justify-between items-center mb-4">
             <div className="grid grid-cols-3 items-center w-full">
-              <div className="flex-1 col-span-1">
-                {isEditingTitle ? (
-                  <input
-                    type="text"
-                    value={phase.title}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "title",
-                        e.target.value,
-                        phase,
-                        onUpdate
-                      )
-                    }
-                    onBlur={() => handleTitleBlur(setIsEditingTitle)}
-                    onKeyDown={(e) => handleTitleKeyDown(e, setIsEditingTitle)}
-                    autoFocus
-                    className="text-2xl font-bold bg-transparent border-b border-zinc-300 dark:border-zinc-600 focus:outline-none focus:border-blue-500"
-                  />
-                ) : (
-                  <h2
-                    className="text-2xl font-bold cursor-text"
-                    onClick={() =>
-                      handleTitleClick(isPhaseCollapsed, setIsEditingTitle)
-                    }
-                  >
-                    {phase.title}
-                  </h2>
-                )}
+              <div className="flex-1 col-span-1 pr-2">
+                <h2 className="text-md sm:text-2xl font-bold truncate">
+                  {phase.title}
+                </h2>
               </div>
               <span className="text-md text-center col-span-1">
                 {(() => {

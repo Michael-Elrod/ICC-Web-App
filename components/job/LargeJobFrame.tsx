@@ -63,25 +63,25 @@ const LargeJobFrame: React.FC<LargeJobFrameProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-800 shadow-md overflow-hidden sm:rounded-lg mb-4 p-6">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-baseline">
-          <h2 className="text-2xl font-bold mr-4">{jobName}</h2>
+    <div className="bg-white dark:bg-zinc-800 shadow-md overflow-x-hidden sm:overflow-visible sm:rounded-lg mb-4 p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-baseline gap-2">
+          <h2 className="text-2xl font-bold">{jobName}</h2>
           <p className="text-lg text-zinc-600 dark:text-white/70">
             {dateRange}
           </p>
         </div>
         <Link
           href={`/jobs/${id}`}
-          className="px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600 transition-colors w-full sm:w-auto text-center"
         >
           View
         </Link>
       </div>
 
-      <div className="flex justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
         <select
-          className="flex-1 appearance-none bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline dark:text-white"
+          className="flex-1 appearance-none bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline dark:text-white text-center sm:text-left"
           onChange={() => {}}
           value=""
         >
@@ -97,7 +97,7 @@ const LargeJobFrame: React.FC<LargeJobFrameProps> = ({
 
         <button
           onClick={() => floorplans.length > 0 && setShowFloorplanModal(true)}
-          className={`flex items-center justify-center gap-2 px-4 py-2 w-64 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded shadow leading-tight focus:outline-none focus:shadow-outline dark:text-white ${
+          className={`flex items-center justify-center gap-2 px-4 py-2 w-full sm:w-64 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded shadow leading-tight focus:outline-none focus:shadow-outline dark:text-white ${
             !floorplans.length
               ? "opacity-50 cursor-not-allowed"
               : "hover:border-zinc-400 dark:hover:border-zinc-500"
