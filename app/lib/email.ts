@@ -1,10 +1,10 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 
 const ses = new SESClient({
-  region: process.env.AWS_REGION,
+  region: process.env.AMPLIFY_REGION,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.AMPLIFY_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AMPLIFY_SECRET_ACCESS_KEY!,
   },
 });
 
@@ -13,7 +13,7 @@ export async function sendPasswordResetEmail(
   resetToken: string
 ) {
   const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}`;
-  
+
   const params = {
     Source: process.env.SES_FROM_EMAIL,
     Destination: {
