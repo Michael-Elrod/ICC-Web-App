@@ -6,7 +6,7 @@ import DarkModeToggle from "./DarkModeToggle";
 
 export default function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const noSidebarRoutes = pathname === '/' || pathname === '/reset-password';
+  const noSidebarRoutes = pathname === '/' || pathname === '/forgot-password';
 
   return (
     <div className="min-h-screen relative">

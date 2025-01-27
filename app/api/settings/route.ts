@@ -9,6 +9,7 @@ interface UpdateUserRequest {
   lastName: string;
   phone: string | null;
   email: string;
+  notificationPref: 'email' | 'text' | 'both';
 }
 
 export async function PUT(request: Request) {
@@ -21,11 +22,19 @@ export async function PUT(request: Request) {
     }
 
     const data: UpdateUserRequest = await request.json();
-    const { firstName, lastName, phone, email } = data;
+    const { firstName, lastName, phone, email, notificationPref } = data;
 
     if (!firstName?.trim() || !lastName?.trim() || !email?.trim()) {
       return NextResponse.json(
         { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Add validation for notification preference
+    if (!['email', 'text', 'both'].includes(notificationPref)) {
+      return NextResponse.json(
+        { error: "Invalid notification preference" },
         { status: 400 }
       );
     }
@@ -55,9 +64,10 @@ export async function PUT(request: Request) {
        SET user_first_name = ?, 
            user_last_name = ?, 
            user_phone = ?,
-           user_email = ?
+           user_email = ?,
+           notification_pref = ?
        WHERE user_id = ?`,
-      [firstName, lastName, phone || null, email, session.user.id]
+      [firstName, lastName, phone || null, email, notificationPref, session.user.id]
     );
 
     return NextResponse.json({
@@ -67,6 +77,7 @@ export async function PUT(request: Request) {
         lastName,
         phone,
         email,
+        notificationPref,
       },
     });
   } catch (error) {

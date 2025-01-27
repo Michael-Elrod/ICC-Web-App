@@ -14,7 +14,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Move pathname check to a client component
   return (
     <html lang="en" suppressHydrationWarning>
       <body

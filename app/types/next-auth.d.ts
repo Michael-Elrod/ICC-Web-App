@@ -11,6 +11,7 @@ declare module 'next-auth' {
       lastName: string;
       phone: string | null;
       email: string;
+      notificationPref: string;
     } & DefaultSession['user']
   }
 
@@ -21,6 +22,7 @@ declare module 'next-auth' {
     user_last_name: string;
     user_email: string;
     user_phone: string | null;
+    notification_pref: string;
   }
 }
 
@@ -32,5 +34,6 @@ declare module 'next-auth/jwt' {
     lastName: string;
     phone: string | null;
     email: string;
+    notificationPref: string;
   }
 }

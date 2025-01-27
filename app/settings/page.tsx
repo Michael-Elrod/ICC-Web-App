@@ -5,16 +5,6 @@ import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import PasswordChangeModal from "@/components/util/PasswordModal";
 
-const SettingsHeader: React.FC<{ title: string }> = ({ title }) => {
-  return (
-    <header className="sticky top-0 z-10">
-      <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold">{title}</h1>
-      </div>
-    </header>
-  );
-};
-
 export default function SettingsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -27,9 +17,11 @@ export default function SettingsPage() {
 
   // Show loading state while checking authentication
   if (status === "loading") {
-    return <div className="flex justify-center items-center min-h-screen">
-      Loading...
-    </div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        Loading...
+      </div>
+    );
   }
 
   // Don't render anything if not authenticated
@@ -39,8 +31,7 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <SettingsHeader title="Settings" />
-      <main className="flex-1 flex justify-center items-center">
+      <main className="flex-1 flex flex-col items-center py-8">
         <SettingsForm />
       </main>
     </div>
@@ -48,6 +39,7 @@ export default function SettingsPage() {
 }
 
 const SettingsForm: React.FC = () => {
+  const router = useRouter();
   const { data: session, update: updateSession } = useSession();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -69,47 +61,44 @@ const SettingsForm: React.FC = () => {
     setIsUpdating(true);
     setError(null);
     setSuccessMessage(null);
-    
+
     try {
       const formData = new FormData(e.currentTarget);
-      const response = await fetch('/api/settings', {
-        method: 'PUT',
+      const updatedData = {
+        firstName: formData.get("firstName"),
+        lastName: formData.get("lastName"),
+        phone: formData.get("phone"),
+        email: formData.get("email"),
+        notificationPref: formData.get("notificationPref"),
+      };
+
+      const response = await fetch("/api/settings", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          firstName: formData.get('firstName'),
-          lastName: formData.get('lastName'),
-          phone: formData.get('phone'),
-          email: formData.get('email'),
-        }),
+        body: JSON.stringify(updatedData),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to update profile');
+        throw new Error(data.error || "Failed to update profile");
       }
-  
-      try {
-        await updateSession({
-          ...session,
-          user: {
-            ...session?.user,
-            firstName: formData.get('firstName') as string,
-            lastName: formData.get('lastName') as string,
-            phone: formData.get('phone') as string,
-            email: formData.get('email') as string,
-          }
-        });
-        setSuccessMessage('Profile updated successfully');
-      } catch (error) {
-        console.error('Session update error:', error);
-        setError('Failed to update session');
-      }
+
+      await updateSession({
+        ...session,
+        user: {
+          ...session?.user,
+          ...updatedData,
+        },
+      });
+
+      setSuccessMessage("Profile updated successfully");
+      router.refresh();
     } catch (error) {
-      console.error('Update error:', error);
-      setError(error instanceof Error ? error.message : 'An error occurred');
+      console.error("Update error:", error);
+      setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsUpdating(false);
     }
@@ -118,11 +107,11 @@ const SettingsForm: React.FC = () => {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
-      await signOut({ 
+      await signOut({
         callbackUrl: "/",
-        redirect: false
+        redirect: false,
       });
-      
+
       localStorage.clear();
       sessionStorage.clear();
       window.location.href = "/";
@@ -133,12 +122,15 @@ const SettingsForm: React.FC = () => {
     }
   };
 
-  const handlePasswordChange = async (currentPassword: string, newPassword: string) => {
+  const handlePasswordChange = async (
+    currentPassword: string,
+    newPassword: string
+  ) => {
     try {
-      const response = await fetch('/api/settings/password', {
-        method: 'POST',
+      const response = await fetch("/api/settings/password", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           currentPassword,
@@ -152,30 +144,30 @@ const SettingsForm: React.FC = () => {
         throw new Error(data.error);
       }
 
-      setSuccessMessage('Password updated successfully');
+      setSuccessMessage("Password updated successfully");
     } catch (error) {
       throw error;
     }
   };
-  
+
   return (
     <>
-      <div className="bg-white dark:bg-zinc-800 p-8 rounded-lg shadow-lg w-96">
+      <div className="bg-white dark:bg-zinc-800 p-8 rounded-lg shadow-lg w-96 mb-6">
         <h2 className="text-2xl font-bold mb-6 text-center text-zinc-700 dark:text-white">
-          Contact Information
+          Settings
         </h2>
-  
+
         {error && (
           <div className="mb-4 text-red-500 text-sm text-center">{error}</div>
         )}
-  
+
         {successMessage && (
           <div className="mb-4 text-green-500 text-sm text-center">
             {successMessage}
           </div>
         )}
-  
-        <form onSubmit={handleSubmit}>
+
+        <form id="settingsForm" onSubmit={handleSubmit}>
           <div className="mb-4">
             <label
               htmlFor="firstName"
@@ -192,7 +184,7 @@ const SettingsForm: React.FC = () => {
               className={getInputClassName("firstName")}
             />
           </div>
-  
+
           <div className="mb-4">
             <label
               htmlFor="lastName"
@@ -209,7 +201,7 @@ const SettingsForm: React.FC = () => {
               className={getInputClassName("lastName")}
             />
           </div>
-  
+
           <div className="mb-4">
             <label
               htmlFor="phone"
@@ -225,8 +217,8 @@ const SettingsForm: React.FC = () => {
               className={getInputClassName("phone")}
             />
           </div>
-  
-          <div className="mb-6">
+
+          <div className="mb-4">
             <label
               htmlFor="email"
               className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
@@ -242,78 +234,100 @@ const SettingsForm: React.FC = () => {
               className={getInputClassName("email")}
             />
           </div>
-  
-          <button
-            type="submit"
-            disabled={isUpdating}
-            className="w-full bg-green-500 text-white py-2 rounded-md shadow-sm hover:bg-green-600 transition duration-300 mb-3 font-bold disabled:opacity-50"
-          >
-            {isUpdating ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  />
-                </svg>
-                Updating...
-              </span>
-            ) : (
-              "Update"
-            )}
-          </button>
-  
-          <button
-            type="button"
-            onClick={() => setIsPasswordModalOpen(true)}
-            className="w-full bg-blue-600 text-white py-2 rounded-md shadow-sm hover:bg-blue-700 transition duration-300 mb-3 font-bold"
-          >
-            Change Password
-          </button>
-  
-          <button
-            type="button"
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className="w-full bg-red-500 text-white py-2 rounded-md shadow-sm hover:bg-red-600 transition duration-300 font-bold disabled:opacity-50"
-          >
-            {isLoggingOut ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  />
-                </svg>
-                Logging out...
-              </span>
-            ) : (
-              "Logout"
-            )}
-          </button>
+
+          <div className="mb-4">
+            <label
+              htmlFor="notificationPref"
+              className="block text-sm font-medium text-zinc-700 dark:text-white mb-1"
+            >
+              Notification Preference
+            </label>
+            <select
+              id="notificationPref"
+              name="notificationPref"
+              defaultValue={session?.user.notificationPref}
+              className={getInputClassName("notifications")}
+            >
+              <option value="email">Email</option>
+              <option value="text">Text</option>
+              <option value="both">Both</option>
+            </select>
+          </div>
         </form>
       </div>
-  
+
+      <div className="w-96 space-y-3">
+        <button
+          type="submit"
+          form="settingsForm"
+          disabled={isUpdating}
+          className="w-full bg-green-500 text-white py-2 rounded-md shadow-sm hover:bg-green-600 transition duration-300 font-bold disabled:opacity-50"
+        >
+          {isUpdating ? (
+            <span className="flex items-center justify-center">
+              <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
+              </svg>
+              Updating...
+            </span>
+          ) : (
+            "Update"
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setIsPasswordModalOpen(true)}
+          className="w-full bg-blue-600 text-white py-2 rounded-md shadow-sm hover:bg-blue-700 transition duration-300 font-bold"
+        >
+          Change Password
+        </button>
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className="w-full bg-red-500 text-white py-2 rounded-md shadow-sm hover:bg-red-600 transition duration-300 font-bold disabled:opacity-50"
+        >
+          {isLoggingOut ? (
+            <span className="flex items-center justify-center">
+              <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
+              </svg>
+              Logging out...
+            </span>
+          ) : (
+            "Logout"
+          )}
+        </button>
+      </div>
+
       <PasswordChangeModal
         isOpen={isPasswordModalOpen}
         onClose={() => setIsPasswordModalOpen(false)}

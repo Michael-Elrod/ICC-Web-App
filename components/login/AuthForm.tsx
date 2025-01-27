@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { isEmailValid } from "@/app/utils";
+import Link from "next/link";
 
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -244,9 +245,12 @@ export default function AuthForm() {
           )}
         </div>
         <div className="flex items-center justify-end mb-4">
-          <a href="#" className="text-sm text-blue-600 hover:underline">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-blue-600 hover:underline"
+          >
             Forgot Password?
-          </a>
+          </Link>
         </div>
         <button
           type="submit"

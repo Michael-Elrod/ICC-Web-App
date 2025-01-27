@@ -43,6 +43,7 @@ export const authOptions: NextAuthOptions = {
             user_first_name: user.user_first_name,
             user_last_name: user.user_last_name,
             user_phone: user.user_phone,
+            notification_pref: user.notification_pref,
           };
         } catch (error: any) {
           if (error.message === "No account found with this email" ||
@@ -60,15 +61,27 @@ export const authOptions: NextAuthOptions = {
     error: '/auth/error',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
+        // Initial sign in
         token.id = user.id;
         token.type = user.type;
         token.firstName = user.user_first_name;
         token.lastName = user.user_last_name;
         token.phone = user.user_phone;
         token.email = user.user_email;
+        token.notificationPref = user.notification_pref;
       }
+  
+      // Handle updates
+      if (trigger === "update" && session) {
+        token.firstName = session.user.firstName;
+        token.lastName = session.user.lastName;
+        token.phone = session.user.phone;
+        token.email = session.user.email;
+        token.notificationPref = session.user.notificationPref;
+      }
+  
       return token;
     },
     async session({ session, token }) {
@@ -79,9 +92,10 @@ export const authOptions: NextAuthOptions = {
         session.user.lastName = token.lastName;
         session.user.phone = token.phone;
         session.user.email = token.email;
+        session.user.notificationPref = token.notificationPref;
       }
       return session;
-    },
+    }
   },
   session: {
     strategy: "jwt",

@@ -25,16 +25,6 @@ const SideBar = () => {
                 <FaBriefcase size={28} />
               </Link>
             </li>
-            {canCreateJobs && (
-              <li>
-                <Link
-                  href="/jobs/new"
-                  className="text-zinc-300 hover:text-white"
-                >
-                  <FaCirclePlus size={28} />
-                </Link>
-              </li>
-            )}
             <li>
               <Link href="/calendar" className="text-zinc-300 hover:text-white">
                 <FaCalendar size={28} />
@@ -45,6 +35,16 @@ const SideBar = () => {
                 <FaAddressBook size={28} />
               </Link>
             </li>
+            {canCreateJobs && (
+              <li>
+                <Link
+                  href="/jobs/new"
+                  className="text-zinc-300 hover:text-white"
+                >
+                  <FaCirclePlus size={28} />
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
 
@@ -71,11 +71,6 @@ const SideBar = () => {
         <Link href="/jobs" className="text-zinc-300 hover:text-white">
           <FaBriefcase size={24} />
         </Link>
-        {canCreateJobs && (
-          <Link href="/jobs/new" className="text-zinc-300 hover:text-white">
-            <FaCirclePlus size={24} />
-          </Link>
-        )}
         <Link href="/calendar" className="text-zinc-300 hover:text-white">
           <FaCalendar size={24} />
         </Link>
@@ -88,6 +83,11 @@ const SideBar = () => {
         >
           <FaCog size={24} />
         </button>
+        {canCreateJobs && (
+          <Link href="/jobs/new" className="text-zinc-300 hover:text-white">
+            <FaCirclePlus size={24} />
+          </Link>
+        )}
       </nav>
     </>
   );
