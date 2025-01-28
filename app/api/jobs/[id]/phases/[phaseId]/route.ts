@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/db";
 import { addBusinessDays } from "@/app/utils";
-import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
+import { RowDataPacket } from 'mysql2/promise';
 
 export async function PATCH(
    request: Request,

@@ -354,16 +354,16 @@ function NewJobContent() {
         throw new Error("Start date is required");
       }
   
-      console.log('Creating FormData...');
-      const formData = new FormData();
+      // Create job first
+      console.log('Creating FormData for job...');
+      const jobFormData = new FormData();
       
       // Append basic job details
-      formData.append('jobTitle', jobDetails.jobTitle.trim());
-      formData.append('startDate', startDate);
-      formData.append('jobLocation', jobDetails.jobLocation?.trim() || '');
-      formData.append('description', jobDetails.description?.trim() || '');
-      
-      // Log basic details
+      jobFormData.append('jobTitle', jobDetails.jobTitle.trim());
+      jobFormData.append('startDate', startDate);
+      jobFormData.append('jobLocation', jobDetails.jobLocation?.trim() || '');
+      jobFormData.append('description', jobDetails.description?.trim() || '');
+  
       console.log('Basic job details:', {
         title: jobDetails.jobTitle.trim(),
         startDate,
@@ -373,80 +373,93 @@ function NewJobContent() {
   
       if (jobDetails.selectedClient) {
         console.log('Adding client:', jobDetails.selectedClient);
-        formData.append('client', JSON.stringify(jobDetails.selectedClient));
+        jobFormData.append('client', JSON.stringify(jobDetails.selectedClient));
       }
       
       if (jobDetails.floorPlans && jobDetails.floorPlans.length > 0) {
         console.log('Adding floor plans:', jobDetails.floorPlans.length, 'files');
         jobDetails.floorPlans.forEach((file) => {
-          formData.append('floorPlans', file);
+          jobFormData.append('floorPlans', file);
         });
       }
-      
-      console.log('Transforming phases...');
-      const transformedPhases = phases.map(phase => ({
-        title: phase.title.trim(),
-        startDate: phase.startDate,
-        description: phase.description?.trim() || '',
-        tasks: phase.tasks.map(task => ({
-          title: task.title.trim(),
-          startDate: task.startDate,
-          duration: task.duration.toString(),
-          details: task.details?.trim() || '',
-          assignedUsers: task.selectedContacts?.map(contact => parseInt(contact.id)) || []
-        })),
-        materials: phase.materials.map(material => ({
-          title: material.title.trim(),
-          dueDate: material.dueDate,
-          details: material.details?.trim() || '',
-          assignedUsers: material.selectedContacts?.map(contact => parseInt(contact.id)) || []
-        })),
-        notes: phase.notes.map(note => ({
-          content: note.content.trim()
-        }))
-      }));
   
-      console.log('Transformed phases structure:', JSON.stringify(transformedPhases, null, 2));
-      formData.append('phases', JSON.stringify(transformedPhases));
-  
-      console.log('Sending request to /api/jobs/new...');
-      const response = await fetch('/api/jobs/new', {
+      console.log('Sending request to create job...');
+      const jobResponse = await fetch('/api/jobs/new', {
         method: 'POST',
-        body: formData
+        body: jobFormData
       });
   
-      console.log('Response status:', response.status);
-      
-      // Try to get the raw response text first
-      const responseText = await response.text();
-      console.log('Raw response:', responseText);
+      console.log('Job response status:', jobResponse.status);
+      const jobResponseText = await jobResponse.text();
+      console.log('Raw job response:', jobResponseText);
   
-      if (!response.ok) {
+      if (!jobResponse.ok) {
         try {
-          const error = JSON.parse(responseText);
+          const error = JSON.parse(jobResponseText);
           throw new Error(error.message || 'Failed to create job');
         } catch (parseError) {
           console.error('Failed to parse error response:', parseError);
-          throw new Error(`Server error: ${responseText}`);
+          throw new Error(`Server error: ${jobResponseText}`);
         }
       }
   
-      let data;
+      let jobData;
       try {
-        data = JSON.parse(responseText);
+        jobData = JSON.parse(jobResponseText);
       } catch (parseError) {
         console.error('Failed to parse success response:', parseError);
         throw new Error('Invalid response from server');
       }
   
-      console.log('Response data:', data);
-      
-      if (!data.jobId) {
+      if (!jobData.jobId) {
         throw new Error("Failed to get job ID from server");
       }
   
-      console.log('Redirecting to:', `/jobs/${data.jobId}`);
-      router.push(`/jobs/${data.jobId}`);
+      // Now create phases one at a time
+      console.log('Creating phases for job:', jobData.jobId);
+      for (const phase of phases) {
+        const transformedPhase = {
+          title: phase.title.trim(),
+          startDate: phase.startDate,
+          description: phase.description?.trim() || '',
+          tasks: phase.tasks.map(task => ({
+            title: task.title.trim(),
+            startDate: task.startDate,
+            duration: task.duration.toString(),
+            details: task.details?.trim() || '',
+            assignedUsers: task.selectedContacts?.map(contact => parseInt(contact.id)) || []
+          })),
+          materials: phase.materials.map(material => ({
+            title: material.title.trim(),
+            dueDate: material.dueDate,
+            details: material.details?.trim() || '',
+            assignedUsers: material.selectedContacts?.map(contact => parseInt(contact.id)) || []
+          })),
+          notes: phase.notes.map(note => ({
+            content: note.content.trim()
+          }))
+        };
+  
+        console.log(`Creating phase: ${phase.title}`);
+        const phaseFormData = new FormData();
+        phaseFormData.append('phase', JSON.stringify(transformedPhase));
+  
+        const phaseResponse = await fetch(`/api/jobs/${jobData.jobId}/phases`, {
+          method: 'POST',
+          body: phaseFormData
+        });
+  
+        if (!phaseResponse.ok) {
+          const phaseErrorText = await phaseResponse.text();
+          throw new Error(`Failed to create phase: ${phaseErrorText}`);
+        }
+  
+        console.log(`Phase ${phase.title} created successfully`);
+      }
+  
+      console.log('All phases created successfully');
+      console.log('Redirecting to:', `/jobs/${jobData.jobId}`);
+      router.push(`/jobs/${jobData.jobId}`);
       
     } catch (err: unknown) {
       console.error("Error creating job:", {
@@ -459,10 +472,10 @@ function NewJobContent() {
       if (err instanceof Error) {
         console.error(err.message);
       }
-  } finally {
+    } finally {
       console.log('=== Job submission complete ===');
       setIsSubmitting(false);
-  }
+    }
   };
 
   const handleAddPhase = (afterPhaseId: string | null) => {
