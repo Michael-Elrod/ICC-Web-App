@@ -13,6 +13,12 @@ const nextConfig = {
       },
     ],
   },
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+    responseLimit: false,
+  },
   webpack: (config, { isServer }) => {
     if (!isServer && config.optimization.splitChunks) {
       config.optimization.splitChunks.cacheGroups = {
