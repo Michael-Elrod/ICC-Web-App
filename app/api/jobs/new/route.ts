@@ -6,6 +6,7 @@ import { authOptions } from "@/app/lib/auth";
 import { uploadFloorPlans } from "@/app/lib/s3";
 
 export async function POST(request: Request) {
+  const startTime = Date.now();
   console.log('=== Starting new job creation ===');
   try {
     console.log('Verifying user authentication...');
@@ -120,7 +121,10 @@ export async function POST(request: Request) {
       // Create phases and their children
       if (phases) {
         console.log(`Processing ${phases.length} phases...`);
-        for (const [phaseIndex, phase] of phases.entries()) {
+        const phasesStart = Date.now();
+        
+        await Promise.all(phases.map(async (phase: any, phaseIndex: number) => {
+          const phaseStart = Date.now();
           console.log(`Creating phase ${phaseIndex + 1}/${phases.length}: ${phase.title}`);
           const [phaseResult] = await connection.execute<ResultSetHeader>(
             "INSERT INTO phase (job_id, phase_title, phase_startdate, phase_description, created_by) VALUES (?, ?, ?, ?, ?)",
@@ -217,7 +221,10 @@ export async function POST(request: Request) {
           }
           
           console.log(`Completed processing phase ${phaseIndex + 1}`);
-        }
+          console.log(`Phase ${phaseIndex + 1} total processing time: ${Date.now() - phaseStart}ms`);
+        }));
+        
+        console.log(`All phases total processing time: ${Date.now() - phasesStart}ms`);
       }
 
       console.log('All phases processed successfully');
