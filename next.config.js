@@ -1,3 +1,4 @@
+// next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
@@ -13,11 +14,16 @@ const nextConfig = {
       },
     ],
   },
+  serverRuntimeConfig: {
+    apiTimeout: 120000, // 120 seconds in milliseconds
+  },
   api: {
     bodyParser: {
       sizeLimit: '10mb',
     },
     responseLimit: false,
+    externalResolver: true,
+    timeout: 120000, // 120 seconds in milliseconds
   },
   webpack: (config, { isServer }) => {
     if (!isServer && config.optimization.splitChunks) {
