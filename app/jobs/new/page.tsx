@@ -306,13 +306,10 @@ function NewJobContent() {
 
   const handleSubmitJob = async () => {
     try {
-      console.log('=== Starting job submission ===');
       setIsSubmitting(true);
   
       // Check job title first
-      console.log('Checking job details:', jobDetails);
       if (!jobDetails.jobTitle?.trim()) {
-        console.log('Job title missing');
         const jobDetailsElement = document.getElementById("job-details-section");
         if (jobDetailsElement) {
           jobDetailsElement.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -322,10 +319,8 @@ function NewJobContent() {
       }
   
       // Then check for invalid items in phases
-      console.log('Checking phases for invalid items...');
       const invalidItem = findFirstInvalidItem(phases);
       if (invalidItem) {
-        console.log('Found invalid item:', invalidItem);
         const updatedPhases = [...phases];
         const phase = updatedPhases[invalidItem.phaseIndex];
   
@@ -350,12 +345,10 @@ function NewJobContent() {
       }
   
       if (!startDate) {
-        console.log('Start date missing');
         throw new Error("Start date is required");
       }
   
       // Create job first
-      console.log('Creating FormData for job...');
       const jobFormData = new FormData();
       
       // Append basic job details
@@ -364,34 +357,22 @@ function NewJobContent() {
       jobFormData.append('jobLocation', jobDetails.jobLocation?.trim() || '');
       jobFormData.append('description', jobDetails.description?.trim() || '');
   
-      console.log('Basic job details:', {
-        title: jobDetails.jobTitle.trim(),
-        startDate,
-        location: jobDetails.jobLocation?.trim(),
-        description: jobDetails.description?.trim()
-      });
-  
       if (jobDetails.selectedClient) {
-        console.log('Adding client:', jobDetails.selectedClient);
         jobFormData.append('client', JSON.stringify(jobDetails.selectedClient));
       }
       
       if (jobDetails.floorPlans && jobDetails.floorPlans.length > 0) {
-        console.log('Adding floor plans:', jobDetails.floorPlans.length, 'files');
         jobDetails.floorPlans.forEach((file) => {
           jobFormData.append('floorPlans', file);
         });
       }
   
-      console.log('Sending request to create job...');
       const jobResponse = await fetch('/api/jobs/new', {
         method: 'POST',
         body: jobFormData
       });
   
-      console.log('Job response status:', jobResponse.status);
       const jobResponseText = await jobResponse.text();
-      console.log('Raw job response:', jobResponseText);
   
       if (!jobResponse.ok) {
         try {
@@ -416,7 +397,6 @@ function NewJobContent() {
       }
   
       // Now create phases one at a time
-      console.log('Creating phases for job:', jobData.jobId);
       for (const phase of phases) {
         const transformedPhase = {
           title: phase.title.trim(),
@@ -440,7 +420,6 @@ function NewJobContent() {
           }))
         };
   
-        console.log(`Creating phase: ${phase.title}`);
         const phaseFormData = new FormData();
         phaseFormData.append('phase', JSON.stringify(transformedPhase));
   
@@ -454,11 +433,8 @@ function NewJobContent() {
           throw new Error(`Failed to create phase: ${phaseErrorText}`);
         }
   
-        console.log(`Phase ${phase.title} created successfully`);
       }
   
-      console.log('All phases created successfully');
-      console.log('Redirecting to:', `/jobs/${jobData.jobId}`);
       router.push(`/jobs/${jobData.jobId}`);
       
     } catch (err: unknown) {
@@ -473,7 +449,6 @@ function NewJobContent() {
         console.error(err.message);
       }
     } finally {
-      console.log('=== Job submission complete ===');
       setIsSubmitting(false);
     }
   };
