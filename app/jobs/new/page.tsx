@@ -10,7 +10,6 @@ import PhaseCard from "../../../components/new/NewPhaseCard";
 import { InvalidItemProp } from "@/app/types/props";
 import { FormPhase, User } from "@/app/types/database";
 import { PhaseView, TaskView, MaterialView } from "../../types/views";
-import { createJob, transformFormDataToNewJob } from "../../../handlers/jobs";
 import {
   createLocalDate,
   formatToDateString,

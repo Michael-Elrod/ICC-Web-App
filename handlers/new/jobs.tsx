@@ -97,7 +97,7 @@ export const handleCreateJob = async (
             id: `task-${tempId}-${phaseIndex}-${taskIndex}`,
             startDate: formatToDateString(taskStartDate),
             isExpanded: false,
-            selectedContacts: [],
+            selectedContacts: task.selectedContacts || [],
           };
         });
 
@@ -119,7 +119,7 @@ export const handleCreateJob = async (
               id: `material-${tempId}-${phaseIndex}-${materialIndex}`,
               dueDate: formatToDateString(materialDueDate),
               isExpanded: false,
-              selectedContacts: [],
+              selectedContacts: material.selectedContacts || [],
             };
           }
         );

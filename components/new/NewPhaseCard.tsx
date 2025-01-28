@@ -17,13 +17,8 @@ import {
   addBusinessDays,
 } from "@/app/utils";
 import {
-  handleTitleClick,
-  handleTitleBlur,
-  handleTitleKeyDown,
   handleInputChange,
-  updateTask,
   deleteTask,
-  updateMaterial,
   deleteMaterial,
   updateNote,
   deleteNote,
@@ -38,7 +33,6 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
   onMovePhase,
 }) => {
   const [contacts, setContacts] = useState<UserView[]>([]);
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isPhaseCollapsed, setIsPhaseCollapsed] = useState(true);
   const [isTasksExpanded, setIsTasksExpanded] = useState(false);
   const [isMaterialsExpanded, setIsMaterialsExpanded] = useState(false);

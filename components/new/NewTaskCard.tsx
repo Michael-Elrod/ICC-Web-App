@@ -38,10 +38,8 @@ const NewTaskCard: React.FC<TaskCardProps> = ({
   const [selectedContacts, setSelectedContacts] = useState<UserView[]>(
     task.selectedContacts
       ?.map(
-        (id) =>
-          contacts.find(
-            (c) => c.user_id === parseInt(id.toString())
-          ) as UserView
+        (contact) =>
+          contacts.find((c) => c.user_id === parseInt(contact.id)) as UserView
       )
       .filter(Boolean) || []
   );
@@ -189,11 +187,18 @@ const NewTaskCard: React.FC<TaskCardProps> = ({
               className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded dark:bg-zinc-800 dark:text-white"
             >
               <option value="">Select a person</option>
-              {contacts.map((contact: UserView) => (
-                <option key={contact.user_id} value={contact.user_id}>
-                  {`${contact.first_name} ${contact.last_name}`}
-                </option>
-              ))}
+              {contacts
+                .filter(
+                  (contact) =>
+                    !selectedContacts.some(
+                      (selected) => selected.user_id === contact.user_id
+                    )
+                )
+                .map((contact: UserView) => (
+                  <option key={contact.user_id} value={contact.user_id}>
+                    {`${contact.first_name} ${contact.last_name}`}
+                  </option>
+                ))}
             </select>
             <div className="mt-2 space-y-2">
               {selectedContacts.map((contact: UserView) => (
@@ -235,7 +240,7 @@ const NewTaskCard: React.FC<TaskCardProps> = ({
                 )
               }
               className="mr-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded"
-              >
+            >
               Done
             </button>
             <button
@@ -294,7 +299,9 @@ const NewTaskCard: React.FC<TaskCardProps> = ({
                 Cancel
               </button>
               <button
-                onClick={() => handleDeleteConfirm(task.id, onDelete, setShowDeleteConfirm)}
+                onClick={() =>
+                  handleDeleteConfirm(task.id, onDelete, setShowDeleteConfirm)
+                }
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
               >
                 Delete

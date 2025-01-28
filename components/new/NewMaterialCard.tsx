@@ -8,7 +8,7 @@ import ContactCard from "../contact/ContactCard";
 import { FormMaterial } from "../../app/types/database";
 import { UserView } from "../../app/types/views";
 import { MaterialCardProps } from "../../app/types/props";
-import { formatDate,createLocalDate } from "@/app/utils";
+import { formatDate, createLocalDate } from "@/app/utils";
 import { handleDeleteConfirm } from "@/handlers/new/materials";
 import {
   handleDeleteClick,
@@ -30,10 +30,8 @@ const NewMaterialCard: React.FC<MaterialCardProps> = ({
   const [selectedContacts, setSelectedContacts] = useState<UserView[]>(
     material.selectedContacts
       ?.map(
-        (id) =>
-          contacts.find(
-            (c) => c.user_id === parseInt(id.toString())
-          ) as UserView
+        (contact) =>
+          contacts.find((c) => c.user_id === parseInt(contact.id)) as UserView
       )
       .filter(Boolean) || []
   );
@@ -97,7 +95,11 @@ const NewMaterialCard: React.FC<MaterialCardProps> = ({
                 Due Date
               </label>
               <DatePicker
-                selected={localMaterial.dueDate ? createLocalDate(localMaterial.dueDate) : null}
+                selected={
+                  localMaterial.dueDate
+                    ? createLocalDate(localMaterial.dueDate)
+                    : null
+                }
                 onChange={(date: Date | null) =>
                   handleDueDateChange(
                     "dueDate",
@@ -165,11 +167,18 @@ const NewMaterialCard: React.FC<MaterialCardProps> = ({
               className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded dark:bg-zinc-800 dark:text-white"
             >
               <option value="">Select a person</option>
-              {contacts.map((contact: UserView) => (
-                <option key={contact.user_id} value={contact.user_id}>
-                  {`${contact.first_name} ${contact.last_name}`}
-                </option>
-              ))}
+              {contacts
+                .filter(
+                  (contact) =>
+                    !selectedContacts.some(
+                      (selected) => selected.user_id === contact.user_id
+                    )
+                )
+                .map((contact: UserView) => (
+                  <option key={contact.user_id} value={contact.user_id}>
+                    {`${contact.first_name} ${contact.last_name}`}
+                  </option>
+                ))}
             </select>
             <div className="mt-2 space-y-2">
               {selectedContacts.map((contact: UserView) => (
@@ -270,7 +279,13 @@ const NewMaterialCard: React.FC<MaterialCardProps> = ({
                 Cancel
               </button>
               <button
-                onClick={() => handleDeleteConfirm(material.id, onDelete, setShowDeleteConfirm)}
+                onClick={() =>
+                  handleDeleteConfirm(
+                    material.id,
+                    onDelete,
+                    setShowDeleteConfirm
+                  )
+                }
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
               >
                 Delete
