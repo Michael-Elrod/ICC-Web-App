@@ -306,10 +306,13 @@ function NewJobContent() {
 
   const handleSubmitJob = async () => {
     try {
+      console.log('=== Starting job submission ===');
       setIsSubmitting(true);
   
       // Check job title first
+      console.log('Checking job details:', jobDetails);
       if (!jobDetails.jobTitle?.trim()) {
+        console.log('Job title missing');
         const jobDetailsElement = document.getElementById("job-details-section");
         if (jobDetailsElement) {
           jobDetailsElement.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -319,13 +322,13 @@ function NewJobContent() {
       }
   
       // Then check for invalid items in phases
+      console.log('Checking phases for invalid items...');
       const invalidItem = findFirstInvalidItem(phases);
       if (invalidItem) {
-        // Expand the phase containing the invalid item
+        console.log('Found invalid item:', invalidItem);
         const updatedPhases = [...phases];
         const phase = updatedPhases[invalidItem.phaseIndex];
   
-        // Expand the specific item
         if (invalidItem.type === "task") {
           phase.tasks[invalidItem.itemIndex].isExpanded = true;
         } else if (invalidItem.type === "material") {
@@ -336,7 +339,6 @@ function NewJobContent() {
   
         setPhases(updatedPhases);
   
-        // Scroll to the element
         setTimeout(() => {
           const element = document.getElementById(invalidItem.elementId);
           if (element) {
@@ -348,10 +350,11 @@ function NewJobContent() {
       }
   
       if (!startDate) {
+        console.log('Start date missing');
         throw new Error("Start date is required");
       }
   
-      // Create FormData object
+      console.log('Creating FormData...');
       const formData = new FormData();
       
       // Append basic job details
@@ -360,19 +363,27 @@ function NewJobContent() {
       formData.append('jobLocation', jobDetails.jobLocation?.trim() || '');
       formData.append('description', jobDetails.description?.trim() || '');
       
-      // Append client if exists
+      // Log basic details
+      console.log('Basic job details:', {
+        title: jobDetails.jobTitle.trim(),
+        startDate,
+        location: jobDetails.jobLocation?.trim(),
+        description: jobDetails.description?.trim()
+      });
+  
       if (jobDetails.selectedClient) {
+        console.log('Adding client:', jobDetails.selectedClient);
         formData.append('client', JSON.stringify(jobDetails.selectedClient));
       }
       
-      // Append each floor plan file
       if (jobDetails.floorPlans && jobDetails.floorPlans.length > 0) {
+        console.log('Adding floor plans:', jobDetails.floorPlans.length, 'files');
         jobDetails.floorPlans.forEach((file) => {
           formData.append('floorPlans', file);
         });
       }
       
-      // Transform and append phases
+      console.log('Transforming phases...');
       const transformedPhases = phases.map(phase => ({
         title: phase.title.trim(),
         startDate: phase.startDate,
@@ -382,54 +393,76 @@ function NewJobContent() {
           startDate: task.startDate,
           duration: task.duration.toString(),
           details: task.details?.trim() || '',
-          assignedUsers: task.selectedContacts?.map(contact => 
-            // Using the id property instead of user_id
-            parseInt(contact.id)
-          ) || []
+          assignedUsers: task.selectedContacts?.map(contact => parseInt(contact.id)) || []
         })),
         materials: phase.materials.map(material => ({
           title: material.title.trim(),
           dueDate: material.dueDate,
           details: material.details?.trim() || '',
-          assignedUsers: material.selectedContacts?.map(contact => 
-            // Using the id property instead of user_id
-            parseInt(contact.id)
-          ) || []
+          assignedUsers: material.selectedContacts?.map(contact => parseInt(contact.id)) || []
         })),
         notes: phase.notes.map(note => ({
           content: note.content.trim()
         }))
       }));
-      
+  
+      console.log('Transformed phases structure:', JSON.stringify(transformedPhases, null, 2));
       formData.append('phases', JSON.stringify(transformedPhases));
   
+      console.log('Sending request to /api/jobs/new...');
       const response = await fetch('/api/jobs/new', {
         method: 'POST',
         body: formData
       });
   
+      console.log('Response status:', response.status);
+      
+      // Try to get the raw response text first
+      const responseText = await response.text();
+      console.log('Raw response:', responseText);
+  
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create job');
+        try {
+          const error = JSON.parse(responseText);
+          throw new Error(error.message || 'Failed to create job');
+        } catch (parseError) {
+          console.error('Failed to parse error response:', parseError);
+          throw new Error(`Server error: ${responseText}`);
+        }
       }
   
-      const data = await response.json();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse success response:', parseError);
+        throw new Error('Invalid response from server');
+      }
+  
+      console.log('Response data:', data);
       
       if (!data.jobId) {
         throw new Error("Failed to get job ID from server");
       }
   
+      console.log('Redirecting to:', `/jobs/${data.jobId}`);
       router.push(`/jobs/${data.jobId}`);
-    } catch (error) {
-      console.error("Error creating job:", error);
+      
+    } catch (err: unknown) {
+      console.error("Error creating job:", {
+        error: err instanceof Error ? {
+          message: err.message,
+          stack: err.stack
+        } : err,
+      });
       setIsSubmitting(false);
-      if (error instanceof Error) {
-        // You might want to show this error to the user through your UI
-        console.error(error.message);
+      if (err instanceof Error) {
+        console.error(err.message);
       }
-    } finally {
+  } finally {
+      console.log('=== Job submission complete ===');
       setIsSubmitting(false);
-    }
+  }
   };
 
   const handleAddPhase = (afterPhaseId: string | null) => {
