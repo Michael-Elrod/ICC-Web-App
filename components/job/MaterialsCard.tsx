@@ -186,11 +186,23 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
                 onClick={(e) => handleCardClick(e, material.material_id)}
                 className="cursor-pointer"
               >
-                <div className="grid grid-cols-3 items-center">
-                  <span className="text-sm font-medium col-span-1">
-                    {material.material_title}
-                  </span>
-                  <span className="text-sm text-center col-span-1">
+                <div className="grid grid-cols-3 sm:grid-cols-3 items-start gap-3">
+                  <div className="col-span-2 sm:col-span-1 pr-3">
+                    <div className="flex flex-col sm:block">
+                      <span className="text-sm font-medium break-words">
+                        {material.material_title}
+                      </span>
+                      <span className="text-sm text-gray-600 sm:hidden mt-1">
+                        {createLocalDate(
+                          material.material_duedate
+                        ).toLocaleDateString("en-US", {
+                          month: "numeric",
+                          day: "numeric",
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="hidden sm:block text-sm text-center col-span-1">
                     {createLocalDate(
                       material.material_duedate
                     ).toLocaleDateString("en-US", {
@@ -198,7 +210,7 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
                       day: "numeric",
                     })}
                   </span>
-                  <div className="flex justify-end col-span-1">
+                  <div className="col-span-1 flex justify-end">
                     <div className="status-button">
                       <StatusButton
                         id={material.material_id}
@@ -234,14 +246,14 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
                         </h5>
                         {material.users.map((user) => (
                           <SmallCardFrame key={user.user_id}>
-                            <div className="grid grid-cols-3 items-center">
-                              <span className="text-sm">
+                            <div className="flex flex-col sm:grid sm:grid-cols-3 sm:items-center gap-1 sm:gap-0">
+                              <span className="text-sm font-medium">
                                 {`${user.first_name} ${user.last_name}`}
                               </span>
-                              <span className="text-sm text-center">
+                              <span className="text-sm text-gray-600 sm:text-center">
                                 {formatPhoneNumber(user.user_phone)}
                               </span>
-                              <span className="text-sm text-right">
+                              <span className="text-sm text-gray-600 sm:text-right break-all">
                                 {user.user_email}
                               </span>
                             </div>

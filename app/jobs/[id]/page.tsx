@@ -974,12 +974,13 @@ export default function JobDetailPage() {
         );
 
         // Transform floor plans
-        const transformedFloorplans = data.job.floorplans?.map(
-          (floorplan: any): FloorPlan => ({
-            url: floorplan.floorplan_url,
-            name: `Floor Plan ${floorplan.floorplan_id}`,
-          })
-        ) || [];
+        const transformedFloorplans =
+          data.job.floorplans?.map(
+            (floorplan: any): FloorPlan => ({
+              url: floorplan.floorplan_url,
+              name: `Floor Plan ${floorplan.floorplan_id}`,
+            })
+          ) || [];
 
         const transformedJob: JobDetailView = {
           id: data.job.job_id,
@@ -1259,29 +1260,29 @@ export default function JobDetailPage() {
 
   return (
     <>
-      <header className="mb-8">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <h1 className="text-3xl font-bold">{job.jobName}</h1>
-            <span className="text-lg text-gray-600">{job.dateRange}</span>
+      <header className="mb-4 sm:mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+            <h1 className="text-2xl sm:text-3xl font-bold">{job.jobName}</h1>
+            <span className="text-base sm:text-lg text-gray-600">{job.dateRange}</span>
           </div>
           {hasAdminAccess && (
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
               <button
                 onClick={() => setActiveModal("edit")}
-                className="px-4 py-2 bg-gray-500 text-white rounded font-bold hover:bg-gray-600 transition-colors"
+                className="px-3 sm:px-4 py-2 bg-gray-500 text-white rounded font-bold hover:bg-gray-600 transition-colors text-sm sm:text-base"
               >
                 Edit
               </button>
               <button
                 onClick={() => setShowCopyModal(true)}
-                className="px-4 py-2 bg-blue-500 text-white rounded font-bold hover:bg-blue-600 transition-colors"
+                className="px-3 sm:px-4 py-2 bg-blue-500 text-white rounded font-bold hover:bg-blue-600 transition-colors text-sm sm:text-base"
               >
                 Copy Job
               </button>
               <button
                 onClick={() => setShowTerminateModal(true)}
-                className="px-4 py-2 bg-red-500 text-white rounded font-bold hover:bg-red-600 transition-colors"
+                className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded font-bold hover:bg-red-600 transition-colors text-sm sm:text-base"
               >
                 Terminate Job
               </button>
@@ -1289,45 +1290,55 @@ export default function JobDetailPage() {
           )}
         </div>
       </header>
-
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Job Status</h2>
-        <CardFrame>
-          <StatusBar
-            label="Items Due"
-            items={[]}
-            isDueBar={true}
-            dueItems={{
-              overdue: job.overdue,
-              nextSevenDays: job.nextSevenDays,
-              sevenDaysPlus: job.sevenDaysPlus,
-            }}
-          />
-          <StatusBar label="Tasks" items={job.tasks} withLegend={true} />
-          <StatusBar label="Materials" items={job.materials} />
-        </CardFrame>
+   
+      <section className="mb-4 sm:mb-8">
+        <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4">Job Status</h2>
+        <div 
+          className="bg-white dark:bg-zinc-800 shadow-md rounded-lg p-4 sm:p-6 mx-auto sm:mx-0 w-full sm:w-auto" 
+        >
+          <div className="w-full">
+            <StatusBar
+              label="Items Due"
+              items={[]}
+              isDueBar={true}
+              dueItems={{
+                overdue: job.overdue,
+                nextSevenDays: job.nextSevenDays,
+                sevenDaysPlus: job.sevenDaysPlus,
+              }}
+            />
+            <StatusBar label="Tasks" items={job.tasks} withLegend={true} />
+            <StatusBar label="Materials" items={job.materials} />
+          </div>
+        </div>
       </section>
 
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Timeline</h2>
-        <CardFrame>
-          <Timeline
-            phases={job.phases}
-            currentWeek={job.currentWeek}
-            startDate={job.phases[0]?.startDate}
-            endDate={job.phases[job.phases.length - 1]?.endDate}
-            onStatusUpdate={handleStatusUpdate}
-          />
-        </CardFrame>
+      <section className="mb-4 sm:mb-8">
+        <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4">Timeline</h2>
+        <div 
+          className="bg-white dark:bg-zinc-800 shadow-md rounded-lg p-4 sm:p-6 mx-auto sm:mx-0 w-full sm:w-auto"
+        >
+          <div className="w-full">
+            <Timeline
+              phases={job.phases}
+              currentWeek={job.currentWeek}
+              startDate={job.phases[0]?.startDate}
+              endDate={job.phases[job.phases.length - 1]?.endDate}
+              onStatusUpdate={handleStatusUpdate}
+            />
+          </div>
+        </div>
       </section>
-
-      <section className="mb-8">
-        <ContentTabs
-          tabs={tabs}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
-        <div className="mt-4">
+   
+      <section className="mb-4 sm:mb-8">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+          <ContentTabs
+            tabs={tabs}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+        </div>
+        <div className="mt-2 sm:mt-4 mx-auto sm:mx-0 w-full sm:w-auto bg-white dark:bg-zinc-800 shadow-md rounded-lg p-1 sm:p-6">
           {activeTab === "Contacts"
             ? renderContacts()
             : activeTab === "Floor Plan"
@@ -1335,62 +1346,62 @@ export default function JobDetailPage() {
             : renderPhaseCards()}
         </div>
       </section>
-
+   
       {activeModal === "floorplan" && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setActiveModal(null);
             }
           }}
         >
-          <div className="bg-white dark:bg-zinc-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden relative">
-            <div className="p-4 flex justify-between items-center border-b">
-              <h3 className="text-lg font-semibold">Floor Plan</h3>
+          <div className="bg-white dark:bg-zinc-800 rounded-lg max-w-4xl w-[95%] sm:w-full max-h-[90vh] overflow-hidden relative">
+            <div className="p-3 sm:p-4 flex justify-between items-center border-b">
+              <h3 className="text-base sm:text-lg font-semibold">Floor Plan</h3>
               <div className="flex gap-2">
-                <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+                <button className="px-3 sm:px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm sm:text-base">
                   Download
                 </button>
                 <button
                   onClick={() => setActiveModal(null)}
-                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                  className="px-3 sm:px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors text-sm sm:text-base"
                 >
                   Close
                 </button>
               </div>
             </div>
-            <div className="relative h-[80vh] w-full">
+            <div className="relative h-[50vh] sm:h-[80vh] w-full">
               <Image
                 src="/placeholder-floorplan.jpg"
                 alt="Floor Plan"
                 fill
-                className="object-contain p-4"
+                className="object-contain p-2 sm:p-4"
               />
             </div>
           </div>
         </div>
       )}
-
+   
       {activeModal === "edit" && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setActiveModal(null);
             }
           }}
         >
-          <div className="bg-white dark:bg-zinc-800 rounded-lg max-w-2xl w-full overflow-hidden relative">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold">Edit Job</h3>
+          <div className="bg-white dark:bg-zinc-800 rounded-lg max-w-2xl w-[95%] sm:w-full overflow-hidden relative">
+            <div className="p-4 sm:p-6">
+              <div className="flex justify-between items-center mb-4 sm:mb-6">
+                <h3 className="text-lg sm:text-xl font-semibold">Edit Job</h3>
                 <button
                   onClick={() => setActiveModal(null)}
                   className="text-gray-500 hover:text-gray-700"
                 >
                   <svg
-                    className="w-6 h-6"
+                    className="w-5 h-5 sm:w-6 sm:h-6"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -1404,43 +1415,43 @@ export default function JobDetailPage() {
                   </svg>
                 </button>
               </div>
-
-              <div className="space-y-6">
+   
+              <div className="space-y-4 sm:space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Job Title
                   </label>
                   <input
                     type="text"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-700 dark:border-zinc-600"
+                    className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-700 dark:border-zinc-600"
                     value={editJobTitle}
                     onChange={(e) => setEditJobTitle(e.target.value)}
                   />
                 </div>
-
+   
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Start Date
                   </label>
                   <input
                     type="date"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-700 dark:border-zinc-600"
+                    className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-700 dark:border-zinc-600"
                     value={editStartDate}
                     onChange={(e) => setEditStartDate(e.target.value)}
                   />
                 </div>
               </div>
-
-              <div className="mt-8 flex justify-end gap-4">
+   
+              <div className="mt-6 sm:mt-8 flex justify-end gap-3 sm:gap-4">
                 <button
                   onClick={() => setActiveModal(null)}
-                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  className="px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveJobChanges}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                  className="px-3 sm:px-4 py-2 text-sm sm:text-base bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
                 >
                   Save Changes
                 </button>
@@ -1449,7 +1460,7 @@ export default function JobDetailPage() {
           </div>
         </div>
       )}
-
+   
       <CopyJobModal
         isOpen={showCopyModal}
         onClose={() => setShowCopyModal(false)}
@@ -1462,5 +1473,5 @@ export default function JobDetailPage() {
         onTerminate={handleJobTerminate}
       />
     </>
-  );
+   );
 }

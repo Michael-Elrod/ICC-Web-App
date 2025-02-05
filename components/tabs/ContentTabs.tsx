@@ -1,4 +1,4 @@
-// components/ContentTabs.tsx - For switching content within a page
+// components/ContentTabs.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -23,22 +23,25 @@ const ContentTabs: React.FC<ContentTabsProps> = ({ tabs, activeTab, setActiveTab
 
   return (
     <div className="mt-6">
-      <div className="flex relative">
+      <div className="flex flex-wrap sm:flex-row relative">
         {tabs.map((tab) => (
           <button
             key={tab.name}
             id={`tab-${tab.name}`}
-            className={`px-6 py-2 ${
-              activeTab === tab.name ? 'text-current font-medium' : 'text-opacity-60 hover:text-opacity-80'
+            className={`w-1/3 sm:w-auto px-3 sm:px-6 py-2 text-center ${
+              activeTab === tab.name 
+                ? 'text-current font-medium border-b-2 sm:border-b-0 border-current' 
+                : 'text-opacity-60 hover:text-opacity-80'
             }`}
             onClick={() => setActiveTab(tab.name)}
           >
             {tab.name}
           </button>
         ))}
+        {/* Hide the bottom indicator on mobile, show on desktop */}
         {activeTabElement && (
           <div
-            className="absolute bottom-0 h-0.5 bg-current transition-all ease-in-out"
+            className="hidden sm:block absolute bottom-0 h-0.5 bg-current transition-all ease-in-out"
             style={{
               left: `${activeTabElement.offsetLeft}px`,
               width: `${activeTabElement.offsetWidth}px`,
