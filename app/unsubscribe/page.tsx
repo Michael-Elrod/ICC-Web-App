@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 type NotificationPref = 'email' | 'text' | 'both' | 'none';
 
-export default function UnsubscribePage() {
+function UnsubscribeContent() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'choice'>('loading');
   const [message, setMessage] = useState('Verifying your request...');
@@ -129,31 +129,47 @@ export default function UnsubscribePage() {
   );
 
   return (
-    <main className="flex justify-center items-center min-h-screen bg-white dark:bg-zinc-900 px-4">
-      <div className="max-w-md w-full p-6 bg-white dark:bg-zinc-800 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-4 text-center dark:text-white">
-          Notification Preferences
-        </h1>
-        {status === 'choice' ? (
-          renderPreferenceButtons()
-        ) : (
-          <div className={`text-center mb-6 ${
-            status === 'error' ? 'text-red-500' : 
-            status === 'success' ? 'text-green-500' : 
-            'text-gray-500'
-          }`}>
-            {message}
-          </div>
-        )}
-        <div className="text-center mt-6">
-          <Link 
-            href="/" 
-            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-          >
-            Return to Homepage
-          </Link>
+    <div className="max-w-md w-full p-6 bg-white dark:bg-zinc-800 rounded-lg shadow-md">
+      <h1 className="text-2xl font-bold mb-4 text-center dark:text-white">
+        Notification Preferences
+      </h1>
+      {status === 'choice' ? (
+        renderPreferenceButtons()
+      ) : (
+        <div className={`text-center mb-6 ${
+          status === 'error' ? 'text-red-500' : 
+          status === 'success' ? 'text-green-500' : 
+          'text-gray-500'
+        }`}>
+          {message}
         </div>
+      )}
+      <div className="text-center mt-6">
+        <Link 
+          href="/" 
+          className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+        >
+          Return to Homepage
+        </Link>
       </div>
+    </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="max-w-md w-full p-6 bg-white dark:bg-zinc-800 rounded-lg shadow-md">
+      <div className="text-center">Loading...</div>
+    </div>
+  );
+}
+
+export default function UnsubscribePage() {
+  return (
+    <main className="flex justify-center items-center min-h-screen bg-white dark:bg-zinc-900 px-4">
+      <Suspense fallback={<LoadingFallback />}>
+        <UnsubscribeContent />
+      </Suspense>
     </main>
   );
 }
