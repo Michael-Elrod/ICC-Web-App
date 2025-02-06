@@ -9,7 +9,7 @@ import PhaseCard from "@/components/job/PhaseCard";
 import ContactCard from "@/components/contact/ContactCard";
 import StatusBar from "@/components/util/StatusBar";
 import CopyJobModal from "@/components/job/CopyJobModal";
-import TerminateJobModal from "@/components/job/TerminateJobModal";
+import CloseJobModal from "@/components/job/CloseJobModal";
 import FloorplanViewer from "@/components/job/FloorplanViewer";
 import Image from "next/image";
 import { JobUpdatePayload, FormTask, FormMaterial } from "@/app/types/database";
@@ -43,7 +43,7 @@ export default function JobDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCopyModal, setShowCopyModal] = useState(false);
-  const [showTerminateModal, setShowTerminateModal] = useState(false);
+  const [showCloseModal, setShowCloseModal] = useState(false);
   const [activeModal, setActiveModal] = useState<"edit" | "floorplan" | null>(
     null
   );
@@ -54,20 +54,20 @@ export default function JobDetailPage() {
   const hasAdminAccess =
     session?.user?.type === "Owner" || session?.user?.type === "Admin";
 
-  const handleJobTerminate = async () => {
+  const handleJobClose = async () => {
     try {
-      const response = await fetch(`/api/jobs/${id}`, {
-        method: "DELETE",
+      const response = await fetch(`/api/jobs/${id}/close`, {
+        method: "POST",
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete job");
+        throw new Error("Failed to close job");
       }
 
       router.push("/jobs");
     } catch (error) {
-      console.error("Error deleting job:", error);
-      setError("Failed to delete job");
+      console.error("Error closing job:", error);
+      setError("Failed to close job");
     }
   };
 
@@ -1264,7 +1264,9 @@ export default function JobDetailPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
             <h1 className="text-2xl sm:text-3xl font-bold">{job.jobName}</h1>
-            <span className="text-base sm:text-lg text-gray-600">{job.dateRange}</span>
+            <span className="text-base sm:text-lg text-gray-600">
+              {job.dateRange}
+            </span>
           </div>
           {hasAdminAccess && (
             <div className="flex flex-wrap gap-2 sm:gap-3">
@@ -1281,21 +1283,21 @@ export default function JobDetailPage() {
                 Copy Job
               </button>
               <button
-                onClick={() => setShowTerminateModal(true)}
+                onClick={() => setShowCloseModal(true)}
                 className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded font-bold hover:bg-red-600 transition-colors text-sm sm:text-base"
               >
-                Terminate Job
+                Close Job
               </button>
             </div>
           )}
         </div>
       </header>
-   
+
       <section className="mb-4 sm:mb-8">
-        <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4">Job Status</h2>
-        <div 
-          className="bg-white dark:bg-zinc-800 shadow-md rounded-lg p-4 sm:p-6 mx-auto sm:mx-0 w-full sm:w-auto" 
-        >
+        <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4">
+          Job Status
+        </h2>
+        <div className="bg-white dark:bg-zinc-800 shadow-md rounded-lg p-4 sm:p-6 mx-auto sm:mx-0 w-full sm:w-auto">
           <div className="w-full">
             <StatusBar
               label="Items Due"
@@ -1314,10 +1316,10 @@ export default function JobDetailPage() {
       </section>
 
       <section className="mb-4 sm:mb-8">
-        <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4">Timeline</h2>
-        <div 
-          className="bg-white dark:bg-zinc-800 shadow-md rounded-lg p-4 sm:p-6 mx-auto sm:mx-0 w-full sm:w-auto"
-        >
+        <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4">
+          Timeline
+        </h2>
+        <div className="bg-white dark:bg-zinc-800 shadow-md rounded-lg p-4 sm:p-6 mx-auto sm:mx-0 w-full sm:w-auto">
           <div className="w-full">
             <Timeline
               phases={job.phases}
@@ -1329,7 +1331,7 @@ export default function JobDetailPage() {
           </div>
         </div>
       </section>
-   
+
       <section className="mb-4 sm:mb-8">
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
           <ContentTabs
@@ -1346,7 +1348,7 @@ export default function JobDetailPage() {
             : renderPhaseCards()}
         </div>
       </section>
-   
+
       {activeModal === "floorplan" && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4"
@@ -1382,7 +1384,7 @@ export default function JobDetailPage() {
           </div>
         </div>
       )}
-   
+
       {activeModal === "edit" && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4"
@@ -1415,7 +1417,7 @@ export default function JobDetailPage() {
                   </svg>
                 </button>
               </div>
-   
+
               <div className="space-y-4 sm:space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1428,7 +1430,7 @@ export default function JobDetailPage() {
                     onChange={(e) => setEditJobTitle(e.target.value)}
                   />
                 </div>
-   
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Start Date
@@ -1441,7 +1443,7 @@ export default function JobDetailPage() {
                   />
                 </div>
               </div>
-   
+
               <div className="mt-6 sm:mt-8 flex justify-end gap-3 sm:gap-4">
                 <button
                   onClick={() => setActiveModal(null)}
@@ -1460,18 +1462,18 @@ export default function JobDetailPage() {
           </div>
         </div>
       )}
-   
+
       <CopyJobModal
         isOpen={showCopyModal}
         onClose={() => setShowCopyModal(false)}
         jobName={job.jobName}
         onCopyJob={handleJobCopy}
       />
-      <TerminateJobModal
-        isOpen={showTerminateModal}
-        onClose={() => setShowTerminateModal(false)}
-        onTerminate={handleJobTerminate}
+      <CloseJobModal
+        isOpen={showCloseModal}
+        onClose={() => setShowCloseModal(false)}
+        onCloseJob={handleJobClose}
       />
     </>
-   );
+  );
 }

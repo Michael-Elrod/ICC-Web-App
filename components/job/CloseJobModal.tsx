@@ -1,24 +1,24 @@
-// components/job/TerminateJobModal.tsx
+// components/job/CloseJobModal.tsx
 import React, { useState } from "react";
 
-interface TerminateJobModalProps {
+interface CloseJobModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onTerminate?: () => void;
+  onCloseJob?: () => void;
 }
 
-export default function TerminateJobModal({
+export default function CloseJobModal({
   isOpen,
   onClose,
-  onTerminate,
-}: TerminateJobModalProps) {
+  onCloseJob,
+}: CloseJobModalProps) {
   const [step, setStep] = useState<"initial" | "confirm">("initial");
 
   if (!isOpen) return null;
 
-  const handleTerminate = () => {
-    if (onTerminate) {
-      onTerminate();
+  const handleCloseJob = () => {
+    if (onCloseJob) {
+      onCloseJob();
     }
     onClose();
     setStep("initial");
@@ -37,7 +37,7 @@ export default function TerminateJobModal({
       <div className="bg-white dark:bg-zinc-800 rounded-lg max-w-2xl w-full overflow-hidden relative">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-semibold">Terminate Job</h3>
+            <h3 className="text-xl font-semibold">Close Job</h3>
             <button
               onClick={() => {
                 onClose();
@@ -63,7 +63,7 @@ export default function TerminateJobModal({
 
           {step === "initial" ? (
             <>
-              <p className="mb-6">Are you sure you want to terminate this job?</p>
+              <p className="mb-6">Are you sure you want to close this job?</p>
               <div className="flex justify-end gap-4">
                 <button
                   onClick={() => {
@@ -85,7 +85,7 @@ export default function TerminateJobModal({
           ) : (
             <>
               <p className="mb-6">
-                Terminating a job will set the job status to Closed. This will automatically 
+                Closing a job will set the job status to Closed. This will automatically 
                 complete all tasks and materials and stop any future notifications about this job. 
                 You will still be able to see the job for a limited time under the Closed tab in 
                 the Jobs page if you would like to copy its contents to create a new one.
@@ -101,10 +101,10 @@ export default function TerminateJobModal({
                   Cancel
                 </button>
                 <button
-                  onClick={handleTerminate}
+                  onClick={handleCloseJob}
                   className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                 >
-                  Terminate Job
+                  Close Job
                 </button>
               </div>
             </>
