@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FaCirclePlus } from "react-icons/fa6";
 import { FaBriefcase, FaCalendar, FaAddressBook, FaCog } from "react-icons/fa";
