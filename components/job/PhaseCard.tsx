@@ -246,6 +246,7 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
                   contacts={contacts}
                   onStatusUpdate={onStatusUpdate}
                   onDelete={onTaskDelete}
+                  userType={userType}
                 />
                 {isAddingTask && (
                   <NewTaskCard
@@ -336,6 +337,7 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
                   contacts={contacts}
                   onStatusUpdate={onStatusUpdate}
                   onDelete={onMaterialDelete}
+                  userType={userType}
                 />
                 {isAddingMaterial && (
                   <NewMaterialCard

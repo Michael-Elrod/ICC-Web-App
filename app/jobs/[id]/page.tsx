@@ -10,8 +10,9 @@ import ContactCard from "@/components/contact/ContactCard";
 import StatusBar from "@/components/util/StatusBar";
 import CopyJobModal from "@/components/job/CopyJobModal";
 import CloseJobModal from "@/components/job/CloseJobModal";
-import FloorplanViewer from "@/components/job/FloorplanViewer";
+import FloorplanViewerID from "@/components/job/FloorplanViewerID";
 import Image from "next/image";
+import { validateFiles } from "@/app/lib/s3";
 import { JobUpdatePayload, FormTask, FormMaterial } from "@/app/types/database";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -42,8 +43,14 @@ export default function JobDetailPage() {
   const [job, setJob] = useState<JobDetailView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [showCloseModal, setShowCloseModal] = useState(false);
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [showRemoveAllModal, setShowRemoveAllModal] = useState(false);
+  const [selectedFloorplanId, setSelectedFloorplanId] = useState<number | null>(
+    null
+  );
   const [activeModal, setActiveModal] = useState<"edit" | "floorplan" | null>(
     null
   );
@@ -68,6 +75,178 @@ export default function JobDetailPage() {
     } catch (error) {
       console.error("Error closing job:", error);
       setError("Failed to close job");
+    }
+  };
+
+  const FloorplanUploadModal = ({
+    isOpen,
+    onClose,
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+  }) => {
+    const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleUpload = async () => {
+      if (!selectedFiles) return;
+
+      setUploading(true);
+      setError(null);
+      const formData = new FormData();
+
+      try {
+        // Validate files before upload
+        const filesArray = Array.from(selectedFiles);
+        validateFiles(filesArray);
+
+        filesArray.forEach((file) => {
+          formData.append("files", file);
+        });
+
+        const response = await fetch(`/api/jobs/${id}/floorplan`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Upload failed");
+        }
+
+        onClose();
+        window.location.reload();
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "Upload failed");
+        console.error("Error uploading floorplans:", error);
+      } finally {
+        setUploading(false);
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-zinc-800 rounded-lg max-w-md w-full p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Upload Floor Plans</h3>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div className="mb-6">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/gif,application/pdf"
+              multiple
+              onChange={(e) => {
+                setSelectedFiles(e.target.files);
+                setError(null);
+              }}
+              className="w-full p-2 border border-gray-300 rounded"
+            />
+            <p className="mt-2 text-sm text-gray-500">
+              Accepted formats: JPEG, PNG, GIF, PDF (max 5MB per file)
+            </p>
+            {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpload}
+              disabled={!selectedFiles || uploading}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-blue-300"
+            >
+              {uploading ? "Uploading..." : "Upload"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const handleRemoveCurrent = async (index: number) => {
+    const floorplan = job?.floorplans[index];
+    if (!floorplan) return;
+
+    const matches = floorplan.name.match(/Floor Plan (\d+)/);
+    const floorplanId = matches ? matches[1] : null;
+
+    if (!floorplanId) {
+      console.error("Could not extract floorplan ID");
+      return;
+    }
+
+    setSelectedFloorplanId(parseInt(floorplanId));
+    setShowRemoveModal(true);
+  };
+
+  const handleRemoveAll = () => {
+    setShowRemoveAllModal(true);
+  };
+
+  const confirmRemoveCurrent = async () => {
+    try {
+      if (!selectedFloorplanId) {
+        console.error("No floorplan ID selected");
+        return;
+      }
+
+      const response = await fetch(
+        `/api/jobs/${id}/floorplan?floorplanId=${selectedFloorplanId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to remove floorplan");
+      }
+
+      setShowRemoveModal(false);
+      window.location.reload();
+    } catch (error) {
+      console.error("Error removing floorplan:", error);
+    }
+  };
+
+  const confirmRemoveAll = async () => {
+    try {
+      const response = await fetch(`/api/jobs/${id}/floorplan`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to remove all floorplans");
+      }
+
+      setShowRemoveAllModal(false);
+      window.location.reload();
+    } catch (error) {
+      console.error("Error removing all floorplans:", error);
     }
   };
 
@@ -1192,15 +1371,58 @@ export default function JobDetailPage() {
       return (
         <CardFrame>
           <div className="text-center py-8">
-            No floor plans available for this job.
+            <div className="mb-4">No floor plans available for this job.</div>
+            <div className="flex justify-center">
+              <button
+                className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
+                onClick={() => setShowUploadModal(true)}
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
         </CardFrame>
       );
     }
+
+    const floorplansWithId = job.floorplans.map((floorplan, index) => {
+      const urlParts = floorplan.url.split("/");
+      const fileNamePart = urlParts[urlParts.length - 1];
+      const matches = fileNamePart.match(/job-\d+-(\d+)/);
+      const id = matches ? parseInt(matches[1]) : index;
+
+      return {
+        id,
+        url: floorplan.url,
+        name: floorplan.name,
+      };
+    });
+
     return (
-      <CardFrame>
-        <FloorplanViewer floorplans={job.floorplans} mode="embedded" />
-      </CardFrame>
+      <div className="w-full -mx-4 sm:mx-0">
+        <div className="sm:rounded-lg overflow-hidden">
+          <FloorplanViewerID
+            floorplans={floorplansWithId}
+            mode="embedded"
+            onRemoveCurrent={handleRemoveCurrent}
+            onRemoveAll={handleRemoveAll}
+            onUpload={() => setShowUploadModal(true)}
+            hasAdminAccess={hasAdminAccess}
+          />
+        </div>
+      </div>
     );
   };
 
@@ -1474,6 +1696,64 @@ export default function JobDetailPage() {
         onClose={() => setShowCloseModal(false)}
         onCloseJob={handleJobClose}
       />
+      {/* Single Remove Confirmation Modal */}
+      {showRemoveModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-800 rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-4">Confirm Removal</h3>
+            <p className="mb-6">
+              Are you sure you want to remove this floorplan?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowRemoveModal(false)}
+                className="px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmRemoveCurrent}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Remove All Confirmation Modal */}
+      {showRemoveAllModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-800 rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-4">Confirm Removal</h3>
+            <p className="mb-6">
+              Are you sure you want to remove all floorplans? This action cannot
+              be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowRemoveAllModal(false)}
+                className="px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmRemoveAll}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+              >
+                Remove All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showUploadModal && (
+        <FloorplanUploadModal
+          isOpen={showUploadModal}
+          onClose={() => setShowUploadModal(false)}
+        />
+      )}
     </>
   );
 }

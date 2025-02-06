@@ -15,6 +15,7 @@ interface MaterialsCardProps {
     newStatus: string
   ) => void;
   onDelete: (id: number) => Promise<void>;
+  userType?: string;
 }
 
 const MaterialsCard: React.FC<MaterialsCardProps> = ({
@@ -22,6 +23,7 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
   contacts,
   onStatusUpdate,
   onDelete,
+  userType,
 }) => {
   const [expandedMaterialId, setExpandedMaterialId] = useState<number | null>(
     null
@@ -32,6 +34,7 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const hasAdminAccess = userType === "Owner" || userType === "Admin";
   const sortedMaterials = [...materials].sort(
     (a, b) =>
       createLocalDate(a.material_duedate).getTime() -

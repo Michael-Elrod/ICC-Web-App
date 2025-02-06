@@ -19,6 +19,7 @@ interface TasksCardProps {
     newStatus: string
   ) => void;
   onDelete: (id: number) => Promise<void>;
+  userType?: string;
 }
 
 const TasksCard: React.FC<TasksCardProps> = ({
@@ -26,6 +27,7 @@ const TasksCard: React.FC<TasksCardProps> = ({
   contacts,
   onStatusUpdate,
   onDelete,
+  userType,
 }) => {
   const [expandedTaskId, setExpandedTaskId] = useState<number | null>(null);
   const [localTasks, setLocalTasks] = useState(tasks);
@@ -34,6 +36,7 @@ const TasksCard: React.FC<TasksCardProps> = ({
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const hasAdminAccess = userType === "Owner" || userType === "Admin";
   const sortedTasks = [...tasks].sort(
     (a, b) =>
       new Date(a.task_startdate).getTime() -
@@ -245,7 +248,7 @@ const TasksCard: React.FC<TasksCardProps> = ({
                     </div>
                   </div>
 
-                  {isExpanded && (
+                  {expandedTaskId === task.task_id && (
                     <div className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-600">
                       {task.task_description && (
                         <div className="mb-4">
@@ -281,15 +284,17 @@ const TasksCard: React.FC<TasksCardProps> = ({
                       )}
 
                       <div className="mt-4 flex justify-end">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveModal(task.task_id);
-                          }}
-                          className="px-4 py-2 bg-gray-500 text-white rounded font-bold hover:bg-gray-600 transition-colors"
-                        >
-                          Edit
-                        </button>
+                        {hasAdminAccess && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveModal(task.task_id);
+                            }}
+                            className="px-4 py-2 bg-gray-500 text-white rounded font-bold hover:bg-gray-600 transition-colors"
+                          >
+                            Edit
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
