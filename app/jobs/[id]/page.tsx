@@ -10,6 +10,7 @@ import ContactCard from "@/components/contact/ContactCard";
 import StatusBar from "@/components/util/StatusBar";
 import CopyJobModal from "@/components/job/CopyJobModal";
 import CloseJobModal from "@/components/job/CloseJobModal";
+import DeleteJobModal from "@/components/job/DeleteJobModal";
 import FloorplanViewerID from "@/components/job/FloorplanViewerID";
 import Image from "next/image";
 import { validateFiles } from "@/app/lib/s3";
@@ -46,6 +47,7 @@ export default function JobDetailPage() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [showCloseModal, setShowCloseModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [showRemoveAllModal, setShowRemoveAllModal] = useState(false);
   const [selectedFloorplanId, setSelectedFloorplanId] = useState<number | null>(
@@ -75,6 +77,23 @@ export default function JobDetailPage() {
     } catch (error) {
       console.error("Error closing job:", error);
       setError("Failed to close job");
+    }
+  };
+
+  const handleJobDelete = async () => {
+    try {
+      const response = await fetch(`/api/jobs/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete job");
+      }
+
+      router.push("/jobs");
+    } catch (error) {
+      console.error("Error deleting job:", error);
+      setError("Failed to delete job");
     }
   };
 
@@ -1190,7 +1209,9 @@ export default function JobDetailPage() {
           nextSevenDays: data.job.nextSevenDays,
           sevenDaysPlus: data.job.sevenDaysPlus,
           contacts: data.job.contacts || [],
+          status: data.job.job_status,
         };
+        console.log("Job Status from transformedJob:", transformedJob.status);
 
         setJob(transformedJob);
         setCollapsedPhases(
@@ -1504,12 +1525,21 @@ export default function JobDetailPage() {
               >
                 Copy Job
               </button>
-              <button
-                onClick={() => setShowCloseModal(true)}
-                className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded font-bold hover:bg-red-600 transition-colors text-sm sm:text-base"
-              >
-                Close Job
-              </button>
+              {job.status === "closed" ? (
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded font-bold hover:bg-red-600 transition-colors text-sm sm:text-base"
+                >
+                  Delete Job
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowCloseModal(true)}
+                  className="px-3 sm:px-4 py-2 bg-red-500 text-white rounded font-bold hover:bg-red-600 transition-colors text-sm sm:text-base"
+                >
+                  Close Job
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -1695,6 +1725,11 @@ export default function JobDetailPage() {
         isOpen={showCloseModal}
         onClose={() => setShowCloseModal(false)}
         onCloseJob={handleJobClose}
+      />
+      <DeleteJobModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onDeleteJob={handleJobDelete}
       />
       {/* Single Remove Confirmation Modal */}
       {showRemoveModal && (

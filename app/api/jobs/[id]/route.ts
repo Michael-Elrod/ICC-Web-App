@@ -80,6 +80,7 @@ export async function GET(
           j.job_startdate,
           j.job_location,
           j.job_description,
+          j.job_status,
           j.job_startdate as job_startdate,
           CEIL(DATEDIFF(CURDATE(), j.job_startdate) / 7) + 1 as current_week
         FROM job j

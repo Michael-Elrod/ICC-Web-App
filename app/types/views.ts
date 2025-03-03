@@ -27,6 +27,7 @@ export interface JobDetailView {
   materials: MaterialView[];
   contacts: string[];
   floorplans: FloorPlan[];
+  status?: string;
 }
 
 export interface PhaseView {

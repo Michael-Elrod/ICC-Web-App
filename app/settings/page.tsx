@@ -249,8 +249,8 @@ const SettingsForm: React.FC = () => {
               className={getInputClassName("notifications")}
             >
               <option value="email">Email</option>
-              <option value="text">Text</option>
-              <option value="both">Both</option>
+              {/* <option value="text">Text</option>
+              <option value="both">Email & Text</option> */}
             </select>
           </div>
         </form>
