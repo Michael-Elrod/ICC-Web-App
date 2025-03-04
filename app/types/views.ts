@@ -36,6 +36,7 @@ export interface PhaseView {
   startDate: string;
   endDate: string;
   color: string;
+  description?: string;
   tasks: TaskView[];
   materials: MaterialView[];
   notes: NoteView[];

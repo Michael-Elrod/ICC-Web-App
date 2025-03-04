@@ -52,6 +52,7 @@ interface Phase extends RowDataPacket {
   name: string;
   startDate: string;
   endDate: string;
+  description: string;
   color: string;
   tasks: Task[];
   materials: Material[];
@@ -112,7 +113,8 @@ export async function GET(
           p.phase_id as id,
           p.phase_title as name,
           p.phase_startdate as startDate,
-          p.phase_startdate as endDate, -- We'll calculate real end date in JS
+          p.phase_startdate as endDate,
+          p.phase_description as description,
           CASE (p.phase_id % 6)
             WHEN 0 THEN '#3B82F6'
             WHEN 1 THEN '#10B981'

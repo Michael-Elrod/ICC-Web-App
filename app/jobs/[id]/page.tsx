@@ -1196,6 +1196,7 @@ export default function JobDetailPage() {
               startDate: phase.startDate,
               endDate: phase.endDate,
               color: phase.color,
+              description: phase.description,
               tasks: transformedTasks.filter(
                 (task: TaskView) => task.phase_id === phase.id
               ),
@@ -1211,7 +1212,6 @@ export default function JobDetailPage() {
           contacts: data.job.contacts || [],
           status: data.job.job_status,
         };
-        console.log("Job Status from transformedJob:", transformedJob.status);
 
         setJob(transformedJob);
         setCollapsedPhases(
@@ -1353,6 +1353,7 @@ export default function JobDetailPage() {
                 name: phase.name,
                 startDate: phase.startDate,
                 endDate: phase.endDate,
+                description: phase.description,
                 tasks: filteredTasks,
                 materials: filteredMaterials,
                 notes: phase.notes,

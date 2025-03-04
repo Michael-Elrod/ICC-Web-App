@@ -9,6 +9,7 @@ export interface DetailPhaseCardProps {
     name: string;
     startDate: string;
     endDate: string;
+    description?: string;
     tasks: {
       task_id: number;
       task_title: string;

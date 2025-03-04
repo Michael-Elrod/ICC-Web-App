@@ -235,6 +235,14 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
 
       {!isCollapsed && (
         <>
+          {phase.description && (
+            <div className="mb-4">
+              <span className="text-sm font-medium break-words">
+                {phase.description}
+              </span>
+            </div>
+          )}
+
           <div className="space-y-4">
             {showTasks && (
               <div>
