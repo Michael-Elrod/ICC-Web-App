@@ -7,7 +7,13 @@ interface CopyJobModalProps {
   isOpen: boolean;
   onClose: () => void;
   jobName: string;
-  onCopyJob?: (startDate: Date) => void;
+  onCopyJob?: (startDate: Date, copyOptions: CopyOptions) => void;
+}
+
+interface CopyOptions {
+  workerAssignments: boolean;
+  notes: boolean;
+  floorplans: boolean;
 }
 
 export default function CopyJobModal({
@@ -18,16 +24,28 @@ export default function CopyJobModal({
 }: CopyJobModalProps) {
   const [step, setStep] = useState<"confirm" | "date">("confirm");
   const [newJobStartDate, setNewJobStartDate] = useState<Date | null>(null);
+  const [copyOptions, setCopyOptions] = useState<CopyOptions>({
+    workerAssignments: true,
+    notes: true,
+    floorplans: true,
+  });
 
   if (!isOpen) return null;
 
   const handleCopyJob = () => {
     if (newJobStartDate && onCopyJob) {
-      onCopyJob(newJobStartDate);
+      onCopyJob(newJobStartDate, copyOptions);
     }
     onClose();
     setStep("confirm");
     setNewJobStartDate(null);
+  };
+
+  const handleOptionChange = (option: keyof CopyOptions) => {
+    setCopyOptions({
+      ...copyOptions,
+      [option]: !copyOptions[option],
+    });
   };
 
   return (
@@ -97,9 +115,10 @@ export default function CopyJobModal({
           ) : (
             <>
               <p className="mb-6">
-                Please choose the start date of the new job
+                Please choose the start date of the new job and select what to
+                copy:
               </p>
-              <div className="relative" style={{ zIndex: 1000 }}>
+              <div className="relative mb-6" style={{ zIndex: 1000 }}>
                 <DatePicker
                   selected={newJobStartDate}
                   onChange={(date: Date | null) => setNewJobStartDate(date)}
@@ -115,6 +134,55 @@ export default function CopyJobModal({
                   portalId="root"
                 />
               </div>
+
+              <div className="space-y-3 mb-6">
+                <p className="font-medium">Items to copy:</p>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="workerAssignments"
+                    checked={copyOptions.workerAssignments}
+                    onChange={() => handleOptionChange("workerAssignments")}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label
+                    htmlFor="workerAssignments"
+                    className="ml-2 text-sm font-medium"
+                  >
+                    Worker Assignments (All users assigned to tasks and materials)
+                  </label>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="floorplans"
+                    checked={copyOptions.floorplans}
+                    onChange={() => handleOptionChange("floorplans")}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label
+                    htmlFor="floorplans"
+                    className="ml-2 text-sm font-medium"
+                  >
+                    Floor Plans (All floor plan images)
+                  </label>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="notes"
+                    checked={copyOptions.notes}
+                    onChange={() => handleOptionChange("notes")}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="notes" className="ml-2 text-sm font-medium">
+                    Notes (All notes added to phases)
+                  </label>
+                </div>
+              </div>
+
               <div className="mt-6 flex justify-end gap-4">
                 <button
                   onClick={() => {

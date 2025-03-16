@@ -11,6 +11,8 @@ interface NewJobCardProps {
   jobType: string;
   startDate: string;
   errors?: { [key: string]: string };
+  willCopyFloorplans?: boolean;
+  floorplansToCopyCount?: number;
   onJobDetailsChange: (details: {
     jobTitle: string;
     jobLocation?: string;
@@ -24,6 +26,8 @@ export default function NewJobCard({
   jobType,
   startDate,
   errors: externalErrors,
+  willCopyFloorplans,
+  floorplansToCopyCount,
   onJobDetailsChange,
 }: NewJobCardProps) {
   const [contacts, setContacts] = useState<User[]>([]);
@@ -35,6 +39,7 @@ export default function NewJobCard({
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [floorPlans, setFloorPlans] = useState<File[]>([]);
   const [uploadStatus, setUploadStatus] = useState<string>("");
+  const [showFloorplanDropdown, setShowFloorplanDropdown] = useState(false);
 
   useEffect(() => {
     if (externalErrors) {
@@ -60,6 +65,27 @@ export default function NewJobCard({
     } ${darkModeClass} ${typeSpecificClass}`.trim();
   };
 
+  const removeFloorplan = (index: number) => {
+    const updatedFloorPlans = [...floorPlans];
+    updatedFloorPlans.splice(index, 1);
+    setFloorPlans(updatedFloorPlans);
+    setUploadStatus(
+      updatedFloorPlans.length > 0
+        ? `${updatedFloorPlans.length} file${
+            updatedFloorPlans.length > 1 ? "s" : ""
+          } selected`
+        : ""
+    );
+
+    onJobDetailsChange({
+      jobTitle,
+      jobLocation,
+      description,
+      selectedClient,
+      floorPlans: updatedFloorPlans,
+    });
+  };
+
   const handleClientSelect = (client: User | null) => {
     setSelectedClient(client);
     onJobDetailsChange({
@@ -74,11 +100,15 @@ export default function NewJobCard({
   const handleFloorPlanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       try {
-        const files = Array.from(e.target.files);
-        validateFiles(files);
-        setFloorPlans(files);
+        const newFiles = Array.from(e.target.files);
+        validateFiles(newFiles);
+
+        const updatedFloorPlans = [...floorPlans, ...newFiles];
+        setFloorPlans(updatedFloorPlans);
         setUploadStatus(
-          `${files.length} file${files.length > 1 ? "s" : ""} selected`
+          `${updatedFloorPlans.length} file${
+            updatedFloorPlans.length > 1 ? "s" : ""
+          } selected`
         );
 
         onJobDetailsChange({
@@ -86,8 +116,15 @@ export default function NewJobCard({
           jobLocation,
           description,
           selectedClient,
-          floorPlans: files,
+          floorPlans: updatedFloorPlans,
         });
+
+        const fileInput = document.getElementById(
+          "floorplan-upload"
+        ) as HTMLInputElement;
+        if (fileInput) {
+          fileInput.value = "";
+        }
       } catch (error) {
         if (error instanceof Error) {
           setUploadStatus(error.message);
@@ -176,7 +213,7 @@ export default function NewJobCard({
           </div>
 
           {/* Location and Floor Plan Inputs */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label
                 htmlFor="jobLocation"
@@ -199,34 +236,109 @@ export default function NewJobCard({
                 className="block text-sm font-medium text-zinc-700 dark:text-white"
               >
                 Floor Plans
+                {willCopyFloorplans && (
+                  <span className="block sm:inline sm:ml-2 text-blue-500 text-sm font-normal mt-1 sm:mt-0">
+                    ({floorplansToCopyCount} will be copied from original job)
+                  </span>
+                )}
               </label>
-              <div className="relative">
-                <input
-                  type="file"
-                  id="floorPlan"
-                  accept="image/*"
-                  multiple
-                  onChange={handleFloorPlanChange}
-                  className={`${getInputClassName(
-                    "floorPlan",
-                    "file"
-                  )} custom-file-input opacity-0 absolute inset-0 w-full h-full cursor-pointer`}
-                />
-                <div
-                  className={`${getInputClassName(
-                    "floorPlan"
-                  )} pointer-events-none text-zinc-500 dark:text-zinc-400`}
-                >
-                  {uploadStatus || (
-                    <>
-                      <span className="hidden sm:inline">
-                        Select floor plan images...
-                      </span>
-                      <span className="sm:hidden">Images...</span>
-                    </>
+
+              <div className="flex items-center gap-2 mt-1">
+                <div className="relative flex-grow">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowFloorplanDropdown(!showFloorplanDropdown)
+                    }
+                    className="w-full px-3 py-2 text-left border rounded-md shadow-sm border-zinc-300 dark:border-zinc-600 flex justify-between items-center dark:bg-zinc-800 dark:text-white"
+                  >
+                    <span className="truncate">
+                      {floorPlans.length === 0
+                        ? willCopyFloorplans
+                          ? "Add more floor plans..."
+                          : "No floor plans selected"
+                        : `${floorPlans.length} floor plan${
+                            floorPlans.length !== 1 ? "s" : ""
+                          } selected`}
+                    </span>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+
+                  {/* Dropdown showing selected files */}
+                  {showFloorplanDropdown && floorPlans.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-md shadow-lg max-h-48 overflow-auto">
+                      <ul className="py-1">
+                        {floorPlans.map((file, index) => (
+                          <li
+                            key={index}
+                            className="px-3 py-2 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-700"
+                          >
+                            <span className="truncate">{file.name}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeFloorplan(index);
+                              }}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const input = document.getElementById("floorplan-upload");
+                    if (input) {
+                      input.click();
+                    }
+                  }}
+                  className="px-3 py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 transition-colors"
+                >
+                  Add Floorplan
+                </button>
+
+                {/* Hidden file input */}
+                <input
+                  id="floorplan-upload"
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,application/pdf"
+                  multiple
+                  className="hidden"
+                  onChange={handleFloorPlanChange}
+                />
               </div>
+
               {errors.floorPlan && (
                 <p className="text-red-500 text-xs mt-1">{errors.floorPlan}</p>
               )}
@@ -245,7 +357,7 @@ export default function NewJobCard({
               <button
                 type="button"
                 onClick={() => setShowNewClientForm(true)}
-                className="mt-6 min-w-[100px] px-3 py-2 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-700 transition-colors"
+                className="mt-6 min-w-[100px] px-3 py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
               >
                 Add New Client
               </button>

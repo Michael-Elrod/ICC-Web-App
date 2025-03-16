@@ -269,9 +269,16 @@ export default function JobDetailPage() {
     }
   };
 
-  const handleJobCopy = (newStartDate: Date) => {
+  const handleJobCopy = (
+    newStartDate: Date,
+    copyOptions: {
+      workerAssignments: boolean;
+      notes: boolean;
+      floorplans: boolean;
+    }
+  ) => {
     if (!job) return;
-
+  
     const jobDataForCopy = {
       originalJobId: job.id,
       jobDetails: {
@@ -280,8 +287,11 @@ export default function JobDetailPage() {
       originalJobName: job.jobName,
       phases: job.phases,
       newStartDate: newStartDate.toISOString().split("T")[0],
+      copyOptions: copyOptions,
+      floorplans: copyOptions.floorplans ? job.floorplans : [],
     };
-
+    
+    console.log("Saving job data with floorplans:", jobDataForCopy);
     localStorage.setItem("jobToCopy", JSON.stringify(jobDataForCopy));
     router.push("/jobs/new?copy=true");
   };
@@ -1720,7 +1730,9 @@ export default function JobDetailPage() {
         isOpen={showCopyModal}
         onClose={() => setShowCopyModal(false)}
         jobName={job.jobName}
-        onCopyJob={handleJobCopy}
+        onCopyJob={(newStartDate, copyOptions) =>
+          handleJobCopy(newStartDate, copyOptions)
+        }
       />
       <CloseJobModal
         isOpen={showCloseModal}

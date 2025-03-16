@@ -44,6 +44,8 @@ function NewJobContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isCreateJobDisabled = !jobType || !startDate;
   const [originalJobName, setOriginalJobName] = useState<string>("");
+  const [willCopyFloorplans, setWillCopyFloorplans] = useState(false);
+  const [floorplansToCopyCount, setFloorplansToCopyCount] = useState(0);
   const [jobDetailsErrors, setJobDetailsErrors] = useState<{
     [key: string]: string;
   }>({});
@@ -64,6 +66,25 @@ function NewJobContent() {
         try {
           const jobData = JSON.parse(jobDataString);
 
+          // Get copy options, defaulting to true if not provided (for backward compatibility)
+          const copyOptions = jobData.copyOptions || {
+            workerAssignments: true,
+            notes: true,
+            floorplans: true,
+          };
+
+          const willCopyFloorplans =
+            copyOptions.floorplans &&
+            jobData.floorplans &&
+            jobData.floorplans.length > 0;
+
+          const floorplansToCopyCount = willCopyFloorplans
+            ? jobData.floorplans.length
+            : 0;
+
+          setWillCopyFloorplans(willCopyFloorplans);
+          setFloorplansToCopyCount(floorplansToCopyCount);
+
           // Set basic job info
           setJobType("copy");
           setStartDate(jobData.newStartDate);
@@ -71,6 +92,23 @@ function NewJobContent() {
           setShowNewJobCard(true);
           setContacts(jobData.contacts || []);
 
+          if (
+            copyOptions.floorplans &&
+            jobData.floorplans &&
+            jobData.floorplans.length > 0
+          ) {
+            // We can't directly copy files, but we can store info about them to copy later
+            localStorage.setItem(
+              "floorplansToCopy",
+              JSON.stringify({
+                originalJobId: jobData.originalJobId,
+                floorplans: jobData.floorplans,
+              })
+            );
+          }
+          console.log("Job data from localStorage:", jobData);
+          console.log("Will copy floorplans:", willCopyFloorplans);
+          console.log("Floorplans count:", floorplansToCopyCount);
           // Calculate offsets and new dates
           const originalStartDate = createLocalDate(
             jobData.jobDetails.originalStartDate
@@ -84,15 +122,17 @@ function NewJobContent() {
               if (isPreplanningPhase) {
                 // First create tasks and materials for preplanning
                 const newTasks = phase.tasks.map((task: TaskView) => {
-                  const mappedContacts =
-                    task.users?.map((user) => ({
-                      id: user.user_id.toString(),
-                      user_id: user.user_id,
-                      first_name: user.first_name,
-                      last_name: user.last_name,
-                      user_email: user.user_email,
-                      user_phone: user.user_phone || "",
-                    })) || [];
+                  // Handle worker assignments based on copy options
+                  const mappedContacts = copyOptions.workerAssignments
+                    ? task.users?.map((user) => ({
+                        id: user.user_id.toString(),
+                        user_id: user.user_id,
+                        first_name: user.first_name,
+                        last_name: user.last_name,
+                        user_email: user.user_email,
+                        user_phone: user.user_phone || "",
+                      })) || []
+                    : [];
 
                   if (task.task_title === "One Call Lot") {
                     return {
@@ -119,17 +159,20 @@ function NewJobContent() {
                     isExpanded: false,
                   };
                 });
+
                 const newMaterials = phase.materials.map(
                   (material: MaterialView) => {
-                    const mappedContacts =
-                      material.users?.map((user) => ({
-                        id: user.user_id.toString(),
-                        user_id: user.user_id,
-                        first_name: user.first_name,
-                        last_name: user.last_name,
-                        user_email: user.user_email,
-                        user_phone: user.user_phone || "",
-                      })) || [];
+                    // Handle worker assignments based on copy options
+                    const mappedContacts = copyOptions.workerAssignments
+                      ? material.users?.map((user) => ({
+                          id: user.user_id.toString(),
+                          user_id: user.user_id,
+                          first_name: user.first_name,
+                          last_name: user.last_name,
+                          user_email: user.user_email,
+                          user_phone: user.user_phone || "",
+                        })) || []
+                      : [];
 
                     if (
                       material.material_title ===
@@ -169,14 +212,23 @@ function NewJobContent() {
                   current < earliest ? current : earliest
                 );
 
+                // Only include notes if they should be copied
+                const phaseNotes = copyOptions.notes
+                  ? (phase.notes || []).map((note) => ({
+                      id: `note-${Date.now()}-${Math.random()}`,
+                      content: note.note_details || "",
+                      isExpanded: false,
+                    }))
+                  : [];
+
                 return {
                   tempId: `phase-${Date.now()}-${Math.random()}`,
                   title: phase.name,
-                  description: "",
+                  description: phase.description || "",
                   startDate: phaseStartDate,
                   tasks: newTasks,
                   materials: newMaterials,
-                  notes: phase.notes || [],
+                  notes: phaseNotes,
                 };
               } else {
                 // Create tasks and materials for regular phases
@@ -191,10 +243,12 @@ function NewJobContent() {
                     taskOffset
                   );
 
-                  const mappedContacts =
-                    task.users?.map((user) => ({
-                      id: user.user_id.toString(),
-                    })) || [];
+                  // Handle worker assignments based on copy options
+                  const mappedContacts = copyOptions.workerAssignments
+                    ? task.users?.map((user) => ({
+                        id: user.user_id.toString(),
+                      })) || []
+                    : [];
 
                   return {
                     id: `task-${Date.now()}-${Math.random()}`,
@@ -221,10 +275,12 @@ function NewJobContent() {
                       materialOffset
                     );
 
-                    const mappedContacts =
-                      material.users?.map((user) => ({
-                        id: user.user_id.toString(),
-                      })) || [];
+                    // Handle worker assignments based on copy options
+                    const mappedContacts = copyOptions.workerAssignments
+                      ? material.users?.map((user) => ({
+                          id: user.user_id.toString(),
+                        })) || []
+                      : [];
 
                     return {
                       id: `material-${Date.now()}-${Math.random()}`,
@@ -247,21 +303,29 @@ function NewJobContent() {
                   current < earliest ? current : earliest
                 );
 
+                // Only include notes if they should be copied
+                const phaseNotes = copyOptions.notes
+                  ? (phase.notes || []).map((note) => ({
+                      id: `note-${Date.now()}-${Math.random()}`,
+                      content: note.note_details || "",
+                      isExpanded: false,
+                    }))
+                  : [];
+
                 return {
                   tempId: `phase-${Date.now()}-${Math.random()}`,
                   title: phase.name,
-                  description: "",
+                  description: phase.description || "",
                   startDate: phaseStartDate,
                   tasks: newTasks,
                   materials: newMaterials,
-                  notes: phase.notes || [],
+                  notes: phaseNotes,
                 };
               }
             }
           );
 
           setPhases(copiedPhases);
-          localStorage.removeItem("jobToCopy");
         } catch (error) {
           console.error("Error parsing job data:", error);
         }
@@ -364,10 +428,29 @@ function NewJobContent() {
       jobFormData.append("jobLocation", jobDetails.jobLocation?.trim() || "");
       jobFormData.append("description", jobDetails.description?.trim() || "");
 
+      // Check if we're copying a job
+      const isCopyingJob = jobType === "copy";
+
+      // Handle client information
       if (jobDetails.selectedClient) {
         jobFormData.append("client", JSON.stringify(jobDetails.selectedClient));
       }
 
+      // Handle floorplan copying from original job
+      if (isCopyingJob && willCopyFloorplans) {
+        const jobDataString = localStorage.getItem("jobToCopy");
+        if (jobDataString) {
+          const jobData = JSON.parse(jobDataString);
+          if (jobData.originalJobId) {
+            jobFormData.append(
+              "copyFloorplansFromJobId",
+              jobData.originalJobId.toString()
+            );
+          }
+        }
+      }
+
+      // Add any directly uploaded floor plans
       if (jobDetails.floorPlans && jobDetails.floorPlans.length > 0) {
         jobDetails.floorPlans.forEach((file) => {
           jobFormData.append("floorPlans", file);
@@ -401,6 +484,49 @@ function NewJobContent() {
 
       if (!jobData.jobId) {
         throw new Error("Failed to get job ID from server");
+      }
+
+      if (isCopyingJob && willCopyFloorplans) {
+        try {
+          console.log("Attempting to copy floorplans");
+          const jobToCopyString = localStorage.getItem("jobToCopy");
+          if (jobToCopyString) {
+            console.log("Found jobToCopy in localStorage");
+            const jobToCopy = JSON.parse(jobToCopyString);
+            console.log("Job to copy data:", jobToCopy);
+            if (jobToCopy.originalJobId) {
+              console.log(
+                `Making API call to copy floorplans from job ${jobToCopy.originalJobId} to job ${jobData.jobId}`
+              );
+              const response = await fetch(
+                `/api/jobs/${jobData.jobId}/copy-floorplans`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    originalJobId: jobToCopy.originalJobId,
+                  }),
+                }
+              );
+              const copyResult = await response.json();
+              console.log("Copy floorplans response:", copyResult);
+            } else {
+              console.log("No originalJobId found in jobToCopy");
+            }
+          } else {
+            console.log("No jobToCopy found in localStorage");
+          }
+        } catch (error) {
+          console.error("Error copying floorplans:", error);
+        }
+      } else {
+        console.log("Skipping floorplan copy, conditions not met:", {
+          isCopyingJob,
+          willCopyFloorplans,
+          hasFormDataEntry: jobFormData.has("copyFloorplansFromJobId"),
+        });
       }
 
       // Now create phases one at a time
@@ -444,6 +570,11 @@ function NewJobContent() {
           const phaseErrorText = await phaseResponse.text();
           throw new Error(`Failed to create phase: ${phaseErrorText}`);
         }
+      }
+
+      // Clean up any temporary storage
+      if (isCopyingJob) {
+        localStorage.removeItem("jobToCopy");
       }
 
       router.push(`/jobs/${jobData.jobId}`);
@@ -653,6 +784,8 @@ function NewJobContent() {
             jobType={jobType}
             startDate={startDate}
             errors={jobDetailsErrors}
+            willCopyFloorplans={willCopyFloorplans}
+            floorplansToCopyCount={floorplansToCopyCount}
             onJobDetailsChange={({
               jobTitle,
               jobLocation,
