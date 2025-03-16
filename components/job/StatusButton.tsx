@@ -7,6 +7,7 @@ interface StatusButtonProps {
   type: "task" | "material";
   currentStatus: string;
   onStatusChange: (newStatus: string) => void;
+  disabled?: boolean; // New prop
 }
 
 const StatusButton: React.FC<StatusButtonProps> = ({
@@ -14,6 +15,7 @@ const StatusButton: React.FC<StatusButtonProps> = ({
   type,
   currentStatus,
   onStatusChange,
+  disabled = false, // Default to false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -24,6 +26,7 @@ const StatusButton: React.FC<StatusButtonProps> = ({
 
   const handleButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (disabled) return; // Don't open dropdown if disabled
     setIsOpen(!isOpen);
   };
 
@@ -79,12 +82,14 @@ const StatusButton: React.FC<StatusButtonProps> = ({
             : currentStatus === "In Progress"
             ? "bg-yellow-500 text-white"
             : "bg-red-500 text-white"
-        }`}
+        } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        disabled={disabled}
+        title={disabled ? "You are not assigned to this item" : ""}
       >
         {currentStatus}
       </button>
 
-      {isOpen && (
+      {isOpen && !disabled && (
         <div className="absolute right-0 mt-1 w-36 bg-white rounded-md shadow-lg z-10 border border-gray-200">
           <div className="py-1">
             {statuses

@@ -312,26 +312,28 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
                     onPhaseUpdate={() => {}}
                   />
                 )}
-                <div className="flex justify-center mt-4">
-                  <button
-                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
-                    onClick={() => setIsAddingTask(true)}
-                  >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                {hasAdminAccess && (
+                  <div className="flex justify-center mt-4">
+                    <button
+                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
+                      onClick={() => setIsAddingTask(true)}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                  </button>
-                </div>
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -402,26 +404,28 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
                     onPhaseUpdate={() => {}}
                   />
                 )}
-                <div className="flex justify-center mt-4">
-                  <button
-                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
-                    onClick={() => setIsAddingMaterial(true)}
-                  >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                {hasAdminAccess && (
+                  <div className="flex justify-center mt-4">
+                    <button
+                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
+                      onClick={() => setIsAddingMaterial(true)}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                  </button>
-                </div>
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -438,7 +442,7 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
                     }
                     isExpanded={expandedNoteId === index}
                   />
-                  {expandedNoteId === index && (
+                  {expandedNoteId === index && hasAdminAccess && (
                     <div className="mt-4 flex justify-end">
                       <button
                         onClick={(e) => {
@@ -456,27 +460,30 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
               ))}
             </div>
 
-            <SmallCardFrame>
-              <div className="space-y-2">
-                <h5 className="text-sm font-medium">Add New Note</h5>
-                <textarea
-                  value={newNote}
-                  onChange={(e) => setNewNote(e.target.value)}
-                  placeholder="Type your note here..."
-                  className="w-full p-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:border-zinc-600 shadow-sm"
-                  rows={3}
-                />
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleAddNote}
-                    disabled={!newNote.trim()}
-                    className="px-4 py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Add Note
-                  </button>
+            {/* Only render the Add New Note section for admin users */}
+            {hasAdminAccess && (
+              <SmallCardFrame>
+                <div className="space-y-2">
+                  <h5 className="text-sm font-medium">Add New Note</h5>
+                  <textarea
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                    placeholder="Type your note here..."
+                    className="w-full p-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:border-zinc-600 shadow-sm"
+                    rows={3}
+                  />
+                  <div className="flex justify-end">
+                    <button
+                      onClick={handleAddNote}
+                      disabled={!newNote.trim()}
+                      className="px-4 py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Add Note
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </SmallCardFrame>
+              </SmallCardFrame>
+            )}
           </div>
         </>
       )}

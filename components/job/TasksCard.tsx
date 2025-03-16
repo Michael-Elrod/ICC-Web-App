@@ -1,4 +1,5 @@
 // components/TasksCard.tsx
+import { useSession } from "next-auth/react";
 import React, { useState, useEffect, useRef } from "react";
 import SmallCardFrame from "../util/SmallCardFrame";
 import StatusButton from "./StatusButton";
@@ -36,12 +37,19 @@ const TasksCard: React.FC<TasksCardProps> = ({
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { data: session } = useSession();
+  const currentUserId = session?.user?.id ? parseInt(session.user.id) : null;
   const hasAdminAccess = userType === "Owner" || userType === "Admin";
   const sortedTasks = [...tasks].sort(
     (a, b) =>
       new Date(a.task_startdate).getTime() -
       new Date(b.task_startdate).getTime()
   );
+  const canEditTask = (task: TaskView) => {
+    if (hasAdminAccess) return true;
+    if (!currentUserId) return false;
+    return task.users.some((user) => user.user_id === currentUserId);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -114,6 +122,8 @@ const TasksCard: React.FC<TasksCardProps> = ({
   };
 
   const handleStatusChange = (taskId: number, newStatus: string) => {
+    const task = localTasks.find((t) => t.task_id === taskId);
+    if (!task || !canEditTask(task)) return;
     setLocalTasks((prevTasks) =>
       prevTasks.map((task) =>
         task.task_id === taskId ? { ...task, task_status: newStatus } : task
@@ -243,6 +253,7 @@ const TasksCard: React.FC<TasksCardProps> = ({
                           onStatusChange={(newStatus) =>
                             handleStatusChange(task.task_id, newStatus)
                           }
+                          disabled={!canEditTask(task)}
                         />
                       </div>
                     </div>

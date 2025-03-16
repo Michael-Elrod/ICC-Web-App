@@ -1,4 +1,5 @@
 // components/MaterialsCard.tsx
+import { useSession } from "next-auth/react";
 import React, { useState, useEffect, useRef } from "react";
 import SmallCardFrame from "../util/SmallCardFrame";
 import StatusButton from "./StatusButton";
@@ -34,12 +35,19 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { data: session } = useSession();
+  const currentUserId = session?.user?.id ? parseInt(session.user.id) : null;
   const hasAdminAccess = userType === "Owner" || userType === "Admin";
   const sortedMaterials = [...materials].sort(
     (a, b) =>
       createLocalDate(a.material_duedate).getTime() -
       createLocalDate(b.material_duedate).getTime()
   );
+  const canEditMaterial = (material: MaterialView) => {
+    if (hasAdminAccess) return true;
+    if (!currentUserId) return false;
+    return material.users.some((user) => user.user_id === currentUserId);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -83,6 +91,9 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
   };
 
   const handleStatusChange = (materialId: number, newStatus: string) => {
+    const material = localMaterials.find((m) => m.material_id === materialId);
+    if (!material || !canEditMaterial(material)) return;
+
     setLocalMaterials((prevMaterials) =>
       prevMaterials.map((material) =>
         material.material_id === materialId
@@ -222,6 +233,7 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
                         onStatusChange={(newStatus) =>
                           handleStatusChange(material.material_id, newStatus)
                         }
+                        disabled={!canEditMaterial(material)}
                       />
                     </div>
                   </div>
@@ -266,15 +278,18 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
                     )}
 
                     <div className="mt-4 flex justify-end">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveModal(material.material_id);
-                        }}
-                        className="px-4 py-2 bg-gray-500 text-white rounded font-bold hover:bg-gray-600 transition-colors"
-                      >
-                        Edit
-                      </button>
+                      {/* Add the admin access check here */}
+                      {hasAdminAccess && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveModal(material.material_id);
+                          }}
+                          className="px-4 py-2 bg-gray-500 text-white rounded font-bold hover:bg-gray-600 transition-colors"
+                        >
+                          Edit
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
