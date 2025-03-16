@@ -14,7 +14,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Get architectural plans printed",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -24,7 +24,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Complete property survey",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -34,7 +34,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Coordinate with electric company",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -44,7 +44,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Coordinate with water/sewer company",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -54,7 +54,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Coordinate with cable company",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -64,7 +64,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Coordinate with gas company",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -74,7 +74,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Schedule backhoe operator",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -84,7 +84,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Coordinate with truss company",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -94,7 +94,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Arrange portable toilet delivery",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -104,7 +104,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Pay for water meter",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -114,7 +114,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Pay for sewer connection",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -124,7 +124,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Set up temporary power",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -134,7 +134,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Install temporary water",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -144,7 +144,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Prepare lot",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -154,7 +154,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: -10,  // 2 weeks before start date
       details: "Schedule One Call for lot inspection",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     }
   ],
   materials: [
@@ -165,7 +165,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Order and arrange delivery of windows",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -174,7 +174,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Order and arrange delivery of siding materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -183,7 +183,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Order and arrange delivery of posts",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -192,7 +192,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Order and arrange delivery of exterior doors",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -201,7 +201,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Order and arrange delivery of roofing materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -210,7 +210,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Order and arrange delivery of tub/shower units",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -219,7 +219,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Order and arrange delivery of HVAC equipment",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -228,7 +228,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: 0,
       details: "Order and arrange delivery of flooring materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -237,7 +237,7 @@ const PREPLANNING_PHASE: FormPhase = {
       offset: -5,   // 1 week before start date
       details: "Order blocks, vents, and anchors",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     }
   ],
   notes: []
@@ -257,7 +257,7 @@ const CONSTRUCTION_START_PHASE: FormPhase = {
       offset: 0,
       details: "Excavate footers and pour concrete foundation",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -267,7 +267,7 @@ const CONSTRUCTION_START_PHASE: FormPhase = {
       offset: 4,
       details: "Lay concrete blocks for foundation",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     }
   ],
   materials: [
@@ -278,7 +278,7 @@ const CONSTRUCTION_START_PHASE: FormPhase = {
       offset: 2,
       details: "Fill/Plastic/Rebar/Concrete ordered and scheduled",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -287,7 +287,7 @@ const CONSTRUCTION_START_PHASE: FormPhase = {
       offset: 2,
       details: "Delivery of rebar and foundation materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -296,7 +296,7 @@ const CONSTRUCTION_START_PHASE: FormPhase = {
       offset: 3,
       details: "Delivery of blocks and related materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     }
   ],
   notes: []
@@ -316,7 +316,7 @@ const FOUNDATION_PHASE: FormPhase = {
       offset: 7,
       details: "Contact termite company to spray lot",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -326,7 +326,7 @@ const FOUNDATION_PHASE: FormPhase = {
       offset: 7,
       details: "Fill and prepare slab area",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -336,7 +336,7 @@ const FOUNDATION_PHASE: FormPhase = {
       offset: 7,
       details: "Construct porch forms",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -346,7 +346,7 @@ const FOUNDATION_PHASE: FormPhase = {
       offset: 9,
       details: "Install rough plumbing",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -356,7 +356,7 @@ const FOUNDATION_PHASE: FormPhase = {
       offset: 9,
       details: "Install dryer vent",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -366,7 +366,7 @@ const FOUNDATION_PHASE: FormPhase = {
       offset: 11,
       details: "Complete block laying",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -376,7 +376,7 @@ const FOUNDATION_PHASE: FormPhase = {
       offset: 12,
       details: "Install plastic barrier",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -386,7 +386,7 @@ const FOUNDATION_PHASE: FormPhase = {
       offset: 13,
       details: "Pour concrete slabs",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -396,7 +396,7 @@ const FOUNDATION_PHASE: FormPhase = {
       offset: 13,
       details: "Pour step footers",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -406,7 +406,7 @@ const FOUNDATION_PHASE: FormPhase = {
       offset: 13,
       details: "Pour patio slabs",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -416,7 +416,7 @@ const FOUNDATION_PHASE: FormPhase = {
       offset: 13,
       details: "Pour garage slabs",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     }
   ],
   materials: [
@@ -427,7 +427,7 @@ const FOUNDATION_PHASE: FormPhase = {
       offset: 10,
       details: "Delivery of slab materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -436,7 +436,7 @@ const FOUNDATION_PHASE: FormPhase = {
       offset: 12,
       details: "Delivery of termite treatment",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     }
   ],
   notes: []
@@ -456,7 +456,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 18,
       details: "Install house steps",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -466,7 +466,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 18,
       details: "Complete house framing",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -476,7 +476,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 22,
       details: "Paint foundation blocks",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     }
   ],
   materials: [
@@ -487,7 +487,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 15,
       details: "Delivery of framing materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -496,7 +496,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 14,
       details: "Delivery of roof trusses",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -505,7 +505,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 21,
       details: "Delivery of windows and exterior doors",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -514,7 +514,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 21,
       details: "Delivery of roofing shingles",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -523,7 +523,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 10,
       details: "Order interior doors",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -532,7 +532,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 10,
       details: "Order door hardware",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -541,7 +541,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 15,
       details: "Order cabinet and vanity units",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -550,7 +550,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 15,
       details: "Order cabinet hardware",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -559,7 +559,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 20,
       details: "Order counter tops",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -568,7 +568,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 10,
       details: "Order kitchen sink",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -577,7 +577,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 20,
       details: "Order garage door",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -586,7 +586,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 20,
       details: "Order trim materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -595,7 +595,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 10,
       details: "Order handrails",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -604,7 +604,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 10,
       details: "Order specialty items",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -613,7 +613,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 20,
       details: "Order water heater",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -622,7 +622,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 10,
       details: "Order vanity faucets",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -631,7 +631,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 10,
       details: "Order kitchen faucet",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -640,7 +640,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 10,
       details: "Order tub and shower faucets",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -649,7 +649,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 20,
       details: "Order toilets",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -658,7 +658,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 20,
       details: "Order light fixtures",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -667,7 +667,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 25,
       details: "Order ceiling fans",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -676,7 +676,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 20,
       details: "Order bathroom accessory kits",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -685,7 +685,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 25,
       details: "Order vanity mirrors",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -694,7 +694,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 20,
       details: "Order sheetrock materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -703,7 +703,7 @@ const FRAMING_PHASE: FormPhase = {
       offset: 10,
       details: "Order tile materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     }
   ],
   notes: []
@@ -723,7 +723,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 22,
       details: "Install roofing materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -733,7 +733,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 26,
       details: "Install siding materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -743,7 +743,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 26,
       details: "Install brick facade",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -753,7 +753,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 23,
       details: "Complete electrical rough-in",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -763,7 +763,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 23,
       details: "Complete HVAC system rough-in",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -773,7 +773,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 22,
       details: "Complete plumbing rough-in",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -783,7 +783,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 27,
       details: "Install wall insulation",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -793,7 +793,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 32,
       details: "Install sheetrock throughout",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -803,7 +803,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 29,
       details: "Install attic insulation",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -813,7 +813,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 36,
       details: "Connect permanent electrical service",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     }
   ],
   materials: [
@@ -824,7 +824,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 22,
       details: "Delivery of bathtubs and shower units",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -833,7 +833,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 24,
       details: "Delivery of siding materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -842,7 +842,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 31,
       details: "Delivery of sheetrock materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -851,7 +851,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 30,
       details: "Order additional mirrors",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -860,7 +860,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 30,
       details: "Order vanity lights",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -869,7 +869,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 35,
       details: "Order front porch light",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -878,7 +878,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 40,
       details: "Order motion sensor porch light",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     }
   ],
   notes: []
@@ -898,7 +898,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 42,
       details: "Install tile flooring",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -908,7 +908,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 39,
       details: "Install trim and build closets",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -918,7 +918,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 42,
       details: "Paint interior surfaces",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -928,7 +928,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 42,
       details: "Paint or stain exterior surfaces",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -938,7 +938,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 43,
       details: "Run underground utilities",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -948,7 +948,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 43,
       details: "Install exterior electrical and meter",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -958,7 +958,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 46,
       details: "Arrange permanent power connection",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -968,7 +968,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 51,
       details: "Install flooring materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -978,7 +978,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 52,
       details: "Install cabinet units",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -988,7 +988,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 48,
       details: "Complete electrical finishing",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -998,7 +998,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 48,
       details: "Complete HVAC finishing",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1008,7 +1008,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 56,
       details: "Install all appliances",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1018,7 +1018,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 51,
       details: "Install deck and patio",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1028,7 +1028,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 51,
       details: "Install garage door",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1038,7 +1038,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 51,
       details: "Connect main utilities",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1048,7 +1048,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 49,
       details: "Install concrete surfaces",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     }
   ],
   materials: [
@@ -1059,7 +1059,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 38,
       details: "Delivery of trim and doors",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1068,7 +1068,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 49,
       details: "Delivery of flooring materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1077,7 +1077,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 47,
       details: "Delivery of cabinet units",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1086,7 +1086,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 47,
       details: "Delivery of electrical fixtures",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1095,7 +1095,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 55,
       details: "Delivery of all appliances",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1104,7 +1104,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 55,
       details: "Delivery of sink, water heater, disposal, fixtures",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1113,7 +1113,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 30, // 6 weeks * 5 days = 30 days
       details: "Order mailbox",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1122,7 +1122,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 30, // 6 weeks * 5 days = 30 days
       details: "Order address numbers and letters",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1131,7 +1131,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 40, // 8 weeks * 5 days = 40 days
       details: "Order sod materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1140,7 +1140,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 40, // 8 weeks * 5 days = 40 days
       details: "Order privacy fence materials",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     }
   ],
   notes: []
@@ -1160,7 +1160,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 56,
       details: "Complete pre-punch out inspection",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1170,7 +1170,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 56,
       details: "Final plumbing inspection",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1180,7 +1180,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 59,
       details: "Final electrical inspection",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1190,7 +1190,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 59,
       details: "Install mailbox and address numbers",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1200,7 +1200,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 58,
       details: "Complete paint touch ups and quarter round installation",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     }
   ],
   materials: [],
@@ -1221,7 +1221,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 61,
       details: "Complete final punch out inspection",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1231,7 +1231,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 60,
       details: "Complete final landscaping and dirt work",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1241,7 +1241,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 61,
       details: "Install privacy fencing",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     },
     { 
       id: "", 
@@ -1251,7 +1251,7 @@ const ROUGH_IN_PHASE: FormPhase = {
       offset: 63,
       details: "Final house cleaning",
       isExpanded: false,
-      selectedContacts: [{id: '1'}]
+      selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
     }
   ],
   materials: [],

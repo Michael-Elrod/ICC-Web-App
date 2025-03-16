@@ -325,7 +325,7 @@ export default function NewJobCard({
                   }}
                   className="px-3 py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 transition-colors"
                 >
-                  Add Floorplan
+                  Add
                 </button>
 
                 {/* Hidden file input */}
@@ -359,7 +359,7 @@ export default function NewJobCard({
                 onClick={() => setShowNewClientForm(true)}
                 className="mt-6 min-w-[100px] px-3 py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
               >
-                Add New Client
+                Create
               </button>
             </div>
           </div>
