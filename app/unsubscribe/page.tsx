@@ -25,14 +25,10 @@ function UnsubscribeContent() {
     // First fetch current preferences
     const fetchCurrentPrefs = async () => {
       try {
-        const response = await fetch('/api/unsubscribe/preferences', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, token }),
-        });
-
+        const response = await fetch(
+          `/api/unsubscribe?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`
+        );
+  
         if (response.ok) {
           const data = await response.json();
           setCurrentPref(data.currentPref);
@@ -46,7 +42,7 @@ function UnsubscribeContent() {
         setMessage('An error occurred. Please try again later.');
       }
     };
-
+  
     fetchCurrentPrefs();
   }, [searchParams]);
 
