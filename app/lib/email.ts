@@ -49,7 +49,7 @@ export async function sendInvitationEmail(
   inviteCode: string,
   senderName: string
 ) {
-  const registerLink = `${process.env.NEXT_PUBLIC_APP_URL}/register`;
+  const registerLink = `${process.env.NEXT_PUBLIC_APP_URL}`;
   
   // Format date for email clarity
   const formattedDate = new Date().toLocaleDateString('en-US', {
