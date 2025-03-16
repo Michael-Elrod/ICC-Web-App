@@ -9,7 +9,7 @@ interface UpdateUserRequest {
   lastName: string;
   phone: string | null;
   email: string;
-  notificationPref: 'email' | 'text' | 'both';
+  notificationPref: 'email' | 'text' | 'both' | 'none';
 }
 
 export async function PUT(request: Request) {
@@ -32,7 +32,7 @@ export async function PUT(request: Request) {
     }
 
     // Add validation for notification preference
-    if (!['email', 'text', 'both'].includes(notificationPref)) {
+    if (!['email', 'text', 'both', 'none'].includes(notificationPref)) {
       return NextResponse.json(
         { error: "Invalid notification preference" },
         { status: 400 }

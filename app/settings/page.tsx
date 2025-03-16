@@ -251,6 +251,7 @@ const SettingsForm: React.FC = () => {
               <option value="email">Email</option>
               {/* <option value="text">Text</option>
               <option value="both">Email & Text</option> */}
+              <option value="none">None</option>
             </select>
           </div>
         </form>
