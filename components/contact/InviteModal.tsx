@@ -1,4 +1,4 @@
-// components/InviteModal.tsx
+// components/contact/InviteModal.tsx
 import { useState, useEffect } from "react";
 
 interface InviteModalProps {
@@ -10,8 +10,13 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
   const [inviteCode, setInviteCode] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [copySuccess, setCopySuccess] = useState(false);
+  const [emailSuccess, setEmailSuccess] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [activeTab, setActiveTab] = useState<"code" | "email">("code");
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(inviteCode);
@@ -53,6 +58,45 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
     }
   };
 
+  const sendInviteEmail = async () => {
+    if (!emailInput) {
+      setEmailError("Email is required");
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailInput)) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+
+    setIsSendingEmail(true);
+    setEmailError("");
+    try {
+      const response = await fetch("/api/invite", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: emailInput }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to send invitation");
+      }
+
+      setEmailSuccess(true);
+      setEmailInput("");
+      setTimeout(() => setEmailSuccess(false), 3000);
+    } catch (err: any) {
+      setEmailError(err.message || "Failed to send invitation email");
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchCurrentCode();
@@ -66,8 +110,31 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 w-[400px]">
-        <h2 className="text-xl font-bold mb-4">Invitation Code</h2>
+      <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 w-[450px]">
+        <h2 className="text-xl font-bold mb-4">Invitation Management</h2>
+
+        <div className="flex border-b border-zinc-300 dark:border-zinc-700 mb-4">
+          <button
+            className={`py-2 px-4 ${
+              activeTab === "code"
+                ? "border-b-2 border-blue-500 font-medium"
+                : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+            }`}
+            onClick={() => setActiveTab("code")}
+          >
+            Invite Code
+          </button>
+          <button
+            className={`py-2 px-4 ${
+              activeTab === "email"
+                ? "border-b-2 border-blue-500 font-medium"
+                : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+            }`}
+            onClick={() => setActiveTab("email")}
+          >
+            Send Email Invite
+          </button>
+        </div>
 
         {isLoading ? (
           <div className="space-y-4">
@@ -77,75 +144,159 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
-            {error ? (
-              <div className="text-red-500 p-2 rounded bg-red-100 dark:bg-red-900/20">
-                {error}
+          <>
+            {activeTab === "code" && (
+              <div className="space-y-4">
+                {error ? (
+                  <div className="text-red-500 p-2 rounded bg-red-100 dark:bg-red-900/20">
+                    {error}
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
+                      Current Invite Code
+                    </label>
+                    <div className="flex">
+                      <input
+                        type="text"
+                        value={inviteCode}
+                        readOnly
+                        className="flex-1 p-2 border border-zinc-300 dark:border-zinc-600 
+                          rounded-l-md bg-zinc-50 dark:bg-zinc-900"
+                      />
+                      <button
+                        onClick={copyToClipboard}
+                        className={`px-4 py-2 text-white rounded-r-md transition-colors
+                        ${
+                          copySuccess
+                            ? "bg-green-500 hover:bg-green-600"
+                            : "bg-blue-500 hover:bg-blue-600"
+                        }`}
+                      >
+                        {copySuccess ? "Copied!" : "Copy"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={generateNewCode}
+                  disabled={isGenerating}
+                  className="w-full px-4 py-2 bg-blue-500 text-white rounded-md 
+                    hover:bg-blue-600 transition-colors disabled:bg-blue-400
+                    disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  {isGenerating ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Generating...
+                    </>
+                  ) : (
+                    "Generate New Code"
+                  )}
+                </button>
               </div>
-            ) : (
-              <div className="relative">
-                <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
-                  Current Invite Code
-                </label>
-                <div className="flex">
+            )}
+
+            {activeTab === "email" && (
+              <div className="space-y-4">
+                {emailSuccess && (
+                  <div className="bg-green-100 dark:bg-green-900/20 p-3 rounded text-green-700 dark:text-green-300">
+                    Invitation email sent successfully!
+                  </div>
+                )}
+                
+                {emailError && (
+                  <div className="bg-red-100 dark:bg-red-900/20 p-3 rounded text-red-700 dark:text-red-300">
+                    {emailError}
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
+                    Recipient Email
+                  </label>
+                  <input
+                    type="email"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="Email address to invite"
+                    className="w-full p-2 border border-zinc-300 dark:border-zinc-600 
+                      rounded-md bg-white dark:bg-zinc-800 focus:outline-none 
+                      focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-white mb-2">
+                    Code to be sent
+                  </label>
                   <input
                     type="text"
                     value={inviteCode}
                     readOnly
-                    className="flex-1 p-2 border border-zinc-300 dark:border-zinc-600 
-                      rounded-l-md bg-zinc-50 dark:bg-zinc-900"
+                    className="w-full p-2 border border-zinc-300 dark:border-zinc-600 
+                      rounded-md bg-zinc-50 dark:bg-zinc-900 text-zinc-500"
                   />
-                  <button
-                    onClick={copyToClipboard}
-                    className={`px-4 py-2 text-white rounded-r-md transition-colors
-                    ${
-                    copySuccess
-                        ? "bg-green-500 hover:bg-green-600"
-                        : "bg-blue-500 hover:bg-blue-600"
-                    }`}
-                  >
-                    {copySuccess ? "Copied!" : "Copy"}
-                  </button>
                 </div>
+
+                <button
+                  onClick={sendInviteEmail}
+                  disabled={isSendingEmail || !emailInput}
+                  className="w-full px-4 py-2 bg-blue-500 text-white rounded-md 
+                    hover:bg-blue-600 transition-colors disabled:bg-blue-400
+                    disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  {isSendingEmail ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Sending...
+                    </>
+                  ) : (
+                    "Send Invitation Email"
+                  )}
+                </button>
               </div>
             )}
-
-            <button
-              onClick={generateNewCode}
-              disabled={isGenerating}
-              className="w-full px-4 py-2 bg-blue-500 text-white rounded-md 
-                hover:bg-blue-600 transition-colors disabled:bg-blue-400
-                disabled:cursor-not-allowed flex items-center justify-center"
-            >
-              {isGenerating ? (
-                <>
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Generating...
-                </>
-              ) : (
-                "Generate New Code"
-              )}
-            </button>
-          </div>
+          </>
         )}
 
         <div className="mt-6 flex justify-end">
