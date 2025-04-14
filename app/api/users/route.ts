@@ -3,6 +3,9 @@
 import { NextResponse } from 'next/server';
 import pool from '@/app/lib/db';
 
+// Force dynamic rendering to skip all caching
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const connection = await pool.getConnection();
