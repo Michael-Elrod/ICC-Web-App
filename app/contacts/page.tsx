@@ -28,7 +28,9 @@ export default function ContactsPage() {
           headers: {
             'Cache-Control': 'no-cache, no-store',
             'Pragma': 'no-cache'
-          }
+          },
+          // Force a refresh by setting cache to 'no-store'
+          cache: 'no-store'
         });
         
         if (!response.ok) throw new Error("Failed to load contacts");
@@ -43,7 +45,13 @@ export default function ContactsPage() {
     }
   
     loadUsers();
-  }, []);
+    
+    // Add a refresh interval that refetches data every minute
+    const intervalId = setInterval(loadUsers, 60000);
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []); // Empty dependency array as we're handling refresh with setInterval
 
   const filteredUsers = users.filter((user) => {
     const fullName =
