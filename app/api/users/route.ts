@@ -10,7 +10,16 @@ export async function GET() {
       const [rows] = await connection.execute(
         'SELECT * FROM app_user ORDER BY user_first_name, user_last_name'
       );
-      return NextResponse.json(rows);
+      
+      // Return with strong no-cache headers
+      return NextResponse.json(rows, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'Surrogate-Control': 'no-store'
+        }
+      });
     } finally {
       connection.release();
     }

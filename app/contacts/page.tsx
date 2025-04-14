@@ -23,7 +23,14 @@ export default function ContactsPage() {
   useEffect(() => {
     async function loadUsers() {
       try {
-        const response = await fetch("/api/users");
+        // Add timestamp parameter to prevent caching
+        const response = await fetch(`/api/users?t=${Date.now()}`, {
+          headers: {
+            'Cache-Control': 'no-cache, no-store',
+            'Pragma': 'no-cache'
+          }
+        });
+        
         if (!response.ok) throw new Error("Failed to load contacts");
         const data = await response.json();
         setUsers(data);
@@ -34,7 +41,7 @@ export default function ContactsPage() {
         setLoading(false);
       }
     }
-
+  
     loadUsers();
   }, []);
 
