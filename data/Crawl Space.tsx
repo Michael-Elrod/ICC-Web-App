@@ -254,7 +254,7 @@ const CONSTRUCTION_START_PHASE: FormPhase = {
       title: "Dig Footers & Pour Concrete", 
       startDate: "", 
       duration: "2",
-      offset: 0,
+      offset: 1,
       details: "Excavate footers and pour concrete foundation",
       isExpanded: false,
       selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
@@ -285,7 +285,7 @@ const CONSTRUCTION_START_PHASE: FormPhase = {
       id: "", 
       title: "Foundation material (Rebar)", 
       dueDate: "",
-      offset: 2,
+      offset: 0,
       details: "Delivery of rebar and foundation materials",
       isExpanded: false,
       selectedContacts: [{id: '1'}, {id: '2'}, {id: '3'}]
