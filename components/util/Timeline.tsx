@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useSession } from "next-auth/react";
 import { UserView, PhaseView } from "@/app/types/views";
 import { TimelineProps } from "../../app/types/props";
 
@@ -140,14 +141,16 @@ const ItemDetailPopup = ({
   item,
   onClose,
   onStatusUpdate,
+  hasAdminAccess = false,
 }: {
   item: TimelineItem;
   onClose: () => void;
   onStatusUpdate: (
     itemId: number,
     type: "task" | "material",
-    newStatus: "Complete" | "Incomplete" | "In Progress"
+    newStatus: "Complete" | "Incomplete" | "In Progress",
   ) => void;
+  hasAdminAccess?: boolean;
 }) => {
   const [selectedStatus, setSelectedStatus] = useState<
     "Complete" | "Incomplete" | "In Progress" | null
@@ -156,6 +159,14 @@ const ItemDetailPopup = ({
   const availableStatuses = ["Complete", "Incomplete", "In Progress"].filter(
     (status) => status !== item.status
   );
+
+  // Check if current user is assigned to this item
+  const session = useSession();
+  const currentUserId = session?.data?.user?.id ? parseInt(session.data.user.id) : null;
+  const isUserAssigned = item.users.some(user => user.user_id === currentUserId);
+  
+  // Only allow editing if user is an admin or assigned to the item
+  const canEdit = hasAdminAccess || isUserAssigned;
 
   return (
     <div
@@ -202,41 +213,49 @@ const ItemDetailPopup = ({
             </div>
           )}
 
-          <div className="pt-4 flex justify-between items-center">
-            {/* Dropdown for status change */}
-            <select
-              className="border border-gray-300 dark:border-zinc-600 rounded px-4 py-2 bg-white dark:bg-zinc-700"
-              value={selectedStatus || ""}
-              onChange={(e) =>
-                setSelectedStatus(
-                  e.target.value as "Complete" | "Incomplete" | "In Progress"
-                )
-              }
-            >
-              <option value="" disabled>
-                Change Status
-              </option>
-              {availableStatuses.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
-
-            {/* Save button */}
-            <button
-              onClick={() => {
-                if (selectedStatus) {
-                  onStatusUpdate(item.id, item.type, selectedStatus);
-                  onClose();
+          {/* Only show status editing controls if user can edit */}
+          {canEdit ? (
+            <div className="pt-4 flex justify-between items-center">
+              {/* Dropdown for status change */}
+              <select
+                className="border border-gray-300 dark:border-zinc-600 rounded px-4 py-2 bg-white dark:bg-zinc-700"
+                value={selectedStatus || ""}
+                onChange={(e) =>
+                  setSelectedStatus(
+                    e.target.value as "Complete" | "Incomplete" | "In Progress"
+                  )
                 }
-              }}
-              className="px-4 py-2 text-white font-bold bg-blue-500 hover:bg-blue-700 rounded-md"
-              disabled={!selectedStatus}
-            >
-              Save
-            </button>
-          </div>
+              >
+                <option value="" disabled>
+                  Change Status
+                </option>
+                {availableStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+
+              {/* Save button */}
+              <button
+                onClick={() => {
+                  if (selectedStatus) {
+                    onStatusUpdate(item.id, item.type, selectedStatus);
+                    onClose();
+                  }
+                }}
+                className="px-4 py-2 text-white font-bold bg-blue-500 hover:bg-blue-700 rounded-md"
+                disabled={!selectedStatus}
+              >
+                Save
+              </button>
+            </div>
+          ) : (
+            // Optional: show a message about permission
+            <div className="pt-4 text-sm text-gray-500 italic">
+              You must be assigned to this item to update its status
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -252,6 +271,11 @@ const Timeline: React.FC<TimelineProps> = ({
 }) => {
   const [selectedPhase, setSelectedPhase] = useState<any | null>(null);
   const [selectedItem, setSelectedItem] = useState<TimelineItem | null>(null);
+  const { data: session } = useSession();
+
+  const hasAdminAccess = 
+  session?.user?.type === "Owner" || 
+  session?.user?.type === "Admin";
 
   const phaseHeight = 28;
   const topMargin = 20;
@@ -424,6 +448,7 @@ const Timeline: React.FC<TimelineProps> = ({
           item={selectedItem}
           onClose={() => setSelectedItem(null)}
           onStatusUpdate={handleStatusUpdate}
+          hasAdminAccess={hasAdminAccess}
         />
       )}
     </>

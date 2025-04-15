@@ -1,5 +1,6 @@
 // components/EventPopup.tsx
 import React, { useState } from "react";
+import { useSession } from "next-auth/react";
 
 export interface CalendarEvent {
   id: string;
@@ -61,7 +62,23 @@ export const EventPopup = ({
     "Complete" | "Incomplete" | "In Progress" | null
   >(null);
 
-  const allStatuses = ["Complete", "Incomplete", "In Progress"] as const;
+  const { data: sessionData } = useSession();
+  
+  // Check if user has admin access
+  const hasAdminAccess = 
+    sessionData?.user?.type === "Owner" || 
+    sessionData?.user?.type === "Admin";
+    
+  // Check if current user is assigned to this item
+  const currentUserId = sessionData?.user?.id ? parseInt(sessionData.user.id) : null;
+  const isUserAssigned = event.contacts?.some(contact => 
+    `${contact.firstName} ${contact.lastName}`.toLowerCase() === 
+    `${sessionData?.user?.name}`.toLowerCase() || 
+    contact.email === sessionData?.user?.email
+  );
+  
+  // Only allow editing if user is an admin or assigned to the item
+  const canEdit = hasAdminAccess || isUserAssigned;
 
   const handlePopupClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -192,35 +209,41 @@ export const EventPopup = ({
             </div>
           </div>
 
-          {/* Status Update Section */}
-          <div className="pt-4 flex justify-between items-center">
-            <select
-              className="border border-gray-300 dark:border-zinc-600 rounded px-4 py-2 bg-white dark:bg-zinc-700"
-              value={selectedStatus || ""}
-              onChange={(e) =>
-                setSelectedStatus(
-                  e.target.value as "Complete" | "Incomplete" | "In Progress"
-                )
-              }
-            >
-              <option value="" disabled>
-                Change Status
-              </option>
-              {getAvailableStatuses().map((status) => (
-                <option key={status} value={status}>
-                  {status}
+          {/* Status Update Section - Only show if user can edit */}
+          {canEdit ? (
+            <div className="pt-4 flex justify-between items-center">
+              <select
+                className="border border-gray-300 dark:border-zinc-600 rounded px-4 py-2 bg-white dark:bg-zinc-700"
+                value={selectedStatus || ""}
+                onChange={(e) =>
+                  setSelectedStatus(
+                    e.target.value as "Complete" | "Incomplete" | "In Progress"
+                  )
+                }
+              >
+                <option value="" disabled>
+                  Change Status
                 </option>
-              ))}
-            </select>
+                {getAvailableStatuses().map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
 
-            <button
-              onClick={handleStatusUpdate}
-              className="px-4 py-2 text-white font-bold bg-blue-500 hover:bg-blue-700 rounded-md"
-              disabled={!selectedStatus}
-            >
-              Save
-            </button>
-          </div>
+              <button
+                onClick={handleStatusUpdate}
+                className="px-4 py-2 text-white font-bold bg-blue-500 hover:bg-blue-700 rounded-md"
+                disabled={!selectedStatus}
+              >
+                Save
+              </button>
+            </div>
+          ) : (
+            <div className="pt-4 text-sm text-gray-500 italic">
+              You must be assigned to this item to update its status
+            </div>
+          )}
         </div>
       </div>
     </div>
