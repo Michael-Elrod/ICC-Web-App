@@ -4,6 +4,9 @@ import { NextResponse } from 'next/server';
 import { RowDataPacket } from 'mysql2';
 import pool from '@/app/lib/db';
 
+// Force dynamic rendering to skip all caching
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const connection = await pool.getConnection();
@@ -18,7 +21,14 @@ export async function GET() {
         user_email: user.user_email,
         user_phone: user.user_phone,
       }));
-      return NextResponse.json(transformedRows);
+      return NextResponse.json(transformedRows, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'Surrogate-Control': 'no-store'
+        }
+      });
     } finally {
       connection.release();
     }

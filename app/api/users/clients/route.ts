@@ -1,5 +1,7 @@
 // app/api/users/clients/route.ts
 import { NextResponse } from 'next/server';
+import { hash } from 'bcryptjs';
+import crypto from 'crypto';
 import pool from '@/app/lib/db';
 
 export async function GET(request: Request) {
@@ -78,10 +80,15 @@ export async function POST(request: Request) {
         );
       }
 
+      // Generate a random hashed password to satisfy the chk_password constraint.
+      // Client can later set their own password via the forgot password flow.
+      const randomPassword = crypto.randomBytes(32).toString('hex');
+      const hashedPassword = await hash(randomPassword, 12);
+
       // Create new client
       const [result] = await connection.execute(
-        'INSERT INTO app_user (user_type, user_first_name, user_last_name, user_email, user_phone) VALUES (?, ?, ?, ?, ?)',
-        ['Client', firstName, lastName, email, phone || null]
+        'INSERT INTO app_user (user_type, user_first_name, user_last_name, user_email, user_phone, password) VALUES (?, ?, ?, ?, ?, ?)',
+        ['Client', firstName, lastName, email, phone || null, hashedPassword]
       );
 
       const userId = (result as any).insertId;

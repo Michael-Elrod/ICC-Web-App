@@ -1,6 +1,8 @@
 // app/api/users/[userId]/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
+import { hash } from "bcryptjs";
+import crypto from "crypto";
 import pool from "@/app/lib/db";
 
 export async function PUT(
@@ -14,15 +16,21 @@ export async function PUT(
     const { firstName, lastName, email, phone, userType } =
       await request.json();
 
+    // If the user has no password (e.g. a client created before the fix),
+    // fill in a random hash so no user ends up with a NULL password.
+    const randomPassword = crypto.randomBytes(32).toString('hex');
+    const hashedPassword = await hash(randomPassword, 12);
+
     await connection.execute(
-      `UPDATE app_user 
-       SET user_first_name = ?, 
-           user_last_name = ?, 
-           user_email = ?, 
-           user_phone = ?, 
-           user_type = ?
+      `UPDATE app_user
+       SET user_first_name = ?,
+           user_last_name = ?,
+           user_email = ?,
+           user_phone = ?,
+           user_type = ?,
+           password = COALESCE(password, ?)
        WHERE user_id = ?`,
-      [firstName, lastName, email, phone, userType, userId]
+      [firstName, lastName, email, phone, userType, hashedPassword, userId]
     );
 
     // Fetch the updated user to return

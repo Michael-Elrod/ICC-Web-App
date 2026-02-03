@@ -122,7 +122,7 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
   useEffect(() => {
     const fetchContacts = async () => {
       try {
-        const response = await fetch("/api/users/non-clients");
+        const response = await fetch(`/api/users/non-clients?t=${Date.now()}`);
         if (response.ok) {
           const data = await response.json();
           setContacts(data);
