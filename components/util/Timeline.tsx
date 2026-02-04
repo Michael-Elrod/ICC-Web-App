@@ -3,9 +3,8 @@
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
 import { UserView, PhaseView } from "@/app/types/views";
-import { TimelineProps } from "../../app/types/props";
+import { TimelineProps } from "@/app/types/props";
 
-// Type for a single task or material item
 interface TimelineItem {
   id: number;
   title: string;

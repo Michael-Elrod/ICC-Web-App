@@ -1,8 +1,8 @@
 // components/ContactCard.tsx
 import React from 'react';
 import CardFrame from '../util/CardFrame';
-import { formatPhoneNumber } from '../../app/utils';
-import { ContactCardProps } from '../../app/types/props';
+import { formatPhoneNumber } from '@/app/utils';
+import { ContactCardProps } from '@/app/types/props';
 
 const ContactCard: React.FC<ContactCardProps> = ({ 
   user_first_name,

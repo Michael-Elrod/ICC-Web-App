@@ -1,6 +1,6 @@
 // components/new/ClientSearch.tsx
 import React, { useState, useEffect } from "react";
-import { User } from "../../app/types/database";
+import { User } from "@/app/types/database";
 
 interface Props {
   onClientSelect: (client: User | null) => void;
@@ -40,12 +40,10 @@ export default function ClientSearchSelect({
     }
   };
 
-  // Fetch all clients on component mount or when selectedClient changes
   useEffect(() => {
     fetchAllClients();
   }, [selectedClient]);
 
-  // Update search field when selectedClient changes
   useEffect(() => {
     if (selectedClient) {
       setSearch(
@@ -54,7 +52,6 @@ export default function ClientSearchSelect({
     }
   }, [selectedClient]);
 
-  // Handle click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -72,7 +69,6 @@ export default function ClientSearchSelect({
     };
   }, []);
 
-  // Filter clients based on search input
   useEffect(() => {
     if (search.trim()) {
       const filtered = allClients.filter((client) => {
@@ -92,7 +88,6 @@ export default function ClientSearchSelect({
     }
   }, [search, allClients]);
 
-  // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
       setIsOpen(false);

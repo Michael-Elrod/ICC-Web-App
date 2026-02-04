@@ -1,21 +1,8 @@
 // handlers/new/tasks.ts
-import { FormTask,FormPhase } from "../../app/types/database";
-import { UserView } from "../../app/types/views";
-import { calculateEndDate, createLocalDate, formatToDateString } from "@/app/utils";
-import { handleConfirmDelete } from "./jobs";
+import { FormTask } from "@/app/types/database";
+import { UserView } from "@/app/types/views";
+import { calculateEndDate, formatToDateString } from "@/app/utils";
 
-export const updateTask = (updatedTask: FormTask, phase: FormPhase, onUpdate: (phase: FormPhase) => void) => {
-  const updatedTasks = phase.tasks.map(t => 
-    t.id === updatedTask.id ? updatedTask : t
-  ).sort((a, b) => 
-    createLocalDate(a.startDate).getTime() - createLocalDate(b.startDate).getTime()
-  );
-  
-  onUpdate({
-    ...phase,
-    tasks: updatedTasks
-  });
-};
 
 export const handleStartDateChange = (
   date: Date | null,
@@ -23,10 +10,7 @@ export const handleStartDateChange = (
   setLocalTask: React.Dispatch<React.SetStateAction<FormTask>>,
   setErrors: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>
 ) => {
-  // First convert the selected date to local date string
   const newStartDate = date ? formatToDateString(date) : '';
-  
-  // Create Date objects for comparison, setting time to midnight
   const selectedDate = date ? new Date(date.setHours(0,0,0,0)) : null;
   const phaseStart = new Date(phaseStartDate);
   phaseStart.setHours(0,0,0,0);

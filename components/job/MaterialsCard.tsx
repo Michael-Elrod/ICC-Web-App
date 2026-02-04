@@ -3,7 +3,7 @@ import { useSession } from "next-auth/react";
 import React, { useState, useEffect, useRef } from "react";
 import SmallCardFrame from "../util/SmallCardFrame";
 import StatusButton from "./StatusButton";
-import { formatPhoneNumber, createLocalDate } from "../../app/utils";
+import { formatPhoneNumber, createLocalDate } from "@/app/utils";
 import { MaterialView, UserView } from "@/app/types/views";
 import { MaterialUpdatePayload } from "@/app/types/database";
 

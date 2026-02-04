@@ -509,7 +509,6 @@ export default function JobDetailPage() {
         }),
       });
 
-      // Add page reload after successful update
       window.location.reload();
     } catch (error) {
       console.error("Error updating phase:", error);
@@ -1045,7 +1044,6 @@ export default function JobDetailPage() {
     }
   };
 
-  // Helper function to calculate status counts
   const calculateStatusCounts = (phases: PhaseView[]) => {
     let overdue = 0;
     let nextSevenDays = 0;
@@ -1055,7 +1053,6 @@ export default function JobDetailPage() {
     sevenDaysFromNow.setDate(today.getDate() + 7);
 
     phases.forEach((phase) => {
-      // Count tasks
       phase.tasks.forEach((task) => {
         if (task.task_status != "Complete") {
           const dueDate = new Date(task.task_startdate);
@@ -1067,7 +1064,6 @@ export default function JobDetailPage() {
         }
       });
 
-      // Count materials
       phase.materials.forEach((material) => {
         if (material.material_status != "Complete") {
           const dueDate = new Date(material.material_duedate);
@@ -1139,7 +1135,6 @@ export default function JobDetailPage() {
         }
         const data = await response.json();
 
-        // First transform tasks and materials with proper typing
         const transformedTasks = data.job.tasks.map(
           (task: any): TaskView => ({
             task_id: task.task_id,
@@ -1181,7 +1176,6 @@ export default function JobDetailPage() {
           })
         );
 
-        // Transform floor plans
         const transformedFloorplans =
           data.job.floorplans?.map(
             (floorplan: any): FloorPlan => ({
@@ -1241,19 +1235,15 @@ export default function JobDetailPage() {
     if (!job) return [];
 
     if (activeTab !== "My Items" || !session?.user?.id) {
-      // When on Tasks tab, only return phases with tasks
       if (activeTab === "Tasks") {
         return job.phases.filter((phase) => phase.tasks.length > 0);
       }
-      // When on Materials tab, only return phases with materials
       if (activeTab === "Materials") {
         return job.phases.filter((phase) => phase.materials.length > 0);
       }
-      // For Overview tab or other tabs, return all phases
       return job.phases;
     }
 
-    // For My Items tab - create a deep copy of phases with only filtered items
     const filteredPhases = job.phases.map((phase) => {
       const filteredTasks = phase.tasks.filter((task) =>
         task.users.some((user) => user.user_id === parseInt(session.user.id))
@@ -1272,7 +1262,6 @@ export default function JobDetailPage() {
       };
     });
 
-    // Return only phases that have either tasks or materials after filtering
     return filteredPhases.filter(
       (phase) => phase.tasks.length > 0 || phase.materials.length > 0
     );

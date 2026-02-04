@@ -70,8 +70,7 @@ export const EventPopup = ({
     sessionData?.user?.type === "Admin";
     
   // Check if current user is assigned to this item
-  const currentUserId = sessionData?.user?.id ? parseInt(sessionData.user.id) : null;
-  const isUserAssigned = event.contacts?.some(contact => 
+  const isUserAssigned = event.contacts?.some(contact =>
     `${contact.firstName} ${contact.lastName}`.toLowerCase() === 
     `${sessionData?.user?.name}`.toLowerCase() || 
     contact.email === sessionData?.user?.email

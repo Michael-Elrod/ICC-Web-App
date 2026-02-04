@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, UserType } from "../../app/types/database";
+import { User, UserType } from "@/app/types/database";
 
 interface EditUserModalProps {
   isOpen: boolean;

@@ -15,7 +15,6 @@ export default function SettingsPage() {
     }
   }, [status, router]);
 
-  // Show loading state while checking authentication
   if (status === "loading") {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -24,7 +23,6 @@ export default function SettingsPage() {
     );
   }
 
-  // Don't render anything if not authenticated
   if (!session) {
     return null;
   }
@@ -249,8 +247,6 @@ const SettingsForm: React.FC = () => {
               className={getInputClassName("notifications")}
             >
               <option value="email">Email</option>
-              {/* <option value="text">Text</option>
-              <option value="both">Email & Text</option> */}
               <option value="none">None</option>
             </select>
           </div>

@@ -6,7 +6,7 @@ import Timeline from "../util/Timeline";
 import { formatDate } from "@/app/utils";
 import StatusBar from "../util/StatusBar";
 import FloorplanViewer from "@/components/job/FloorplanViewer";
-import { PhaseView, TaskView, MaterialView } from "../../app/types/views";
+import { PhaseView, TaskView, MaterialView } from "@/app/types/views";
 
 interface LargeJobFrameProps {
   id: number;

@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import CardFrame from "../util/CardFrame";
-import { JobCardView } from "../../app/types/views";
+import { JobCardView } from "@/app/types/views";
 
 interface JobFrameProps extends JobCardView {
   isSelected: boolean;

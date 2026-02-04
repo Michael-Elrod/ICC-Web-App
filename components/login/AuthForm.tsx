@@ -75,13 +75,11 @@ export default function AuthForm() {
         setIsLoading(false);
       }
     } else {
-      // Validate passwords match
       if (formData.signupPassword !== formData.retypePassword) {
         setError("Passwords do not match");
         return;
       }
 
-      // Validate email format
       if (!isEmailValid(formData.signupEmail)) {
         setError("Please enter a valid email address");
         return;
@@ -105,7 +103,6 @@ export default function AuthForm() {
 
         const data = await res.json();
 
-        // Immediately handle any non-200 response
         if (res.status === 400) {
           setEmailError(data.message);
           setIsLoading(false);
@@ -118,7 +115,6 @@ export default function AuthForm() {
           return;
         }
 
-        // Only proceed with sign in if registration was successful
         const result = await signIn("credentials", {
           email: formData.signupEmail,
           password: formData.signupPassword,

@@ -22,7 +22,6 @@ function UnsubscribeContent() {
       return;
     }
 
-    // First fetch current preferences
     const fetchCurrentPrefs = async () => {
       try {
         const response = await fetch(

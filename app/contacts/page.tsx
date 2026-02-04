@@ -23,13 +23,11 @@ export default function ContactsPage() {
   useEffect(() => {
     async function loadUsers() {
       try {
-        // Add timestamp parameter to prevent caching
         const response = await fetch(`/api/users?t=${Date.now()}`, {
           headers: {
             'Cache-Control': 'no-cache, no-store',
             'Pragma': 'no-cache'
           },
-          // Force a refresh by setting cache to 'no-store'
           cache: 'no-store'
         });
         
@@ -46,12 +44,10 @@ export default function ContactsPage() {
   
     loadUsers();
     
-    // Add a refresh interval that refetches data every minute
     const intervalId = setInterval(loadUsers, 60000);
     
-    // Clean up interval on component unmount
     return () => clearInterval(intervalId);
-  }, []); // Empty dependency array as we're handling refresh with setInterval
+  }, []);
 
   const filteredUsers = users.filter((user) => {
     const fullName =

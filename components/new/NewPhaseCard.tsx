@@ -1,13 +1,12 @@
 // components/PhaseCard.tsx
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import CardFrame from "../util/CardFrame";
 import TaskCard from "./NewTaskCard";
 import MaterialCard from "./NewMaterialCard";
 import NoteCard from "./NewNoteCard";
 import EditPhaseModal from "../util/EditPhaseModal";
-import { UserView } from "../../app/types/views";
 import { PhaseCardProps } from "../../app/types/props";
 import { FormTask, FormMaterial, FormNote } from "@/app/types/database";
 import { formatDate } from "@/app/utils";
@@ -31,8 +30,8 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
   onUpdate,
   onAddPhaseAfter,
   onMovePhase,
+  contacts,
 }) => {
-  const [contacts, setContacts] = useState<UserView[]>([]);
   const [isPhaseCollapsed, setIsPhaseCollapsed] = useState(true);
   const [isTasksExpanded, setIsTasksExpanded] = useState(false);
   const [isMaterialsExpanded, setIsMaterialsExpanded] = useState(false);
@@ -118,22 +117,6 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
       false
     );
   };
-
-  useEffect(() => {
-    const fetchContacts = async () => {
-      try {
-        const response = await fetch(`/api/users/non-clients?t=${Date.now()}`);
-        if (response.ok) {
-          const data = await response.json();
-          setContacts(data);
-        }
-      } catch (error) {
-        console.error("Error fetching contacts:", error);
-      }
-    };
-
-    fetchContacts();
-  }, []);
 
   return (
     <div className="relative group">

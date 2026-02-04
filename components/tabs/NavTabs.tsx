@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { NavTab } from '../../app/types/views';
+import { NavTab } from '@/app/types/views';
 
 interface NavTabsProps {
   tabs: NavTab[];

@@ -1,7 +1,6 @@
 // types/props.ts
-import { ReactNode } from "react";
 import { FormPhase, FormMaterial, FormTask } from "./database";
-import { UserView, PhaseView, NoteView } from "./views";
+import { UserView, PhaseView } from "./views";
 
 export interface DetailPhaseCardProps {
   phase: {
@@ -158,19 +157,6 @@ export interface TimelineProps {
     type: "task" | "material",
     newStatus: "Complete" | "Incomplete" | "In Progress"
   ) => void;
-}
-
-export interface CardFrameProps {
-  children: ReactNode;
-  className?: string;
-}
-
-export interface NoteProps extends NoteView {
-  onClick: () => void;
-  isExpanded: boolean;
-  onAddNote?: () => void;
-  newNote?: string;
-  onNewNoteChange?: (value: string) => void;
 }
 
 export interface InvalidItemProp {

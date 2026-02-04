@@ -8,8 +8,8 @@ import CardFrame from "../../../components/util/CardFrame";
 import NewJobCard from "../../../components/new/NewJobCard";
 import PhaseCard from "../../../components/new/NewPhaseCard";
 import { InvalidItemProp } from "@/app/types/props";
-import { FormPhase, User } from "@/app/types/database";
-import { PhaseView, TaskView, MaterialView } from "../../types/views";
+import { FormPhase } from "@/app/types/database";
+import { PhaseView, TaskView, MaterialView, UserView } from "../../types/views";
 import {
   createLocalDate,
   formatToDateString,
@@ -21,7 +21,7 @@ import {
   handleCreateJob,
   handlePhaseUpdate,
   getJobTypes,
-} from "../../../handlers/new/jobs";
+} from "@/handlers/new/jobs";
 
 export default function NewJobPage() {
   return (
@@ -40,7 +40,7 @@ function NewJobContent() {
   const [phases, setPhases] = useState<FormPhase[]>([]);
   const [showNewJobCard, setShowNewJobCard] = useState(false);
   const [startDate, setStartDate] = useState("");
-  const [contacts, setContacts] = useState<User[]>([]);
+  const [contacts, setContacts] = useState<UserView[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isCreateJobDisabled = !jobType || !startDate;
   const [originalJobName, setOriginalJobName] = useState<string>("");
@@ -419,24 +419,19 @@ function NewJobContent() {
         throw new Error("Start date is required");
       }
 
-      // Create job first
       const jobFormData = new FormData();
 
-      // Append basic job details
       jobFormData.append("jobTitle", jobDetails.jobTitle.trim());
       jobFormData.append("startDate", startDate);
       jobFormData.append("jobLocation", jobDetails.jobLocation?.trim() || "");
       jobFormData.append("description", jobDetails.description?.trim() || "");
 
-      // Check if we're copying a job
       const isCopyingJob = jobType === "copy";
 
-      // Handle client information
       if (jobDetails.selectedClient) {
         jobFormData.append("client", JSON.stringify(jobDetails.selectedClient));
       }
 
-      // Handle floorplan copying from original job
       if (isCopyingJob && willCopyFloorplans) {
         const jobDataString = localStorage.getItem("jobToCopy");
         if (jobDataString) {
@@ -450,7 +445,6 @@ function NewJobContent() {
         }
       }
 
-      // Add any directly uploaded floor plans
       if (jobDetails.floorPlans && jobDetails.floorPlans.length > 0) {
         jobDetails.floorPlans.forEach((file) => {
           jobFormData.append("floorPlans", file);
@@ -529,7 +523,6 @@ function NewJobContent() {
         });
       }
 
-      // Now create phases one at a time
       for (const phase of phases) {
         const transformedPhase = {
           title: phase.title.trim(),
@@ -572,7 +565,6 @@ function NewJobContent() {
         }
       }
 
-      // Clean up any temporary storage
       if (isCopyingJob) {
         localStorage.removeItem("jobToCopy");
       }
@@ -609,10 +601,8 @@ function NewJobContent() {
     };
 
     if (afterPhaseId === null) {
-      // Add to end
       setPhases([...phases, newPhase]);
     } else {
-      // Insert after specified phase
       const index = phases.findIndex((p) => p.tempId === afterPhaseId);
       const newPhases = [
         ...phases.slice(0, index + 1),
@@ -629,7 +619,6 @@ function NewJobContent() {
     for (let phaseIndex = 0; phaseIndex < phases.length; phaseIndex++) {
       const phase = phases[phaseIndex];
 
-      // Check tasks
       const invalidTask = phase.tasks.findIndex(
         (task) => !task.title?.trim() || !task.startDate || !task.duration
       );
@@ -642,7 +631,6 @@ function NewJobContent() {
         };
       }
 
-      // Check materials
       const invalidMaterial = phase.materials.findIndex(
         (material) => !material.title?.trim() || !material.dueDate
       );
@@ -655,7 +643,6 @@ function NewJobContent() {
         };
       }
 
-      // Check notes
       const invalidNote = phase.notes.findIndex(
         (note) => !note.content?.trim()
       );
@@ -882,13 +869,7 @@ function NewJobContent() {
                     setPhases(newPhases);
                   }}
                   onMovePhase={(direction) => handleMovePhase(index, direction)}
-                  contacts={contacts.map((user) => ({
-                    user_id: user.user_id,
-                    first_name: user.user_first_name,
-                    last_name: user.user_last_name,
-                    user_email: user.user_email,
-                    user_phone: user.user_phone || "",
-                  }))}
+                  contacts={contacts}
                 />
               ))}
               {phases.length === 0 && (

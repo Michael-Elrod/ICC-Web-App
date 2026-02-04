@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User, UserType } from "../../app/types/database";
+import { User, UserType } from "@/app/types/database";
 
 interface NewClientModalProps {
   isOpen: boolean;

@@ -30,7 +30,6 @@ export default function NewJobCard({
   floorplansToCopyCount,
   onJobDetailsChange,
 }: NewJobCardProps) {
-  const [contacts, setContacts] = useState<User[]>([]);
   const [jobTitle, setJobTitle] = useState("");
   const [showNewClientForm, setShowNewClientForm] = useState(false);
   const [selectedClient, setSelectedClient] = useState<User | null>(null);
@@ -169,22 +168,6 @@ export default function NewJobCard({
       floorPlans,
     });
   };
-
-  useEffect(() => {
-    const fetchContacts = async () => {
-      try {
-        const response = await fetch(`/api/users/non-clients?t=${Date.now()}`);
-        if (response.ok) {
-          const data = await response.json();
-          setContacts(data);
-        }
-      } catch (error) {
-        console.error("Error fetching contacts:", error);
-      }
-    };
-
-    fetchContacts();
-  }, []);
 
   return (
     <div id="job-details-section" className="space-y-4">

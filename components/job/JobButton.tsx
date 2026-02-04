@@ -25,7 +25,6 @@ const JobButton: React.FC<JobButtonProps> = ({ title, icon: Icon, onClick, color
     }
   };
 
-  // Rest of the component remains the same
   return (
     <button
       onClick={onClick}

@@ -10,8 +10,8 @@ import {
   CalendarEvent,
   SelectedEventInfo,
   EventPopup,
-} from "../../components/calendar/EventPopup";
-import { Legend } from "../../components/calendar/Legend";
+} from "@/components/calendar/EventPopup";
+import { Legend } from "@/components/calendar/Legend";
 
 const phaseColors = [
   "#B8DEFF", // soft blue

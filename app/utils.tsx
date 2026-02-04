@@ -41,7 +41,7 @@ export const calculateEndDate = (
 };
 
 export function formatDate(dateString: string): string {
-  if (!dateString || typeof dateString !== "string") {
+  if (!dateString) {
     throw new Error("Invalid date string");
   }
 
@@ -63,10 +63,8 @@ export function formatDate(dateString: string): string {
 }
 
 export const createLocalDate = (dateString: string): Date => {
-  // Check if it's an ISO timestamp (contains 'T')
   if (dateString.includes('T')) {
     const date = new Date(dateString);
-    // Create a new date using just the date portion in local timezone
     return new Date(
       date.getFullYear(),
       date.getMonth(),
@@ -75,7 +73,6 @@ export const createLocalDate = (dateString: string): Date => {
     );
   }
   
-  // Original handling for YYYY-MM-DD format
   const [year, month, day] = dateString.split('-').map(Number);
   return new Date(
     year,

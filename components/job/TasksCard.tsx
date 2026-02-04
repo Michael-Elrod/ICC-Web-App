@@ -215,7 +215,6 @@ const TasksCard: React.FC<TasksCardProps> = ({
       <h4 className="text-md font-semibold mb-2">Tasks</h4>
       <div className="space-y-2">
         {sortedTasks.map((task) => {
-          const isExpanded = expandedTaskId === task.task_id;
 
           return (
             <div key={task.task_id}>

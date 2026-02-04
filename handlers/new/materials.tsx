@@ -1,21 +1,7 @@
 // handlers/new/materials.ts
-import { FormMaterial,FormPhase } from "../../app/types/database";
-import { UserView } from "../../app/types/views";
-import { createLocalDate } from "@/app/utils";
-import { handleConfirmDelete } from "./jobs";
+import { FormMaterial } from "@/app/types/database";
+import { UserView } from "@/app/types/views";
 
-export const updateMaterial = (updatedMaterial: FormMaterial, phase: FormPhase, onUpdate: (phase: FormPhase) => void) => {
-  const updatedMaterials = phase.materials.map(m => 
-    m.id === updatedMaterial.id ? updatedMaterial : m
-  ).sort((a, b) => 
-    createLocalDate(a.dueDate).getTime() - createLocalDate(b.dueDate).getTime()
-  );
-  
-  onUpdate({
-    ...phase,
-    materials: updatedMaterials
-  });
-};
 
 export const handleDeleteConfirm = (
   materialId: string,

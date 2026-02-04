@@ -11,7 +11,6 @@ function getS3Client() {
 }
 
 export async function uploadFloorPlans(files: File[], jobId: string) {
-  // Check environment variables only when the function is called
   if (!process.env.S3_ACCESS_KEY_ID)
     throw new Error("S3_ACCESS_KEY_ID is not set");
   if (!process.env.S3_SECRET_ACCESS_KEY)
@@ -22,9 +21,8 @@ export async function uploadFloorPlans(files: File[], jobId: string) {
   const uploadedUrls: string[] = [];
 
   try {
-    const s3Client = getS3Client(); // Create client only when needed
+    const s3Client = getS3Client();
 
-    // Process each file
     for (const file of files) {
       const fileExtension = file.name.split(".").pop();
       const fileName = `floorplans/job-${jobId}-${Date.now()}.${fileExtension}`;
@@ -77,14 +75,12 @@ export async function deleteFloorPlan(fileUrl: string) {
 }
 
 export function validateFile(file: File): boolean {
-  // Validate file type
   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
   if (!allowedTypes.includes(file.type)) {
     throw new Error('Invalid file type. Only JPEG, PNG, GIF, and PDF files are allowed.');
   }
 
-  // Validate file size (e.g., 5MB limit)
-  const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+  const maxSize = 5 * 1024 * 1024;
   if (file.size > maxSize) {
     throw new Error('File size exceeds 5MB limit.');
   }
