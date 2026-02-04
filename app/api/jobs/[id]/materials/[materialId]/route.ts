@@ -1,36 +1,19 @@
 // app/api/jobs/[id]/materials/[materialId]/route.ts
 import { NextResponse } from 'next/server';
-import pool from '@/app/lib/db';
 import { MaterialUpdatePayload } from '@/app/types/database';
 import { addBusinessDays } from '@/app/utils';
 import { RowDataPacket } from 'mysql2';
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/lib/auth";
+import { withAuth, withDb, withTransaction } from "@/app/lib/api-utils";
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string, materialId: string } }
-) {
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user || !session.user.id) {
-    return NextResponse.json(
-      { error: 'Unauthorized: Session not found or user not authenticated' },
-      { status: 401 }
-    );
-  }
-  const connection = await pool.getConnection();
+export const PATCH = withAuth(async (connection, session, request, params) => {
+  const body: MaterialUpdatePayload = await request.json();
+  const materialId = params.materialId;
+  const jobId = params.id;
+  const userId = parseInt(session.user.id);
 
-  try {
-    const body: MaterialUpdatePayload = await request.json();
-    const materialId = params.materialId;
-    const jobId = params.id;
-    const userId = parseInt(session.user.id);
-
-    await connection.beginTransaction();
-
-    // Verify material belongs to this job
+  return await withTransaction(connection, async () => {
     const [materialCheck] = await connection.query<RowDataPacket[]>(
-      `SELECT m.material_id 
+      `SELECT m.material_id
        FROM material m
        JOIN phase p ON m.phase_id = p.phase_id
        WHERE m.material_id = ? AND p.job_id = ?`,
@@ -44,7 +27,6 @@ export async function PATCH(
       );
     }
 
-    // Handle basic updates
     if (body.material_title) {
       await connection.query(
         'UPDATE material SET material_title = ? WHERE material_id = ?',
@@ -60,19 +42,16 @@ export async function PATCH(
     }
 
     if (body.extension_days && !isNaN(body.extension_days)) {
-      // Get current material date
       const [currentMaterial] = await connection.query<RowDataPacket[]>(
         'SELECT material_duedate FROM material WHERE material_id = ?',
         [materialId]
       );
-    
+
       if (currentMaterial.length > 0) {
-        // Calculate new date using addBusinessDays
         const currentDate = new Date(currentMaterial[0].material_duedate);
         const newDate = addBusinessDays(currentDate, body.extension_days);
         const formattedNewDate = newDate.toISOString().split('T')[0];
-    
-        // Update with exact new date
+
         await connection.query(
           'UPDATE material SET material_duedate = ? WHERE material_id = ?',
           [formattedNewDate, materialId]
@@ -80,24 +59,18 @@ export async function PATCH(
       }
     }
 
-    // Handle user assignments
     if (body.new_users) {
-      // Get current user assignments
       const [currentUsers] = await connection.query<RowDataPacket[]>(
         'SELECT user_id FROM user_material WHERE material_id = ?',
         [materialId]
       );
-      
+
       const currentUserIds = new Set(currentUsers.map(u => u.user_id));
       const newUserIds = new Set(body.new_users);
-      
-      // Users to remove
+
       const usersToRemove = Array.from(currentUserIds).filter(id => !newUserIds.has(id));
-      
-      // Users to add
       const usersToAdd = Array.from(newUserIds).filter(id => !currentUserIds.has(id));
 
-      // Verify all new users exist
       if (usersToAdd.length > 0) {
         const [users] = await connection.query<RowDataPacket[]>(
           'SELECT user_id FROM app_user WHERE user_id IN (?)',
@@ -109,7 +82,6 @@ export async function PATCH(
         }
       }
 
-      // Remove users no longer assigned
       if (usersToRemove.length > 0) {
         await connection.query(
           'DELETE FROM user_material WHERE material_id = ? AND user_id IN (?)',
@@ -117,46 +89,26 @@ export async function PATCH(
         );
       }
 
-      // Add new users
       for (const newUser of usersToAdd) {
         await connection.query(
-          `INSERT INTO user_material (user_id, material_id, assigned_by) 
+          `INSERT INTO user_material (user_id, material_id, assigned_by)
            VALUES (?, ?, ?)`,
           [newUser, materialId, userId]
         );
       }
     }
 
-    await connection.commit();
     return NextResponse.json({ success: true });
+  });
+}, "Failed to update material");
 
-  } catch (error) {
-    await connection.rollback();
-    console.error('Error updating material:', error);
-    return NextResponse.json(
-      { error: 'Failed to update material' },
-      { status: 500 }
-    );
-  } finally {
-    connection.release();
-  }
-}
+export const DELETE = withDb(async (connection, request, params) => {
+  const materialId = params.materialId;
+  const jobId = params.id;
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string, materialId: string } }
-) {
-  const connection = await pool.getConnection();
-
-  try {
-    const materialId = params.materialId;
-    const jobId = params.id;
-
-    await connection.beginTransaction();
-
-    // Verify material belongs to this job
+  return await withTransaction(connection, async () => {
     const [materialCheck] = await connection.query<RowDataPacket[]>(
-      `SELECT m.material_id 
+      `SELECT m.material_id
        FROM material m
        JOIN phase p ON m.phase_id = p.phase_id
        WHERE m.material_id = ? AND p.job_id = ?`,
@@ -170,20 +122,9 @@ export async function DELETE(
       );
     }
 
-    // Delete related entries
     await connection.query('DELETE FROM user_material WHERE material_id = ?', [materialId]);
     await connection.query('DELETE FROM material WHERE material_id = ?', [materialId]);
 
-    await connection.commit();
     return NextResponse.json({ success: true });
-  } catch (error) {
-    await connection.rollback();
-    console.error("Error deleting material:", error);
-    return NextResponse.json(
-      { error: "Failed to delete material" },
-      { status: 500 }
-    );
-  } finally {
-    connection.release();
-  }
-}
+  });
+}, "Failed to delete material");

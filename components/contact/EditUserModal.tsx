@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { User, UserType } from "@/app/types/database";
+import { formatPhoneNumberInput } from "@/app/utils";
 
 interface EditUserModalProps {
   isOpen: boolean;
@@ -32,7 +33,7 @@ export default function EditUserModal({
     if (user) {
       setFirstName(user.user_first_name);
       setLastName(user.user_last_name);
-      setPhone(user.user_phone || "");
+      setPhone(formatPhoneNumberInput(user.user_phone || ""));
       setEmail(user.user_email);
       setUserType(user.user_type);
     }
@@ -47,18 +48,6 @@ export default function EditUserModal({
       errors.email = "Please enter a valid email address";
     }
     return errors;
-  };
-
-  const formatPhoneNumber = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    if (!numbers) return "";
-    if (numbers.length <= 3) return `(${numbers}`;
-    if (numbers.length <= 6)
-      return `(${numbers.slice(0, 3)}) ${numbers.slice(3)}`;
-    return `(${numbers.slice(0, 3)}) ${numbers.slice(3, 6)}-${numbers.slice(
-      6,
-      10
-    )}`;
   };
 
   const handleDelete = async () => {
@@ -219,7 +208,7 @@ export default function EditUserModal({
               type="tel"
               value={phone}
               onChange={(e) => {
-                const formatted = formatPhoneNumber(e.target.value);
+                const formatted = formatPhoneNumberInput(e.target.value);
                 if (formatted.length <= 14) setPhone(formatted);
               }}
               className="mt-1 block w-full border border-zinc-300 rounded-md shadow-sm p-2 dark:bg-zinc-800 dark:text-white dark:border-zinc-600"

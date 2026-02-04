@@ -3,11 +3,8 @@ import { useSession } from "next-auth/react";
 import React, { useState, useEffect, useRef } from "react";
 import SmallCardFrame from "../util/SmallCardFrame";
 import StatusButton from "./StatusButton";
-import {
-  formatPhoneNumber,
-  createLocalDate,
-  addBusinessDays,
-} from "../../app/utils";
+import { createLocalDate, addBusinessDays } from "../../app/utils";
+import UserInfoRow from "../util/UserInfoRow";
 import { TaskView, UserView } from "../../app/types/views";
 import { TaskUpdatePayload } from "@/app/types/database";
 
@@ -277,17 +274,12 @@ const TasksCard: React.FC<TasksCardProps> = ({
                           </h5>
                           {task.users.map((user) => (
                             <SmallCardFrame key={user.user_id}>
-                              <div className="flex flex-col sm:grid sm:grid-cols-3 sm:items-center gap-1 sm:gap-0">
-                                <span className="text-sm font-medium">
-                                  {`${user.first_name} ${user.last_name}`}
-                                </span>
-                                <span className="text-sm text-gray-600 sm:text-center">
-                                  {formatPhoneNumber(user.user_phone)}
-                                </span>
-                                <span className="text-sm text-gray-600 sm:text-right break-all">
-                                  {user.user_email}
-                                </span>
-                              </div>
+                              <UserInfoRow
+                                firstName={user.first_name}
+                                lastName={user.last_name}
+                                phone={user.user_phone}
+                                email={user.user_email}
+                              />
                             </SmallCardFrame>
                           ))}
                         </div>

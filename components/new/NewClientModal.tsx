@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { User, UserType } from "@/app/types/database";
+import { formatPhoneNumberInput } from "@/app/utils";
 
 interface NewClientModalProps {
   isOpen: boolean;
@@ -25,14 +26,6 @@ export default function NewClientModal({ isOpen, onClose, onClientCreated }: New
       errors.clientEmail = "Please enter a valid email address";
     }
     return errors;
-  };
-
-  const formatPhoneNumber = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    if (!numbers) return "";
-    if (numbers.length <= 3) return `(${numbers}`;
-    if (numbers.length <= 6) return `(${numbers.slice(0, 3)}) ${numbers.slice(3)}`;
-    return `(${numbers.slice(0, 3)}) ${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
   };
 
   const handleSubmit = async () => {
@@ -188,7 +181,7 @@ export default function NewClientModal({ isOpen, onClose, onClientCreated }: New
               type="tel"
               value={clientPhone}
               onChange={(e) => {
-                const formatted = formatPhoneNumber(e.target.value);
+                const formatted = formatPhoneNumberInput(e.target.value);
                 if (formatted.length <= 14) {
                   setClientPhone(formatted);
                 }
