@@ -17,7 +17,7 @@ export default function UserInfoRow({
 }: UserInfoRowProps) {
   const textClass = size === "lg" ? "text-lg" : "text-sm";
   const nameClass = size === "lg" ? textClass : `${textClass} font-medium`;
-  const secondaryClass = size === "lg" ? textClass : `${textClass} text-gray-600`;
+  const secondaryClass = size === "lg" ? textClass : `${textClass} text-gray-600 dark:text-white`;
 
   return (
     <div className="flex flex-col sm:grid sm:grid-cols-3 sm:items-center gap-1 sm:gap-0">
