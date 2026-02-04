@@ -5,6 +5,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import ContactCard from "../contact/ContactCard";
+import ContactSearchSelect from "./ContactSearchSelect";
 import { FormTask } from "../../app/types/database";
 import { UserView } from "../../app/types/views";
 import { TaskCardProps } from "../../app/types/props";
@@ -170,36 +171,17 @@ const NewTaskCard: React.FC<TaskCardProps> = ({
             <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-200">
               Add People
             </label>
-            <select
-              onChange={(e) => {
-                const selectedContact = contacts.find(
-                  (contact) => contact.user_id === parseInt(e.target.value)
-                );
-                if (selectedContact) {
-                  handleContactSelect(
-                    selectedContact,
-                    selectedContacts,
-                    setSelectedContacts
-                  );
-                  e.target.value = "";
-                }
-              }}
-              className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded dark:bg-zinc-800 dark:text-white"
-            >
-              <option value="">Select a person</option>
-              {contacts
-                .filter(
-                  (contact) =>
-                    !selectedContacts.some(
-                      (selected) => selected.user_id === contact.user_id
-                    )
+            <ContactSearchSelect
+              contacts={contacts}
+              selectedContacts={selectedContacts}
+              onSelect={(contact) =>
+                handleContactSelect(
+                  contact,
+                  selectedContacts,
+                  setSelectedContacts
                 )
-                .map((contact: UserView) => (
-                  <option key={contact.user_id} value={contact.user_id}>
-                    {`${contact.first_name} ${contact.last_name}`}
-                  </option>
-                ))}
-            </select>
+              }
+            />
             <div className="mt-2 space-y-2">
               {selectedContacts.map((contact: UserView) => (
                 <div key={contact.user_id} className="relative">
