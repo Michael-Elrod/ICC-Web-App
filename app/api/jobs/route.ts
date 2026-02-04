@@ -4,34 +4,49 @@ import { RowDataPacket } from 'mysql2';
 import { withDb } from '@/app/lib/api-utils';
 
 interface Task extends RowDataPacket {
+  job_id: number;
+  task_id: number;
+  phase_id: number;
   task_title: string;
+  task_startdate: Date;
+  task_duration: number;
   task_status: string;
+  task_description: string;
 }
 
 interface Material extends RowDataPacket {
+  job_id: number;
+  material_id: number;
+  phase_id: number;
   material_title: string;
+  material_duedate: Date;
   material_status: string;
+  material_description: string;
 }
 
 interface Worker extends RowDataPacket {
+  job_id: number;
   user_full_name: string;
 }
 
 interface Phase extends RowDataPacket {
+  job_id: number;
   id: number;
   name: string;
-  startWeek: number;
-  endWeek: number;
+  startDate: Date;
+  endDate: Date;
   color: string;
 }
 
 interface TaskCount extends RowDataPacket {
+  job_id: number;
   overdue: number;
   next_seven_days: number;
   beyond_seven_days: number;
 }
 
 interface MaterialCount extends RowDataPacket {
+  job_id: number;
   overdue: number;
   next_seven_days: number;
   beyond_seven_days: number;
@@ -49,6 +64,7 @@ interface Job extends RowDataPacket {
 }
 
 interface Floorplan extends RowDataPacket {
+  job_id: number;
   floorplan_id: number;
   floorplan_url: string;
 }
@@ -174,126 +190,182 @@ export const GET = withDb(async (connection, request) => {
     WHERE j.job_status = ?
   `, [status]);
 
-  const enhancedJobs = await Promise.all(jobs.map(async (job: Job) => {
-    const [taskCounts] = await connection.query<TaskCount[]>(`
-      SELECT
-        COUNT(CASE
-          WHEN t.task_status = 'Incomplete' AND
-               DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY) < CURDATE()
-          THEN 1 END) as overdue,
-        COUNT(CASE
-          WHEN t.task_status = 'Incomplete' AND
-               DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY)
-               BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-          THEN 1 END) as next_seven_days,
-        COUNT(CASE
-          WHEN t.task_status = 'Incomplete' AND
-               DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY)
-               > DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-          THEN 1 END) as beyond_seven_days
-      FROM task t
-      JOIN phase p ON t.phase_id = p.phase_id
-      WHERE p.job_id = ?
-    `, [job.job_id]);
+  const jobIds = jobs.map(j => j.job_id);
+  if (jobIds.length === 0) {
+    return NextResponse.json({ jobs: [] });
+  }
 
-    const [materialCounts] = await connection.query<MaterialCount[]>(`
+  const [
+    [taskCountsRows],
+    [materialCountsRows],
+    [tasksRows],
+    [materialsRows],
+    [workersRows],
+    [phasesRows],
+    [floorplansRows]
+  ] = await Promise.all([
+    connection.query<TaskCount[]>(`
       SELECT
+        p.job_id,
+        COUNT(CASE WHEN t.task_status = 'Incomplete'
+          AND DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY) < CURDATE()
+          THEN 1 END) as overdue,
+        COUNT(CASE WHEN t.task_status = 'Incomplete'
+          AND DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY)
+          BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+          THEN 1 END) as next_seven_days,
+        COUNT(CASE WHEN t.task_status = 'Incomplete'
+          AND DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY)
+          > DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+          THEN 1 END) as beyond_seven_days
+      FROM phase p
+      LEFT JOIN task t ON p.phase_id = t.phase_id
+      WHERE p.job_id IN (?)
+      GROUP BY p.job_id
+    `, [jobIds]),
+
+    connection.query<MaterialCount[]>(`
+      SELECT
+        p.job_id,
         COUNT(CASE WHEN m.material_status = 'Incomplete' AND m.material_duedate < CURDATE() THEN 1 END) as overdue,
         COUNT(CASE WHEN m.material_status = 'Incomplete' AND m.material_duedate BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN 1 END) as next_seven_days,
         COUNT(CASE WHEN m.material_status = 'Incomplete' AND m.material_duedate > DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN 1 END) as beyond_seven_days
-      FROM material m
-      JOIN phase p ON m.phase_id = p.phase_id
-      WHERE p.job_id = ?
-    `, [job.job_id]);
+      FROM phase p
+      LEFT JOIN material m ON p.phase_id = m.phase_id
+      WHERE p.job_id IN (?)
+      GROUP BY p.job_id
+    `, [jobIds]),
 
-    const [tasks] = await connection.query<Task[]>(`
+    connection.query<Task[]>(`
       SELECT
-        t.task_id,
-        t.phase_id,
-        t.task_title,
-        t.task_startdate,
-        t.task_duration,
-        t.task_status,
-        t.task_description
+        p.job_id,
+        t.task_id, t.phase_id, t.task_title, t.task_startdate,
+        t.task_duration, t.task_status, t.task_description
       FROM task t
       JOIN phase p ON t.phase_id = p.phase_id
-      WHERE p.job_id = ?
+      WHERE p.job_id IN (?)
       ORDER BY t.task_title
-    `, [job.job_id]);
+    `, [jobIds]),
 
-    const [materials] = await connection.query<Material[]>(`
+    connection.query<Material[]>(`
       SELECT
-        m.material_id,
-        m.phase_id,
-        m.material_title,
-        m.material_duedate,
-        m.material_status,
-        m.material_description
+        p.job_id,
+        m.material_id, m.phase_id, m.material_title, m.material_duedate,
+        m.material_status, m.material_description
       FROM material m
       JOIN phase p ON m.phase_id = p.phase_id
-      WHERE p.job_id = ?
+      WHERE p.job_id IN (?)
       ORDER BY m.material_title
-    `, [job.job_id]);
+    `, [jobIds]),
 
-    const [workers] = await connection.query<Worker[]>(`
-      SELECT DISTINCT CONCAT(u.user_first_name, ' ', u.user_last_name) as user_full_name
+    connection.query<Worker[]>(`
+      SELECT p.job_id, CONCAT(u.user_first_name, ' ', u.user_last_name) as user_full_name
       FROM app_user u
       JOIN user_task ut ON u.user_id = ut.user_id
       JOIN task t ON ut.task_id = t.task_id
       JOIN phase p ON t.phase_id = p.phase_id
-      WHERE p.job_id = ?
+      WHERE p.job_id IN (?)
       UNION
-      SELECT DISTINCT CONCAT(u.user_first_name, ' ', u.user_last_name) as user_full_name
+      SELECT p.job_id, CONCAT(u.user_first_name, ' ', u.user_last_name) as user_full_name
       FROM app_user u
       JOIN user_material um ON u.user_id = um.user_id
       JOIN material m ON um.material_id = m.material_id
       JOIN phase p ON m.phase_id = p.phase_id
-      WHERE p.job_id = ?
-      ORDER BY user_full_name
-    `, [job.job_id, job.job_id]);
+      WHERE p.job_id IN (?)
+    `, [jobIds, jobIds]),
 
-    const [phases] = await connection.query<Phase[]>(`
-        SELECT
-            p.phase_id as id,
-            p.phase_title as name,
-            p.phase_startdate as startDate,
-            GREATEST(
-                IFNULL((
-                    SELECT MAX(DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY))
-                    FROM task t
-                    WHERE t.phase_id = p.phase_id
-                ), p.phase_startdate),
-                IFNULL((
-                    SELECT MAX(m.material_duedate)
-                    FROM material m
-                    WHERE m.phase_id = p.phase_id
-                ), p.phase_startdate)
-            ) as endDate,
-            CASE (p.phase_id % 6)
-                WHEN 0 THEN '#3B82F6'
-                WHEN 1 THEN '#10B981'
-                WHEN 2 THEN '#6366F1'
-                WHEN 3 THEN '#8B5CF6'
-                WHEN 4 THEN '#EC4899'
-                WHEN 5 THEN '#F59E0B'
-            END as color
-        FROM phase p
-        WHERE p.job_id = ?
-        ORDER BY p.phase_startdate
-    `, [job.job_id]);
-
-    const [floorplans] = await connection.query<Floorplan[]>(`
+    connection.query<Phase[]>(`
       SELECT
-        floorplan_id,
-        floorplan_url
-      FROM job_floorplan
-      WHERE job_id = ?
-      ORDER BY floorplan_id
-    `, [job.job_id]);
+        p.job_id,
+        p.phase_id as id,
+        p.phase_title as name,
+        p.phase_startdate as startDate,
+        GREATEST(
+          IFNULL((SELECT MAX(DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY))
+                  FROM task t WHERE t.phase_id = p.phase_id), p.phase_startdate),
+          IFNULL((SELECT MAX(m.material_duedate)
+                  FROM material m WHERE m.phase_id = p.phase_id), p.phase_startdate)
+        ) as endDate,
+        CASE (p.phase_id % 6)
+          WHEN 0 THEN '#3B82F6'
+          WHEN 1 THEN '#10B981'
+          WHEN 2 THEN '#6366F1'
+          WHEN 3 THEN '#8B5CF6'
+          WHEN 4 THEN '#EC4899'
+          WHEN 5 THEN '#F59E0B'
+        END as color
+      FROM phase p
+      WHERE p.job_id IN (?)
+      ORDER BY p.phase_startdate
+    `, [jobIds]),
 
-    const overdue = (taskCounts[0]?.overdue || 0) + (materialCounts[0]?.overdue || 0);
-    const nextSevenDays = (taskCounts[0]?.next_seven_days || 0) + (materialCounts[0]?.next_seven_days || 0);
-    const beyondSevenDays = (taskCounts[0]?.beyond_seven_days || 0) + (materialCounts[0]?.beyond_seven_days || 0);
+    // Bulk floorplans query
+    connection.query<Floorplan[]>(`
+      SELECT job_id, floorplan_id, floorplan_url
+      FROM job_floorplan
+      WHERE job_id IN (?)
+      ORDER BY floorplan_id
+    `, [jobIds])
+  ]);
+
+  const taskCountsByJob = new Map<number, TaskCount>();
+  for (const row of taskCountsRows) {
+    taskCountsByJob.set(row.job_id, row);
+  }
+
+  const materialCountsByJob = new Map<number, MaterialCount>();
+  for (const row of materialCountsRows) {
+    materialCountsByJob.set(row.job_id, row);
+  }
+
+  const tasksByJob = new Map<number, Task[]>();
+  for (const row of tasksRows) {
+    if (!tasksByJob.has(row.job_id)) {
+      tasksByJob.set(row.job_id, []);
+    }
+    tasksByJob.get(row.job_id)!.push(row);
+  }
+
+  const materialsByJob = new Map<number, Material[]>();
+  for (const row of materialsRows) {
+    if (!materialsByJob.has(row.job_id)) {
+      materialsByJob.set(row.job_id, []);
+    }
+    materialsByJob.get(row.job_id)!.push(row);
+  }
+
+  const workersByJob = new Map<number, Set<string>>();
+  for (const row of workersRows) {
+    if (!workersByJob.has(row.job_id)) {
+      workersByJob.set(row.job_id, new Set());
+    }
+    workersByJob.get(row.job_id)!.add(row.user_full_name);
+  }
+
+  const phasesByJob = new Map<number, Phase[]>();
+  for (const row of phasesRows) {
+    if (!phasesByJob.has(row.job_id)) {
+      phasesByJob.set(row.job_id, []);
+    }
+    phasesByJob.get(row.job_id)!.push(row);
+  }
+
+  const floorplansByJob = new Map<number, Floorplan[]>();
+  for (const row of floorplansRows) {
+    if (!floorplansByJob.has(row.job_id)) {
+      floorplansByJob.set(row.job_id, []);
+    }
+    floorplansByJob.get(row.job_id)!.push(row);
+  }
+
+  const enhancedJobs = jobs.map((job: Job) => {
+    const taskCounts = taskCountsByJob.get(job.job_id) || { overdue: 0, next_seven_days: 0, beyond_seven_days: 0 };
+    const materialCounts = materialCountsByJob.get(job.job_id) || { overdue: 0, next_seven_days: 0, beyond_seven_days: 0 };
+    const tasks = tasksByJob.get(job.job_id) || [];
+    const materials = materialsByJob.get(job.job_id) || [];
+    const workers = Array.from(workersByJob.get(job.job_id) || []);
+    const phases = phasesByJob.get(job.job_id) || [];
+    const floorplans = floorplansByJob.get(job.job_id) || [];
 
     return {
       ...job,
@@ -316,16 +388,14 @@ export const GET = withDb(async (connection, request) => {
         material_description: m.material_description,
         users: []
       })),
-      workers: workers.map((w: Worker) => w.user_full_name),
-      floorplans: floorplans.length > 0
-      ? floorplans.map(fp => ({
-          url: fp.floorplan_url,
-          name: `Floor Plan ${fp.floorplan_id}`
-        }))
-      : [],
-      overdue,
-      nextSevenDays,
-      sevenDaysPlus: beyondSevenDays,
+      workers,
+      floorplans: floorplans.map(fp => ({
+        url: fp.floorplan_url,
+        name: `Floor Plan ${fp.floorplan_id}`
+      })),
+      overdue: (taskCounts.overdue || 0) + (materialCounts.overdue || 0),
+      nextSevenDays: (taskCounts.next_seven_days || 0) + (materialCounts.next_seven_days || 0),
+      sevenDaysPlus: (taskCounts.beyond_seven_days || 0) + (materialCounts.beyond_seven_days || 0),
       phases: phases.map((phase: Phase) => ({
         id: phase.id,
         name: phase.name,
@@ -334,7 +404,7 @@ export const GET = withDb(async (connection, request) => {
         color: phase.color
       }))
     };
-  }));
+  });
 
   return NextResponse.json({ jobs: enhancedJobs });
 }, "Failed to fetch jobs");
