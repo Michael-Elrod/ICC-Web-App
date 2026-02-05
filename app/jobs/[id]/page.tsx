@@ -11,7 +11,7 @@ import StatusBar from "@/components/util/StatusBar";
 import CopyJobModal from "@/components/job/CopyJobModal";
 import CloseJobModal from "@/components/job/CloseJobModal";
 import DeleteJobModal from "@/components/job/DeleteJobModal";
-import FloorplanViewerID from "@/components/job/FloorplanViewerID";
+import FloorplanViewer from "@/components/job/FloorplanViewer";
 import Image from "next/image";
 import { validateFiles } from "@/app/lib/s3";
 import { JobUpdatePayload, FormTask, FormMaterial } from "@/app/types/database";
@@ -1434,7 +1434,7 @@ export default function JobDetailPage() {
     return (
       <div className="w-full -mx-4 sm:mx-0">
         <div className="sm:rounded-lg overflow-hidden">
-          <FloorplanViewerID
+          <FloorplanViewer
             floorplans={floorplansWithId}
             mode="embedded"
             onRemoveCurrent={handleRemoveCurrent}
