@@ -1,10 +1,10 @@
 // components/MaterialsCard.tsx
 import { useSession } from "next-auth/react";
 import React, { useState, useEffect, useRef } from "react";
-import SmallCardFrame from "../util/SmallCardFrame";
+import SmallCardFrame from "./SmallCardFrame";
 import StatusButton from "./StatusButton";
 import { createLocalDate } from "@/app/utils";
-import UserInfoRow from "../util/UserInfoRow";
+import UserInfoRow from "./UserInfoRow";
 import { MaterialView, UserView } from "@/app/types/views";
 import { MaterialUpdatePayload } from "@/app/types/database";
 

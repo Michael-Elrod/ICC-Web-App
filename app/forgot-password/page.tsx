@@ -1,7 +1,7 @@
 // app/forgot-password/page.tsx
 "use client";
 
-import ForgotPasswordForm from "@/components/reset/ForgotPasswordForm";
+import ForgotPasswordForm from "./_components/ForgotPasswordForm";
 
 export default function ForgotPassword() {
   return (

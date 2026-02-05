@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import AuthForm from '@/components/login/AuthForm'
+import AuthForm from '@/app/_components/AuthForm'
 
 // Mock next/navigation
 const mockReplace = vi.fn()

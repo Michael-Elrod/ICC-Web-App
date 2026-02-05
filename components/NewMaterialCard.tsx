@@ -4,20 +4,20 @@ import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaEdit, FaTrash } from "react-icons/fa";
-import ContactCard from "../contact/ContactCard";
+import ContactCard from "./ContactCard";
 import ContactSearchSelect from "./ContactSearchSelect";
-import { FormMaterial } from "../../app/types/database";
-import { UserView } from "../../app/types/views";
-import { MaterialCardProps } from "../../app/types/props";
+import { FormMaterial } from "@/app/types/database";
+import { UserView } from "@/app/types/views";
+import { MaterialCardProps } from "@/app/types/props";
 import { formatDate, createLocalDate } from "@/app/utils";
-import { handleDeleteConfirm } from "@/handlers/new/materials";
 import {
+  handleDeleteConfirm,
   handleDeleteClick,
   handleDueDateChange,
   handleContactSelect,
   handleContactRemove,
   handleDone,
-} from "../../handlers/new/materials";
+} from "@/handlers/new/materials";
 
 const NewMaterialCard: React.FC<MaterialCardProps> = ({
   material,
@@ -214,7 +214,16 @@ const NewMaterialCard: React.FC<MaterialCardProps> = ({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-3 items-center">
+        <div
+          className="grid grid-cols-3 items-center cursor-pointer"
+          onClick={(e) => {
+            if (!(e.target as HTMLElement).closest("button")) {
+              const updatedMaterial = { ...localMaterial, isExpanded: true };
+              setLocalMaterial(updatedMaterial);
+              onUpdate(updatedMaterial);
+            }
+          }}
+        >
           <div className="overflow-hidden text-ellipsis whitespace-nowrap">
             {localMaterial.title}
           </div>

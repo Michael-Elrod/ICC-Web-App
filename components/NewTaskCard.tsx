@@ -4,14 +4,14 @@ import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaEdit, FaTrash } from "react-icons/fa";
-import ContactCard from "../contact/ContactCard";
+import ContactCard from "./ContactCard";
 import ContactSearchSelect from "./ContactSearchSelect";
-import { FormTask } from "../../app/types/database";
-import { UserView } from "../../app/types/views";
-import { TaskCardProps } from "../../app/types/props";
+import { FormTask } from "@/app/types/database";
+import { UserView } from "@/app/types/views";
+import { TaskCardProps } from "@/app/types/props";
 import { formatDate, createLocalDate } from "@/app/utils";
-import { handleDeleteConfirm } from "@/handlers/new/tasks";
 import {
+  handleDeleteConfirm,
   handleStartDateChange,
   handleInputChange,
   handleDurationChange,
@@ -19,7 +19,7 @@ import {
   handleContactRemove,
   handleDeleteClick,
   handleDone,
-} from "../../handlers/new/tasks";
+} from "@/handlers/new/tasks";
 
 const NewTaskCard: React.FC<TaskCardProps> = ({
   task,
@@ -234,7 +234,16 @@ const NewTaskCard: React.FC<TaskCardProps> = ({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-3 items-center">
+        <div
+          className="grid grid-cols-3 items-center cursor-pointer"
+          onClick={(e) => {
+            if (!(e.target as HTMLElement).closest("button")) {
+              const updatedTask = { ...localTask, isExpanded: true };
+              setLocalTask(updatedTask);
+              onUpdate(updatedTask);
+            }
+          }}
+        >
           <div className="overflow-hidden text-ellipsis whitespace-nowrap">
             {localTask.title}
           </div>

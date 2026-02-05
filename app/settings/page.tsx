@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import PasswordChangeModal from "@/components/util/PasswordModal";
+import PasswordChangeModal from "./_components/PasswordModal";
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();

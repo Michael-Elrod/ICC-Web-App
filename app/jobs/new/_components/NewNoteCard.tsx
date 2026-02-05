@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
-import { FormNote } from '../../app/types/database';
+import { FormNote } from '@/app/types/database';
 
 interface NoteCardProps {
   note: FormNote;
@@ -70,7 +70,19 @@ export default function NewNoteCard({ note, onUpdate, onDelete }: NoteCardProps)
           </div>
         </div>
       ) : (
-        <div className="flex justify-between items-center">
+        <div
+          className="flex justify-between items-center cursor-pointer"
+          onClick={(e) => {
+            if (!(e.target as HTMLElement).closest("button")) {
+              const updatedNote = {
+                ...localNote,
+                isExpanded: true
+              };
+              setLocalNote(updatedNote);
+              onUpdate(updatedNote);
+            }
+          }}
+        >
           <div className="overflow-hidden text-ellipsis whitespace-nowrap flex-grow">
             {localNote.content || "Empty note"}
           </div>

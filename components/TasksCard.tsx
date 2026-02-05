@@ -1,11 +1,11 @@
 // components/TasksCard.tsx
 import { useSession } from "next-auth/react";
 import React, { useState, useEffect, useRef } from "react";
-import SmallCardFrame from "../util/SmallCardFrame";
+import SmallCardFrame from "./SmallCardFrame";
 import StatusButton from "./StatusButton";
-import { createLocalDate, addBusinessDays } from "../../app/utils";
-import UserInfoRow from "../util/UserInfoRow";
-import { TaskView, UserView } from "../../app/types/views";
+import { createLocalDate, addBusinessDays } from "@/app/utils";
+import UserInfoRow from "./UserInfoRow";
+import { TaskView, UserView } from "@/app/types/views";
 import { TaskUpdatePayload } from "@/app/types/database";
 
 interface TasksCardProps {

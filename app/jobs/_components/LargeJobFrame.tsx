@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Timeline from "../util/Timeline";
+import Timeline from "@/components/Timeline";
 import { formatDate } from "@/app/utils";
-import StatusBar from "../util/StatusBar";
-import FloorplanViewer from "@/components/job/FloorplanViewer";
+import StatusBar from "@/components/StatusBar";
+import FloorplanViewer from "@/components/FloorplanViewer";
 import { PhaseView, TaskView, MaterialView } from "@/app/types/views";
 
 interface LargeJobFrameProps {

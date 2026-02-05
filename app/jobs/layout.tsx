@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from 'react';
-import NavTabs from '../../components/tabs/NavTabs';
+import NavTabs from './_components/NavTabs';
 import { usePathname } from 'next/navigation';
 import { NavTab } from '../types/views';
 

@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import Timeline from "@/components/util/Timeline";
-import ContentTabs from "@/components/tabs/ContentTabs";
-import CardFrame from "@/components/util/CardFrame";
-import PhaseCard from "@/components/job/PhaseCard";
-import ContactCard from "@/components/contact/ContactCard";
-import StatusBar from "@/components/util/StatusBar";
-import CopyJobModal from "@/components/job/CopyJobModal";
-import CloseJobModal from "@/components/job/CloseJobModal";
-import DeleteJobModal from "@/components/job/DeleteJobModal";
-import FloorplanViewer from "@/components/job/FloorplanViewer";
+import Timeline from "@/components/Timeline";
+import ContentTabs from "./_components/ContentTabs";
+import CardFrame from "@/components/CardFrame";
+import PhaseCard from "@/components/PhaseCard";
+import ContactCard from "@/components/ContactCard";
+import StatusBar from "@/components/StatusBar";
+import CopyJobModal from "./_components/CopyJobModal";
+import CloseJobModal from "./_components/CloseJobModal";
+import DeleteJobModal from "./_components/DeleteJobModal";
+import FloorplanViewer from "@/components/FloorplanViewer";
 import Image from "next/image";
 import { validateFiles } from "@/app/lib/s3";
 import { JobUpdatePayload, FormTask, FormMaterial } from "@/app/types/database";

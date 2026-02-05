@@ -2,14 +2,14 @@
 import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa";
-import CardFrame from "../util/CardFrame";
+import CardFrame from "./CardFrame";
 import Note from "./NoteCard";
 import TasksCard from "./TasksCard";
 import MaterialsCard from "./MaterialsCard";
-import SmallCardFrame from "../util/SmallCardFrame";
-import NewTaskCard from "../new/NewTaskCard";
-import NewMaterialCard from "../new/NewMaterialCard";
-import EditPhaseModal from "../util/EditPhaseModal";
+import SmallCardFrame from "./SmallCardFrame";
+import NewTaskCard from "./NewTaskCard";
+import NewMaterialCard from "./NewMaterialCard";
+import EditPhaseModal from "./EditPhaseModal";
 import { DetailPhaseCardProps } from "@/app/types/props";
 import { createLocalDate } from "@/app/utils";
 
@@ -140,7 +140,14 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
     <CardFrame>
       <div className="mb-4 relative">
         {/* Mobile Layout */}
-        <div className="flex flex-col sm:hidden">
+        <div
+          className="flex flex-col sm:hidden cursor-pointer"
+          onClick={(e) => {
+            if (!(e.target as HTMLElement).closest("button")) {
+              onToggleCollapse();
+            }
+          }}
+        >
           <div className="flex justify-between items-start">
             <div className="flex flex-col">
               <h3 className="text-lg font-semibold">
@@ -187,18 +194,23 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
         </div>
 
         {/* Desktop Layout */}
-        <div className="hidden sm:flex justify-between items-center">
-          <h3 className="text-lg font-semibold">
+        <div
+          className="hidden sm:grid sm:grid-cols-3 sm:items-center cursor-pointer"
+          onClick={(e) => {
+            if (!(e.target as HTMLElement).closest("button")) {
+              onToggleCollapse();
+            }
+          }}
+        >
+          <h3 className="text-lg font-semibold min-w-0 truncate pr-4">
             Phase {phaseNumber} - {phase.name}
           </h3>
 
-          <div className="absolute left-1/2 transform -translate-x-1/2">
-            <span className="text-md">
-              {startDate} - {endDate}
-            </span>
-          </div>
+          <span className="text-md text-center">
+            {startDate} - {endDate}
+          </span>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 justify-end">
             {hasAdminAccess && (
               <button
                 onClick={() => setIsEditModalOpen(true)}

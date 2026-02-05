@@ -2,12 +2,12 @@
 
 import React, { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import CardFrame from "../util/CardFrame";
-import TaskCard from "./NewTaskCard";
-import MaterialCard from "./NewMaterialCard";
+import CardFrame from "@/components/CardFrame";
+import TaskCard from "@/components/NewTaskCard";
+import MaterialCard from "@/components/NewMaterialCard";
 import NoteCard from "./NewNoteCard";
-import EditPhaseModal from "../util/EditPhaseModal";
-import { PhaseCardProps } from "../../app/types/props";
+import EditPhaseModal from "@/components/EditPhaseModal";
+import { PhaseCardProps } from "@/app/types/props";
 import { FormTask, FormMaterial, FormNote } from "@/app/types/database";
 import { formatDate } from "@/app/utils";
 import {
@@ -21,7 +21,7 @@ import {
   deleteMaterial,
   updateNote,
   deleteNote,
-} from "../../handlers/new/phases";
+} from "@/handlers/new/phases";
 
 const NewPhaseCard: React.FC<PhaseCardProps> = ({
   phase,
@@ -178,7 +178,14 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
         <CardFrame>
           {/* Title and Description Section */}
           <div className="flex justify-between items-center mb-4">
-            <div className="grid grid-cols-3 items-center w-full">
+            <div
+              className="grid grid-cols-3 items-center w-full cursor-pointer"
+              onClick={(e) => {
+                if (!(e.target as HTMLElement).closest("button")) {
+                  setIsPhaseCollapsed(!isPhaseCollapsed);
+                }
+              }}
+            >
               <div className="flex-1 col-span-1 pr-2">
                 <h2 className="text-md sm:text-2xl font-bold truncate">
                   {phase.title}

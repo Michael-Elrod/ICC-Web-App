@@ -3,9 +3,9 @@
 
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import EditUserModal from "@/components/contact/EditUserModal";
-import ContactCard from "@/components/contact/ContactCard";
-import InviteModal from "@/components/contact/InviteModal";
+import EditUserModal from "./_components/EditUserModal";
+import ContactCard from "@/components/ContactCard";
+import InviteModal from "./_components/InviteModal";
 import { User } from "@/app/types/database";
 
 type FilterType = "all" | "workers" | "clients";
@@ -98,45 +98,38 @@ export default function ContactsPage() {
     <div className="flex-1">
       <header className="sticky top-0 z-10 transition-all bg-white dark:bg-zinc-900">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-bold">Contacts</h1>
-              <select
-                value={activeFilter}
-                onChange={(e) => setActiveFilter(e.target.value as FilterType)}
-                className="px-4 py-2 rounded-md font-medium border border-zinc-300 
-          dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none 
-          focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All</option>
-                <option value="workers">Workers</option>
-                <option value="clients">Clients</option>
-              </select>
-            </div>
-
-            {(session?.user?.type === "Owner" ||
-              session?.user?.type === "Admin") && (
-              <button
-                onClick={() => setIsInviteModalOpen(true)}
-                className="px-4 py-2 bg-blue-500 text-white font-medium rounded-md 
-      hover:bg-blue-600 transition-colors"
-              >
-                Invite
-              </button>
-            )}
-          </div>
-
-          {/* Rest of the search input remains the same */}
-          <div className="mb-4">
+          <h1 className="text-3xl font-bold mb-3">Contacts</h1>
+          <div className="flex items-center gap-4">
             <input
               type="text"
               placeholder="Search contacts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md 
-                 focus:outline-none focus:ring-2 focus:ring-blue-500 
+              className="flex-1 px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md
+                 focus:outline-none focus:ring-2 focus:ring-blue-500
                  bg-white dark:bg-zinc-800"
             />
+            <select
+              value={activeFilter}
+              onChange={(e) => setActiveFilter(e.target.value as FilterType)}
+              className="px-4 py-2 rounded-md font-medium border border-zinc-300
+                dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none
+                focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">All</option>
+              <option value="workers">Workers</option>
+              <option value="clients">Clients</option>
+            </select>
+            {(session?.user?.type === "Owner" ||
+              session?.user?.type === "Admin") && (
+              <button
+                onClick={() => setIsInviteModalOpen(true)}
+                className="px-4 py-2 bg-blue-500 text-white font-medium rounded-md
+                  hover:bg-blue-600 transition-colors"
+              >
+                Invite
+              </button>
+            )}
           </div>
         </div>
       </header>

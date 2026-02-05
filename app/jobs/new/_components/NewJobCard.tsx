@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { User } from "../../app/types/database";
-import CardFrame from "../util/CardFrame";
+import { User } from "@/app/types/database";
+import CardFrame from "@/components/CardFrame";
 import ClientSearchSelect from "./ClientSearch";
 import NewClientModal from "./NewClientModal";
 import { validateFiles } from "@/app/lib/s3";

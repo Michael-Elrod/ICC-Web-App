@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import SideBar from '@/components/util/SideBar'
+import SideBar from '@/components/SideBar'
 
 // Mock useRouter
 const mockPush = vi.fn()

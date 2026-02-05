@@ -1,7 +1,7 @@
 // components/ContactCard.tsx
 import React from 'react';
-import CardFrame from '../util/CardFrame';
-import UserInfoRow from '../util/UserInfoRow';
+import CardFrame from './CardFrame';
+import UserInfoRow from './UserInfoRow';
 import { ContactCardProps } from '@/app/types/props';
 
 const ContactCard: React.FC<ContactCardProps> = ({
