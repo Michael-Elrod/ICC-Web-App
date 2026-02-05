@@ -7,6 +7,7 @@ import Note from "./NoteCard";
 import TasksCard from "./TasksCard";
 import MaterialsCard from "./MaterialsCard";
 import SmallCardFrame from "./SmallCardFrame";
+import CollapsibleSection from "./CollapsibleSection";
 import NewTaskCard from "./NewTaskCard";
 import NewMaterialCard from "./NewMaterialCard";
 import EditPhaseModal from "./EditPhaseModal";
@@ -257,245 +258,256 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
 
           <div className="space-y-4">
             {showTasks && (
-              <div>
-                <TasksCard
-                  tasks={phase.tasks.map((task) => ({
-                    ...task,
-                    phase_id: phase.phase_id,
-                  }))}
-                  contacts={contacts}
-                  onStatusUpdate={onStatusUpdate}
-                  onDelete={onTaskDelete}
-                  userType={userType}
-                />
-                {isAddingTask && (
-                  <NewTaskCard
-                    phase={{
-                      tempId: phase.phase_id.toString(),
-                      title: phase.name,
-                      description: "",
-                      startDate: phase.startDate,
-                      tasks: phase.tasks.map((task) => ({
-                        id: task.task_id.toString(),
-                        title: task.task_title,
-                        startDate: task.task_startdate,
-                        duration: task.task_duration.toString(),
-                        offset: 0,
-                        details: task.task_description,
-                        selectedContacts: task.users.map((user) => ({
-                          id: user.user_id.toString(),
-                        })),
-                        isExpanded: false,
-                      })),
-                      materials: phase.materials.map((material) => ({
-                        id: material.material_id.toString(),
-                        title: material.material_title,
-                        dueDate: material.material_duedate,
-                        offset: 0,
-                        details: material.material_description,
-                        selectedContacts: material.users.map((user) => ({
-                          id: user.user_id.toString(),
-                        })),
-                        isExpanded: false,
-                      })),
-                      notes: [],
-                    }}
-                    task={{
-                      id: `new-task-${Date.now()}`,
-                      title: "",
-                      startDate: "",
-                      duration: "1",
-                      details: "",
-                      selectedContacts: [],
-                      isExpanded: true,
-                      offset: 0,
-                    }}
-                    phaseStartDate={phase.startDate}
-                    contacts={contacts}
-                    onUpdate={async (updatedTask) => {
-                      try {
-                        await onTaskCreate(phase.phase_id, updatedTask);
-                        setIsAddingTask(false);
-                      } catch (error) {
-                        console.error("Error creating task:", error);
-                      }
-                    }}
-                    onDelete={() => setIsAddingTask(false)}
-                    onPhaseUpdate={() => {}}
-                  />
-                )}
-                {hasAdminAccess && (
-                  <div className="flex justify-center mt-4">
-                    <button
-                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
-                      onClick={() => setIsAddingTask(true)}
-                    >
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4v16m8-8H4"
+              <TasksCard
+                tasks={phase.tasks.map((task) => ({
+                  ...task,
+                  phase_id: phase.phase_id,
+                }))}
+                contacts={contacts}
+                onStatusUpdate={onStatusUpdate}
+                onDelete={onTaskDelete}
+                userType={userType}
+                renderAddingForm={
+                  isAddingTask
+                    ? () => (
+                        <NewTaskCard
+                          phase={{
+                            tempId: phase.phase_id.toString(),
+                            title: phase.name,
+                            description: "",
+                            startDate: phase.startDate,
+                            tasks: phase.tasks.map((task) => ({
+                              id: task.task_id.toString(),
+                              title: task.task_title,
+                              startDate: task.task_startdate,
+                              duration: task.task_duration.toString(),
+                              offset: 0,
+                              details: task.task_description,
+                              selectedContacts: task.users.map((user) => ({
+                                id: user.user_id.toString(),
+                              })),
+                              isExpanded: false,
+                            })),
+                            materials: phase.materials.map((material) => ({
+                              id: material.material_id.toString(),
+                              title: material.material_title,
+                              dueDate: material.material_duedate,
+                              offset: 0,
+                              details: material.material_description,
+                              selectedContacts: material.users.map((user) => ({
+                                id: user.user_id.toString(),
+                              })),
+                              isExpanded: false,
+                            })),
+                            notes: [],
+                          }}
+                          task={{
+                            id: `new-task-${Date.now()}`,
+                            title: "",
+                            startDate: "",
+                            duration: "1",
+                            details: "",
+                            selectedContacts: [],
+                            isExpanded: true,
+                            offset: 0,
+                          }}
+                          phaseStartDate={phase.startDate}
+                          contacts={contacts}
+                          onUpdate={async (updatedTask) => {
+                            try {
+                              await onTaskCreate(phase.phase_id, updatedTask);
+                              setIsAddingTask(false);
+                            } catch (error) {
+                              console.error("Error creating task:", error);
+                            }
+                          }}
+                          onDelete={() => setIsAddingTask(false)}
+                          onPhaseUpdate={() => {}}
                         />
-                      </svg>
-                    </button>
-                  </div>
-                )}
-              </div>
+                      )
+                    : undefined
+                }
+                renderAddButton={
+                  hasAdminAccess
+                    ? () => (
+                        <div className="flex justify-center mt-4">
+                          <button
+                            className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
+                            onClick={() => setIsAddingTask(true)}
+                          >
+                            <svg
+                              className="w-6 h-6"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 4v16m8-8H4"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      )
+                    : undefined
+                }
+              />
             )}
 
             {showMaterials && (
-              <div>
-                <MaterialsCard
-                  materials={phase.materials.map((material) => ({
-                    ...material,
-                    phase_id: phase.phase_id,
-                  }))}
-                  contacts={contacts}
-                  onStatusUpdate={onStatusUpdate}
-                  onDelete={onMaterialDelete}
-                  userType={userType}
-                />
-                {isAddingMaterial && (
-                  <NewMaterialCard
-                    phase={{
-                      tempId: phase.phase_id.toString(),
-                      title: phase.name,
-                      description: "",
-                      startDate: phase.startDate,
-                      tasks: phase.tasks.map((task) => ({
-                        id: task.task_id.toString(),
-                        title: task.task_title,
-                        startDate: task.task_startdate,
-                        duration: task.task_duration.toString(),
-                        offset: 0,
-                        details: task.task_description,
-                        selectedContacts: task.users.map((user) => ({
-                          id: user.user_id.toString(),
-                        })),
-                        isExpanded: false,
-                      })),
-                      materials: phase.materials.map((material) => ({
-                        id: material.material_id.toString(),
-                        title: material.material_title,
-                        dueDate: material.material_duedate,
-                        offset: 0,
-                        details: material.material_description,
-                        selectedContacts: material.users.map((user) => ({
-                          id: user.user_id.toString(),
-                        })),
-                        isExpanded: false,
-                      })),
-                      notes: [],
-                    }}
-                    material={{
-                      id: `new-material-${Date.now()}`,
-                      title: "",
-                      dueDate: "",
-                      details: "",
-                      selectedContacts: [],
-                      isExpanded: true,
-                      offset: 0,
-                    }}
-                    phaseStartDate={phase.startDate}
-                    contacts={contacts}
-                    onUpdate={async (updatedMaterial) => {
-                      try {
-                        await onMaterialCreate(phase.phase_id, updatedMaterial);
-                        setIsAddingMaterial(false);
-                      } catch (error) {
-                        console.error("Error creating material:", error);
-                      }
-                    }}
-                    onDelete={() => setIsAddingMaterial(false)}
-                    onPhaseUpdate={() => {}}
-                  />
-                )}
-                {hasAdminAccess && (
-                  <div className="flex justify-center mt-4">
-                    <button
-                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
-                      onClick={() => setIsAddingMaterial(true)}
-                    >
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4v16m8-8H4"
+              <MaterialsCard
+                materials={phase.materials.map((material) => ({
+                  ...material,
+                  phase_id: phase.phase_id,
+                }))}
+                contacts={contacts}
+                onStatusUpdate={onStatusUpdate}
+                onDelete={onMaterialDelete}
+                userType={userType}
+                renderAddingForm={
+                  isAddingMaterial
+                    ? () => (
+                        <NewMaterialCard
+                          phase={{
+                            tempId: phase.phase_id.toString(),
+                            title: phase.name,
+                            description: "",
+                            startDate: phase.startDate,
+                            tasks: phase.tasks.map((task) => ({
+                              id: task.task_id.toString(),
+                              title: task.task_title,
+                              startDate: task.task_startdate,
+                              duration: task.task_duration.toString(),
+                              offset: 0,
+                              details: task.task_description,
+                              selectedContacts: task.users.map((user) => ({
+                                id: user.user_id.toString(),
+                              })),
+                              isExpanded: false,
+                            })),
+                            materials: phase.materials.map((material) => ({
+                              id: material.material_id.toString(),
+                              title: material.material_title,
+                              dueDate: material.material_duedate,
+                              offset: 0,
+                              details: material.material_description,
+                              selectedContacts: material.users.map((user) => ({
+                                id: user.user_id.toString(),
+                              })),
+                              isExpanded: false,
+                            })),
+                            notes: [],
+                          }}
+                          material={{
+                            id: `new-material-${Date.now()}`,
+                            title: "",
+                            dueDate: "",
+                            details: "",
+                            selectedContacts: [],
+                            isExpanded: true,
+                            offset: 0,
+                          }}
+                          phaseStartDate={phase.startDate}
+                          contacts={contacts}
+                          onUpdate={async (updatedMaterial) => {
+                            try {
+                              await onMaterialCreate(phase.phase_id, updatedMaterial);
+                              setIsAddingMaterial(false);
+                            } catch (error) {
+                              console.error("Error creating material:", error);
+                            }
+                          }}
+                          onDelete={() => setIsAddingMaterial(false)}
+                          onPhaseUpdate={() => {}}
                         />
-                      </svg>
-                    </button>
-                  </div>
-                )}
-              </div>
+                      )
+                    : undefined
+                }
+                renderAddButton={
+                  hasAdminAccess
+                    ? () => (
+                        <div className="flex justify-center mt-4">
+                          <button
+                            className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
+                            onClick={() => setIsAddingMaterial(true)}
+                          >
+                            <svg
+                              className="w-6 h-6"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 4v16m8-8H4"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      )
+                    : undefined
+                }
+              />
             )}
-          </div>
 
-          <div className="mt-4">
-            <h4 className="text-md font-semibold mb-2">Notes</h4>
-            <div className="space-y-2 mb-4">
-              {notes.map((note, index) => (
-                <SmallCardFrame key={note.created_at}>
-                  <Note
-                    {...note}
-                    onClick={() =>
-                      setExpandedNoteId(expandedNoteId === index ? null : index)
-                    }
-                    isExpanded={expandedNoteId === index}
-                  />
-                  {expandedNoteId === index && hasAdminAccess && (
-                    <div className="mt-4 flex justify-end">
+            <CollapsibleSection title="Notes" itemCount={notes.length}>
+              <div className="space-y-2 mb-4">
+                {notes.map((note, index) => (
+                  <SmallCardFrame key={note.created_at}>
+                    <Note
+                      {...note}
+                      onClick={() =>
+                        setExpandedNoteId(expandedNoteId === index ? null : index)
+                      }
+                      isExpanded={expandedNoteId === index}
+                    />
+                    {expandedNoteId === index && hasAdminAccess && (
+                      <div className="mt-4 flex justify-end">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveNoteModal(note.created_at);
+                            setEditNoteDetails(note.note_details);
+                          }}
+                          className="px-4 py-2 bg-gray-500 text-white rounded font-bold hover:bg-gray-600 transition-colors"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    )}
+                  </SmallCardFrame>
+                ))}
+              </div>
+
+              {/* Only render the Add New Note section for admin users */}
+              {hasAdminAccess && (
+                <SmallCardFrame>
+                  <div className="space-y-2">
+                    <h5 className="text-sm font-medium">Add New Note</h5>
+                    <textarea
+                      value={newNote}
+                      onChange={(e) => setNewNote(e.target.value)}
+                      placeholder="Type your note here..."
+                      className="w-full p-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:border-zinc-600 shadow-sm"
+                      rows={3}
+                    />
+                    <div className="flex justify-end">
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveNoteModal(note.created_at);
-                          setEditNoteDetails(note.note_details);
-                        }}
-                        className="px-4 py-2 bg-gray-500 text-white rounded font-bold hover:bg-gray-600 transition-colors"
+                        onClick={handleAddNote}
+                        disabled={!newNote.trim()}
+                        className="px-4 py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Edit
+                        Add Note
                       </button>
                     </div>
-                  )}
-                </SmallCardFrame>
-              ))}
-            </div>
-
-            {/* Only render the Add New Note section for admin users */}
-            {hasAdminAccess && (
-              <SmallCardFrame>
-                <div className="space-y-2">
-                  <h5 className="text-sm font-medium">Add New Note</h5>
-                  <textarea
-                    value={newNote}
-                    onChange={(e) => setNewNote(e.target.value)}
-                    placeholder="Type your note here..."
-                    className="w-full p-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:border-zinc-600 shadow-sm"
-                    rows={3}
-                  />
-                  <div className="flex justify-end">
-                    <button
-                      onClick={handleAddNote}
-                      disabled={!newNote.trim()}
-                      className="px-4 py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Add Note
-                    </button>
                   </div>
-                </div>
-              </SmallCardFrame>
-            )}
+                </SmallCardFrame>
+              )}
+            </CollapsibleSection>
           </div>
         </>
       )}

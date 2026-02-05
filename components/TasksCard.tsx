@@ -2,6 +2,7 @@
 import { useSession } from "next-auth/react";
 import React, { useState, useEffect, useRef } from "react";
 import SmallCardFrame from "./SmallCardFrame";
+import CollapsibleSection from "./CollapsibleSection";
 import StatusButton from "./StatusButton";
 import { createLocalDate, addBusinessDays } from "@/app/utils";
 import UserInfoRow from "./UserInfoRow";
@@ -18,6 +19,8 @@ interface TasksCardProps {
   ) => void;
   onDelete: (id: number) => Promise<void>;
   userType?: string;
+  renderAddButton?: () => React.ReactNode;
+  renderAddingForm?: () => React.ReactNode;
 }
 
 const TasksCard: React.FC<TasksCardProps> = ({
@@ -26,6 +29,8 @@ const TasksCard: React.FC<TasksCardProps> = ({
   onStatusUpdate,
   onDelete,
   userType,
+  renderAddButton,
+  renderAddingForm,
 }) => {
   const [expandedTaskId, setExpandedTaskId] = useState<number | null>(null);
   const [localTasks, setLocalTasks] = useState(tasks);
@@ -208,8 +213,7 @@ const TasksCard: React.FC<TasksCardProps> = ({
   };
 
   return (
-    <div className="space-y-2">
-      <h4 className="text-md font-semibold mb-2">Tasks</h4>
+    <CollapsibleSection title="Tasks" itemCount={sortedTasks.length}>
       <div className="space-y-2">
         {sortedTasks.map((task) => {
 
@@ -498,7 +502,9 @@ const TasksCard: React.FC<TasksCardProps> = ({
           );
         })}
       </div>
-    </div>
+      {renderAddingForm && renderAddingForm()}
+      {renderAddButton && renderAddButton()}
+    </CollapsibleSection>
   );
 };
 

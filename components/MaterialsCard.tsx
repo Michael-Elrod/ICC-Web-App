@@ -2,6 +2,7 @@
 import { useSession } from "next-auth/react";
 import React, { useState, useEffect, useRef } from "react";
 import SmallCardFrame from "./SmallCardFrame";
+import CollapsibleSection from "./CollapsibleSection";
 import StatusButton from "./StatusButton";
 import { createLocalDate } from "@/app/utils";
 import UserInfoRow from "./UserInfoRow";
@@ -18,6 +19,8 @@ interface MaterialsCardProps {
   ) => void;
   onDelete: (id: number) => Promise<void>;
   userType?: string;
+  renderAddButton?: () => React.ReactNode;
+  renderAddingForm?: () => React.ReactNode;
 }
 
 const MaterialsCard: React.FC<MaterialsCardProps> = ({
@@ -26,6 +29,8 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
   onStatusUpdate,
   onDelete,
   userType,
+  renderAddButton,
+  renderAddingForm,
 }) => {
   const [expandedMaterialId, setExpandedMaterialId] = useState<number | null>(
     null
@@ -191,8 +196,7 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
   };
 
   return (
-    <div className="space-y-2">
-      <h4 className="text-md font-semibold mb-2">Materials</h4>
+    <CollapsibleSection title="Materials" itemCount={sortedMaterials.length}>
       <div className="space-y-2">
         {sortedMaterials.map((material) => (
           <div key={material.material_id}>
@@ -482,7 +486,9 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
           </div>
         ))}
       </div>
-    </div>
+      {renderAddingForm && renderAddingForm()}
+      {renderAddButton && renderAddButton()}
+    </CollapsibleSection>
   );
 };
 
