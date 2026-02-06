@@ -11,9 +11,7 @@ import { PhaseView, TaskView, MaterialView } from "@/app/types/views";
 interface LargeJobFrameProps {
   id: number;
   jobName: string;
-  job_startdate: string;
   dateRange: string;
-  currentWeek: string;
   phases: PhaseView[];
   overdue: number;
   sevenDaysPlus: number;
@@ -32,9 +30,7 @@ interface LargeJobFrameProps {
 const LargeJobFrame: React.FC<LargeJobFrameProps> = ({
   id,
   jobName,
-  job_startdate,
   dateRange,
-  currentWeek,
   phases,
   overdue,
   sevenDaysPlus,
@@ -149,7 +145,6 @@ const LargeJobFrame: React.FC<LargeJobFrameProps> = ({
             phases={phases}
             startDate={formatDate(phases[0].startDate)}
             endDate={formatDate(phases[phases.length - 1].endDate)}
-            currentWeek={parseInt(currentWeek)}
             onStatusUpdate={handleStatusUpdate}
           />
         </div>

@@ -14,6 +14,11 @@ interface JobDetails extends RowDataPacket {
   date_range: string;
   total_weeks: number;
   current_week: number;
+  client_id: number | null;
+  client_first_name: string | null;
+  client_last_name: string | null;
+  client_email: string | null;
+  client_phone: string | null;
 }
 
 interface User extends RowDataPacket {
@@ -72,9 +77,14 @@ export const GET = withDb(async (connection, request, params) => {
       j.job_location,
       j.job_description,
       j.job_status,
-      j.job_startdate as job_startdate,
-      CEIL(DATEDIFF(CURDATE(), j.job_startdate) / 7) + 1 as current_week
+      j.client_id,
+      CEIL(DATEDIFF(CURDATE(), j.job_startdate) / 7) + 1 as current_week,
+      c.user_first_name as client_first_name,
+      c.user_last_name as client_last_name,
+      c.user_email as client_email,
+      c.user_phone as client_phone
     FROM job j
+    LEFT JOIN app_user c ON j.client_id = c.user_id
     WHERE j.job_id = ?`,
     [params.id]
   );
@@ -405,6 +415,12 @@ GROUP BY m.material_id`,
 
   const jobDetails = {
     ...job,
+    client: job.client_id ? {
+      first_name: job.client_first_name,
+      last_name: job.client_last_name,
+      email: job.client_email,
+      phone: job.client_phone,
+    } : null,
     phases: enhancedPhases,
     tasks: transformedTasks,
     materials: transformedMaterials,

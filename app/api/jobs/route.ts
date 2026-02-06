@@ -69,6 +69,24 @@ interface Floorplan extends RowDataPacket {
   floorplan_url: string;
 }
 
+interface TaskUser extends RowDataPacket {
+  task_id: number;
+  user_id: number;
+  user_first_name: string;
+  user_last_name: string;
+  user_email: string;
+  user_phone: string;
+}
+
+interface MaterialUser extends RowDataPacket {
+  material_id: number;
+  user_id: number;
+  user_first_name: string;
+  user_last_name: string;
+  user_email: string;
+  user_phone: string;
+}
+
 export const GET = withDb(async (connection, request) => {
   const { searchParams } = new URL(request.url);
   const view = searchParams.get('view') || 'overview';
@@ -79,6 +97,7 @@ export const GET = withDb(async (connection, request) => {
       SELECT
         j.job_id,
         j.job_title,
+        j.job_startdate,
         (
           SELECT COUNT(*)
           FROM phase p1
@@ -202,7 +221,9 @@ export const GET = withDb(async (connection, request) => {
     [materialsRows],
     [workersRows],
     [phasesRows],
-    [floorplansRows]
+    [floorplansRows],
+    [taskUsersRows],
+    [materialUsersRows]
   ] = await Promise.all([
     connection.query<TaskCount[]>(`
       SELECT
@@ -299,12 +320,29 @@ export const GET = withDb(async (connection, request) => {
       ORDER BY p.phase_startdate
     `, [jobIds]),
 
-    // Bulk floorplans query
     connection.query<Floorplan[]>(`
       SELECT job_id, floorplan_id, floorplan_url
       FROM job_floorplan
       WHERE job_id IN (?)
       ORDER BY floorplan_id
+    `, [jobIds]),
+
+    connection.query<TaskUser[]>(`
+      SELECT t.task_id, u.user_id, u.user_first_name, u.user_last_name, u.user_email, u.user_phone
+      FROM user_task ut
+      JOIN app_user u ON ut.user_id = u.user_id
+      JOIN task t ON ut.task_id = t.task_id
+      JOIN phase p ON t.phase_id = p.phase_id
+      WHERE p.job_id IN (?)
+    `, [jobIds]),
+
+    connection.query<MaterialUser[]>(`
+      SELECT m.material_id, u.user_id, u.user_first_name, u.user_last_name, u.user_email, u.user_phone
+      FROM user_material um
+      JOIN app_user u ON um.user_id = u.user_id
+      JOIN material m ON um.material_id = m.material_id
+      JOIN phase p ON m.phase_id = p.phase_id
+      WHERE p.job_id IN (?)
     `, [jobIds])
   ]);
 
@@ -358,6 +396,22 @@ export const GET = withDb(async (connection, request) => {
     floorplansByJob.get(row.job_id)!.push(row);
   }
 
+  const usersByTask = new Map<number, TaskUser[]>();
+  for (const row of taskUsersRows) {
+    if (!usersByTask.has(row.task_id)) {
+      usersByTask.set(row.task_id, []);
+    }
+    usersByTask.get(row.task_id)!.push(row);
+  }
+
+  const usersByMaterial = new Map<number, MaterialUser[]>();
+  for (const row of materialUsersRows) {
+    if (!usersByMaterial.has(row.material_id)) {
+      usersByMaterial.set(row.material_id, []);
+    }
+    usersByMaterial.get(row.material_id)!.push(row);
+  }
+
   const enhancedJobs = jobs.map((job: Job) => {
     const taskCounts = taskCountsByJob.get(job.job_id) || { overdue: 0, next_seven_days: 0, beyond_seven_days: 0 };
     const materialCounts = materialCountsByJob.get(job.job_id) || { overdue: 0, next_seven_days: 0, beyond_seven_days: 0 };
@@ -377,7 +431,13 @@ export const GET = withDb(async (connection, request) => {
         task_duration: t.task_duration,
         task_status: t.task_status,
         task_description: t.task_description,
-        users: []
+        users: (usersByTask.get(t.task_id) || []).map(u => ({
+          user_id: u.user_id,
+          user_first_name: u.user_first_name,
+          user_last_name: u.user_last_name,
+          user_email: u.user_email,
+          user_phone: u.user_phone || '',
+        }))
       })),
       materials: materials.map((m: Material) => ({
         material_id: m.material_id,
@@ -386,7 +446,13 @@ export const GET = withDb(async (connection, request) => {
         material_duedate: m.material_duedate,
         material_status: m.material_status,
         material_description: m.material_description,
-        users: []
+        users: (usersByMaterial.get(m.material_id) || []).map(u => ({
+          user_id: u.user_id,
+          user_first_name: u.user_first_name,
+          user_last_name: u.user_last_name,
+          user_email: u.user_email,
+          user_phone: u.user_phone || '',
+        }))
       })),
       workers,
       floorplans: floorplans.map(fp => ({

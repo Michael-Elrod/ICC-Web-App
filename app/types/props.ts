@@ -149,7 +149,6 @@ export interface ContactCardProps {
 
 export interface TimelineProps {
   phases: PhaseView[];
-  currentWeek: number;
   startDate: string;
   endDate: string;
   onStatusUpdate: (

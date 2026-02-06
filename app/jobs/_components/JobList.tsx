@@ -39,7 +39,13 @@ function JobListContent({ status }: JobListProps) {
             task_duration: task.task_duration || 0,
             task_status: task.task_status,
             task_description: task.task_description || "",
-            users: task.users || [],
+            users: (task.users || []).map((user: any) => ({
+              user_id: user.user_id,
+              first_name: user.user_first_name,
+              last_name: user.user_last_name,
+              user_email: user.user_email,
+              user_phone: user.user_phone || "",
+            })),
           }));
 
           const transformedMaterials = job.materials.map((material: any) => ({
@@ -49,7 +55,13 @@ function JobListContent({ status }: JobListProps) {
             material_duedate: material.material_duedate || "",
             material_status: material.material_status,
             material_description: material.material_description || "",
-            users: material.users || [],
+            users: (material.users || []).map((user: any) => ({
+              user_id: user.user_id,
+              first_name: user.user_first_name,
+              last_name: user.user_last_name,
+              user_email: user.user_email,
+              user_phone: user.user_phone || "",
+            })),
           }));
 
           const transformedFloorplans =
@@ -63,7 +75,6 @@ function JobListContent({ status }: JobListProps) {
             jobName: job.job_title,
             job_startdate: job.job_startdate,
             dateRange: job.date_range,
-            currentWeek: job.current_week,
             tasks: transformedTasks,
             materials: transformedMaterials,
             floorplans: transformedFloorplans,
@@ -100,11 +111,18 @@ function JobListContent({ status }: JobListProps) {
   const searchTerms = searchQuery
     .split(",")
     .map((term) => term.trim().toLowerCase());
-  const filteredJobs = jobs.filter(
-    (job) =>
-      searchTerms.length === 0 ||
-      searchTerms.some((term) => job.jobName.toLowerCase().includes(term))
-  );
+
+  const filteredJobs = jobs
+    .filter(
+      (job) =>
+        searchTerms.length === 0 ||
+        searchTerms.some((term) => job.jobName.toLowerCase().includes(term))
+    )
+    .sort((a, b) => {
+      const dateA = new Date(a.job_startdate).getTime();
+      const dateB = new Date(b.job_startdate).getTime();
+      return status === "closed" ? dateB - dateA : dateA - dateB;
+    });
 
   const handleStatusUpdate = (
     jobId: number,
@@ -181,9 +199,7 @@ function JobListContent({ status }: JobListProps) {
             key={job.id}
             id={job.id}
             jobName={job.jobName}
-            job_startdate={job.job_startdate}
             dateRange={job.dateRange}
-            currentWeek={job.currentWeek.toString()}
             phases={job.phases}
             overdue={job.overdue}
             sevenDaysPlus={job.sevenDaysPlus}

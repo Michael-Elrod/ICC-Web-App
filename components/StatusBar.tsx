@@ -34,16 +34,16 @@ const StatusBar: React.FC<StatusBarProps> = ({
             <div className="absolute top-[-30px] left-0 right-0">
               <div className="flex justify-center space-x-4">
                 <div className="flex items-center">
-                  <div className="w-4 h-4 bg-red-500 mr-2"></div>
+                  <div className="w-4 h-4 bg-red-500 rounded-sm mr-2"></div>
                   <span>Overdue</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-4 h-4 bg-yellow-500 mr-2"></div>
+                  <div className="w-4 h-4 bg-yellow-500 rounded-sm mr-2"></div>
                   <span className="hidden sm:inline">Next 7 Days</span>
                   <span className="sm:hidden">&lt; 7 Days</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-4 h-4 bg-green-500 mr-2"></div>
+                  <div className="w-4 h-4 bg-green-500 rounded-sm mr-2"></div>
                   <span>&gt; 7 days</span>
                 </div>
               </div>
@@ -127,16 +127,16 @@ const StatusBar: React.FC<StatusBarProps> = ({
             <div className="absolute top-[-30px] left-0 right-0">
               <div className="flex justify-center space-x-4">
                 <div className="flex items-center">
-                  <div className="w-4 h-4 bg-red-500 mr-2"></div>
+                  <div className="w-4 h-4 bg-red-500 rounded-sm mr-2"></div>
                   <span>Incomplete</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-4 h-4 bg-yellow-500 mr-2"></div>
+                  <div className="w-4 h-4 bg-yellow-500 rounded-sm mr-2"></div>
                   <span className="hidden sm:inline">In Progress</span>
                   <span className="sm:hidden">Progress</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-4 h-4 bg-green-500 mr-2"></div>
+                  <div className="w-4 h-4 bg-green-500 rounded-sm mr-2"></div>
                   <span>Complete</span>
                 </div>
               </div>

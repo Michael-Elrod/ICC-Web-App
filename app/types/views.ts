@@ -8,9 +8,17 @@ export interface FloorPlan {
 export interface JobCardView {
   job_id: number;
   job_title: string;
+  job_startdate: string;
   overdue_count: number;
   next_week_count: number;
   later_weeks_count: number;
+}
+
+export interface ClientView {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
 }
 
 export interface JobDetailView {
@@ -18,7 +26,6 @@ export interface JobDetailView {
   jobName: string;
   job_startdate: string;
   dateRange: string;
-  currentWeek: number;
   phases: PhaseView[];
   overdue: number;
   sevenDaysPlus: number;
@@ -28,6 +35,9 @@ export interface JobDetailView {
   contacts: string[];
   floorplans: FloorPlan[];
   status?: string;
+  location?: string | null;
+  description?: string | null;
+  client?: ClientView | null;
 }
 
 export interface PhaseView {

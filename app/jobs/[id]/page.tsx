@@ -7,6 +7,7 @@ import ContentTabs from "./_components/ContentTabs";
 import CardFrame from "@/components/CardFrame";
 import PhaseCard from "@/components/PhaseCard";
 import ContactCard from "@/components/ContactCard";
+import UserInfoRow from "@/components/UserInfoRow";
 import StatusBar from "@/components/StatusBar";
 import CopyJobModal from "./_components/CopyJobModal";
 import CloseJobModal from "./_components/CloseJobModal";
@@ -1189,7 +1190,6 @@ export default function JobDetailPage() {
           jobName: data.job.job_title,
           job_startdate: data.job.job_startdate,
           dateRange: data.job.date_range,
-          currentWeek: data.job.current_week,
           tasks: transformedTasks,
           materials: transformedMaterials,
           floorplans: transformedFloorplans,
@@ -1215,6 +1215,9 @@ export default function JobDetailPage() {
           sevenDaysPlus: data.job.sevenDaysPlus,
           contacts: data.job.contacts || [],
           status: data.job.job_status,
+          location: data.job.job_location || null,
+          description: data.job.job_description || null,
+          client: data.job.client || null,
         };
 
         setJob(transformedJob);
@@ -1278,6 +1281,7 @@ export default function JobDetailPage() {
     { name: "Materials" },
     { name: "Floor Plan" },
     { name: "Contacts" },
+    { name: "Details" },
   ];
 
   const handleSaveJobChanges = async () => {
@@ -1575,7 +1579,6 @@ export default function JobDetailPage() {
           <div className="w-full">
             <Timeline
               phases={job.phases}
-              currentWeek={job.currentWeek}
               startDate={job.phases[0]?.startDate}
               endDate={job.phases[job.phases.length - 1]?.endDate}
               onStatusUpdate={handleStatusUpdate}
@@ -1592,13 +1595,60 @@ export default function JobDetailPage() {
             setActiveTab={setActiveTab}
           />
         </div>
-        <div className="mt-2 sm:mt-4 mx-auto sm:mx-0 w-full sm:w-auto bg-white dark:bg-zinc-800 shadow-md rounded-lg p-1 sm:p-6">
-          {activeTab === "Contacts"
-            ? renderContacts()
-            : activeTab === "Floor Plan"
-            ? renderFloorPlan()
-            : renderPhaseCards()}
-        </div>
+        {activeTab === "Details" ? (
+          <div className="mt-2 sm:mt-4 mx-auto sm:mx-0 w-full sm:w-auto space-y-3">
+            {!job.client && !job.location && !job.description ? (
+              <div className="bg-white dark:bg-zinc-800 shadow-md rounded-lg p-4 sm:p-6 text-center text-gray-500">
+                No details available for this job.
+              </div>
+            ) : (
+              <>
+                {job.client && (
+                  <div className="bg-white dark:bg-zinc-800 shadow-md rounded-lg p-4 sm:p-6">
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                      Client Information
+                    </h3>
+                    <UserInfoRow
+                      firstName={job.client.first_name}
+                      lastName={job.client.last_name}
+                      phone={job.client.phone || ""}
+                      email={job.client.email}
+                      size="lg"
+                    />
+                  </div>
+                )}
+                {job.location && (
+                  <div className="bg-white dark:bg-zinc-800 shadow-md rounded-lg p-4 sm:p-6">
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                      Location
+                    </h3>
+                    <p className="text-gray-900 dark:text-gray-100">
+                      {job.location}
+                    </p>
+                  </div>
+                )}
+                {job.description && (
+                  <div className="bg-white dark:bg-zinc-800 shadow-md rounded-lg p-4 sm:p-6">
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                      Description
+                    </h3>
+                    <p className="text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+                      {job.description}
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="mt-2 sm:mt-4 mx-auto sm:mx-0 w-full sm:w-auto bg-white dark:bg-zinc-800 shadow-md rounded-lg p-1 sm:p-6">
+            {activeTab === "Contacts"
+              ? renderContacts()
+              : activeTab === "Floor Plan"
+              ? renderFloorPlan()
+              : renderPhaseCards()}
+          </div>
+        )}
       </section>
 
       {activeModal === "floorplan" && (

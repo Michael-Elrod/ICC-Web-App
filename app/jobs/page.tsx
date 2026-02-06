@@ -25,9 +25,13 @@ export default function JobsPage() {
     fetchJobs();
   }, []);
 
-  const filteredJobs = jobs.filter((job) =>
-    job.job_title.toLowerCase().includes(localSearchQuery.toLowerCase())
-  );
+  const filteredJobs = jobs
+    .filter((job) =>
+      job.job_title.toLowerCase().includes(localSearchQuery.toLowerCase())
+    )
+    .sort((a, b) =>
+      new Date(a.job_startdate).getTime() - new Date(b.job_startdate).getTime()
+    );
 
   const handleJobSelect = (jobId: string) => {
     setSelectedJobs((prev) =>
@@ -92,6 +96,7 @@ export default function JobsPage() {
           key={job.job_id}
           job_id={job.job_id}
           job_title={job.job_title}
+          job_startdate={job.job_startdate}
           overdue_count={job.overdue_count}
           next_week_count={job.next_week_count}
           later_weeks_count={job.later_weeks_count}
