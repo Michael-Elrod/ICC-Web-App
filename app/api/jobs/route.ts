@@ -62,9 +62,6 @@ interface Job extends RowDataPacket {
   job_startdate: Date;
   job_location: string;
   job_description: string;
-  date_range: string;
-  total_weeks: number;
-  current_week: number;
 }
 
 interface Floorplan extends RowDataPacket {
@@ -97,66 +94,68 @@ export const GET = withDb(async (connection, request) => {
   const status = searchParams.get('status') || 'active';
 
   if (view === 'overview') {
-    const [jobs] = await connection.query(`
-      SELECT
-        j.job_id,
-        j.job_title,
-        j.job_startdate,
-        (
-          SELECT COUNT(*)
-          FROM phase p1
-          JOIN task t ON p1.phase_id = t.phase_id
-          WHERE p1.job_id = j.job_id
-            AND t.task_status = 'Incomplete'
-            AND DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY) < CURDATE()
-        ) +
-        (
-          SELECT COUNT(*)
-          FROM phase p2
-          JOIN material m ON p2.phase_id = m.phase_id
-          WHERE p2.job_id = j.job_id
-            AND m.material_status = 'Incomplete'
-            AND m.material_duedate < CURDATE()
-        ) as overdue_count,
-        (
-          SELECT COUNT(*)
-          FROM phase p3
-          JOIN task t ON p3.phase_id = t.phase_id
-          WHERE p3.job_id = j.job_id
-            AND t.task_status = 'Incomplete'
-            AND DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY)
-            BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-        ) +
-        (
-          SELECT COUNT(*)
-          FROM phase p4
-          JOIN material m ON p4.phase_id = m.phase_id
-          WHERE p4.job_id = j.job_id
-            AND m.material_status = 'Incomplete'
-            AND m.material_duedate
-            BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-        ) as next_week_count,
-        (
-          SELECT COUNT(*)
-          FROM phase p5
-          JOIN task t ON p5.phase_id = t.phase_id
-          WHERE p5.job_id = j.job_id
-            AND t.task_status = 'Incomplete'
-            AND DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY)
-            > DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-        ) +
-        (
-          SELECT COUNT(*)
-          FROM phase p6
-          JOIN material m ON p6.phase_id = m.phase_id
-          WHERE p6.job_id = j.job_id
-            AND m.material_status = 'Incomplete'
-            AND m.material_duedate > DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-        ) as later_weeks_count
+    const [baseJobs] = await connection.query<RowDataPacket[]>(`
+      SELECT j.job_id, j.job_title, j.job_startdate
       FROM job j
       WHERE j.job_status = ?
-      GROUP BY j.job_id, j.job_title
     `, [status]);
+
+    const jobIds = baseJobs.map(j => j.job_id);
+    if (jobIds.length === 0) {
+      return NextResponse.json({ jobs: [] });
+    }
+
+    const [[taskCounts], [materialCounts]] = await Promise.all([
+      connection.query<TaskCount[]>(`
+        SELECT
+          p.job_id,
+          COUNT(CASE WHEN t.task_status = 'Incomplete'
+            AND DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY) < CURDATE()
+            THEN 1 END) as overdue,
+          COUNT(CASE WHEN t.task_status = 'Incomplete'
+            AND DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY)
+            BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+            THEN 1 END) as next_seven_days,
+          COUNT(CASE WHEN t.task_status = 'Incomplete'
+            AND DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY)
+            > DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+            THEN 1 END) as beyond_seven_days
+        FROM phase p
+        LEFT JOIN task t ON p.phase_id = t.phase_id
+        WHERE p.job_id IN (?)
+        GROUP BY p.job_id
+      `, [jobIds]),
+      connection.query<MaterialCount[]>(`
+        SELECT
+          p.job_id,
+          COUNT(CASE WHEN m.material_status = 'Incomplete' AND m.material_duedate < CURDATE() THEN 1 END) as overdue,
+          COUNT(CASE WHEN m.material_status = 'Incomplete' AND m.material_duedate BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN 1 END) as next_seven_days,
+          COUNT(CASE WHEN m.material_status = 'Incomplete' AND m.material_duedate > DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN 1 END) as beyond_seven_days
+        FROM phase p
+        LEFT JOIN material m ON p.phase_id = m.phase_id
+        WHERE p.job_id IN (?)
+        GROUP BY p.job_id
+      `, [jobIds])
+    ]);
+
+    const taskCountMap = new Map<number, TaskCount>();
+    for (const row of taskCounts) taskCountMap.set(row.job_id, row);
+
+    const materialCountMap = new Map<number, MaterialCount>();
+    for (const row of materialCounts) materialCountMap.set(row.job_id, row);
+
+    const jobs = baseJobs.map(job => {
+      const tc = taskCountMap.get(job.job_id) || { overdue: 0, next_seven_days: 0, beyond_seven_days: 0 };
+      const mc = materialCountMap.get(job.job_id) || { overdue: 0, next_seven_days: 0, beyond_seven_days: 0 };
+      return {
+        job_id: job.job_id,
+        job_title: job.job_title,
+        job_startdate: job.job_startdate,
+        overdue_count: (tc.overdue || 0) + (mc.overdue || 0),
+        next_week_count: (tc.next_seven_days || 0) + (mc.next_seven_days || 0),
+        later_weeks_count: (tc.beyond_seven_days || 0) + (mc.beyond_seven_days || 0),
+      };
+    });
 
     return NextResponse.json({ jobs });
   }
@@ -167,48 +166,7 @@ export const GET = withDb(async (connection, request) => {
       j.job_title,
       j.job_startdate,
       j.job_location,
-      j.job_description,
-      CONCAT(
-        DATE_FORMAT(j.job_startdate, '%m/%d'),
-        ' - ',
-        DATE_FORMAT(
-          GREATEST(
-            IFNULL((
-              SELECT MAX(DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY))
-              FROM task t
-              JOIN phase p ON t.phase_id = p.phase_id
-              WHERE p.job_id = j.job_id
-            ), j.job_startdate),
-            IFNULL((
-              SELECT MAX(m.material_duedate)
-              FROM material m
-              JOIN phase p ON m.phase_id = p.phase_id
-              WHERE p.job_id = j.job_id
-            ), j.job_startdate)
-          ),
-          '%m/%d'
-        )
-      ) as date_range,
-      CEIL(
-        DATEDIFF(
-          GREATEST(
-            IFNULL((
-              SELECT MAX(DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY))
-              FROM task t
-              JOIN phase p ON t.phase_id = p.phase_id
-              WHERE p.job_id = j.job_id
-            ), j.job_startdate),
-            IFNULL((
-              SELECT MAX(m.material_duedate)
-              FROM material m
-              JOIN phase p ON m.phase_id = p.phase_id
-              WHERE p.job_id = j.job_id
-            ), j.job_startdate)
-          ),
-          j.job_startdate
-        ) / 7
-      ) + 1 as total_weeks,
-      CEIL(DATEDIFF(CURDATE(), j.job_startdate) / 7) + 1 as current_week
+      j.job_description
     FROM job j
     WHERE j.job_status = ?
   `, [status]);
@@ -431,8 +389,28 @@ export const GET = withDb(async (connection, request) => {
     const phases = phasesByJob.get(job.job_id) || [];
     const floorplans = floorplansByJob.get(job.job_id) || [];
 
+    const jobStart = new Date(job.job_startdate);
+    const maxTaskEnd = tasks.reduce((max, t) => {
+      const end = new Date(t.task_startdate);
+      end.setDate(end.getDate() + t.task_duration);
+      return end > max ? end : max;
+    }, jobStart);
+    const maxMaterialEnd = materials.reduce((max, m) => {
+      const due = new Date(m.material_duedate);
+      return due > max ? due : max;
+    }, jobStart);
+    const endDate = maxTaskEnd > maxMaterialEnd ? maxTaskEnd : maxMaterialEnd;
+    const formatMMDD = (d: Date) => `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+    const daysDiff = (a: Date, b: Date) => Math.round((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
+    const date_range = `${formatMMDD(jobStart)} - ${formatMMDD(endDate)}`;
+    const total_weeks = Math.ceil(daysDiff(endDate, jobStart) / 7) + 1;
+    const current_week = Math.ceil(daysDiff(new Date(), jobStart) / 7) + 1;
+
     return {
       ...job,
+      date_range,
+      total_weeks,
+      current_week,
       tasks: tasks.map((t: Task) => ({
         task_id: t.task_id,
         phase_id: t.phase_id,
