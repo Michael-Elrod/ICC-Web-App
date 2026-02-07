@@ -128,160 +128,101 @@ export const GET = withDb(async (connection, request, params) => {
     [params.id]
   );
 
-  const [statusCounts] = await connection.query<StatusCounts[]>(
-    `
-    WITH RECURSIVE business_days AS (
-      SELECT CURDATE() as date
-      UNION ALL
-      SELECT DATE_ADD(date, INTERVAL 1 DAY)
-      FROM business_days
-      WHERE DATE_ADD(date, INTERVAL 1 DAY) <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-    ),
-    working_days AS (
-      SELECT date FROM business_days
-      WHERE DAYOFWEEK(date) NOT IN (1, 7)
-    ),
-    task_counts AS (
-      SELECT
-        COUNT(CASE
-          WHEN t.task_status = 'Incomplete'
-          AND EXISTS (
-            SELECT 1 FROM (
-              SELECT DATE_ADD(t.task_startdate,
+  const phaseIds = phases.map((p) => p.id);
+
+  const [
+    [statusCounts],
+    [allTasks],
+    [allMaterials],
+    allNotesResult,
+  ] = await Promise.all([
+    connection.query<StatusCounts[]>(
+      `
+      WITH RECURSIVE business_days AS (
+        SELECT CURDATE() as date
+        UNION ALL
+        SELECT DATE_ADD(date, INTERVAL 1 DAY)
+        FROM business_days
+        WHERE DATE_ADD(date, INTERVAL 1 DAY) <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+      ),
+      working_days AS (
+        SELECT date FROM business_days
+        WHERE DAYOFWEEK(date) NOT IN (1, 7)
+      ),
+      task_counts AS (
+        SELECT
+          COUNT(CASE
+            WHEN t.task_status = 'Incomplete'
+            AND EXISTS (
+              SELECT 1 FROM (
+                SELECT DATE_ADD(t.task_startdate,
+                  INTERVAL (t.task_duration +
+                    (SELECT COUNT(*) FROM business_days b
+                     WHERE DAYOFWEEK(b.date) IN (1, 7)
+                     AND b.date BETWEEN t.task_startdate
+                     AND DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY))
+                  ) DAY) as end_date
+              ) as task_end
+              WHERE end_date < CURDATE()
+            )
+            THEN 1 END) as task_overdue,
+          COUNT(CASE
+            WHEN t.task_status = 'Incomplete'
+            AND EXISTS (
+              SELECT 1 FROM working_days w
+              WHERE DATE_ADD(t.task_startdate,
                 INTERVAL (t.task_duration +
                   (SELECT COUNT(*) FROM business_days b
                    WHERE DAYOFWEEK(b.date) IN (1, 7)
                    AND b.date BETWEEN t.task_startdate
                    AND DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY))
-                ) DAY) as end_date
-            ) as task_end
-            WHERE end_date < CURDATE()
-          )
-          THEN 1 END) as task_overdue,
-        COUNT(CASE
-          WHEN t.task_status = 'Incomplete'
-          AND EXISTS (
-            SELECT 1 FROM working_days w
-            WHERE DATE_ADD(t.task_startdate,
+                ) DAY) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+            )
+            THEN 1 END) as task_next_seven,
+          COUNT(CASE
+            WHEN t.task_status = 'Incomplete'
+            AND DATE_ADD(t.task_startdate,
               INTERVAL (t.task_duration +
                 (SELECT COUNT(*) FROM business_days b
                  WHERE DAYOFWEEK(b.date) IN (1, 7)
                  AND b.date BETWEEN t.task_startdate
                  AND DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY))
-              ) DAY) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-          )
-          THEN 1 END) as task_next_seven,
-        COUNT(CASE
-          WHEN t.task_status = 'Incomplete'
-          AND DATE_ADD(t.task_startdate,
-            INTERVAL (t.task_duration +
-              (SELECT COUNT(*) FROM business_days b
-               WHERE DAYOFWEEK(b.date) IN (1, 7)
-               AND b.date BETWEEN t.task_startdate
-               AND DATE_ADD(t.task_startdate, INTERVAL t.task_duration DAY))
-            ) DAY) > DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-          THEN 1 END) as task_beyond_seven
-      FROM task t
-      JOIN phase p ON t.phase_id = p.phase_id
-      WHERE p.job_id = ?
-    ),
-    material_counts AS (
+              ) DAY) > DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+            THEN 1 END) as task_beyond_seven
+        FROM task t
+        JOIN phase p ON t.phase_id = p.phase_id
+        WHERE p.job_id = ?
+      ),
+      material_counts AS (
+        SELECT
+          COUNT(CASE
+            WHEN material_status = 'Incomplete'
+            AND material_duedate < CURDATE()
+            THEN 1 END) as material_overdue,
+          COUNT(CASE
+            WHEN material_status = 'Incomplete'
+            AND material_duedate
+            BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+            THEN 1 END) as material_next_seven,
+          COUNT(CASE
+            WHEN material_status = 'Incomplete'
+            AND material_duedate > DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+            THEN 1 END) as material_beyond_seven
+        FROM material m
+        JOIN phase p ON m.phase_id = p.phase_id
+        WHERE p.job_id = ?
+      )
       SELECT
-        COUNT(CASE
-          WHEN material_status = 'Incomplete'
-          AND material_duedate < CURDATE()
-          THEN 1 END) as material_overdue,
-        COUNT(CASE
-          WHEN material_status = 'Incomplete'
-          AND material_duedate
-          BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-          THEN 1 END) as material_next_seven,
-        COUNT(CASE
-          WHEN material_status = 'Incomplete'
-          AND material_duedate > DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-          THEN 1 END) as material_beyond_seven
-      FROM material m
-      JOIN phase p ON m.phase_id = p.phase_id
-      WHERE p.job_id = ?
-    )
-    SELECT
-        (task_overdue + material_overdue) as overdue,
-        (task_next_seven + material_next_seven) as nextSevenDays,
-        (task_beyond_seven + material_beyond_seven) as sevenDaysPlus
-    FROM task_counts, material_counts
-  `,
-    [job.job_id, job.job_id]
-  );
-
-  const [allTasks] = await connection.query<Task[]>(
-    `
-SELECT
-  t.task_id,
-  t.phase_id,
-  t.task_title,
-  t.task_startdate,
-  t.task_duration,
-  t.task_status,
-  t.task_description,
-  JSON_ARRAYAGG(
-    JSON_OBJECT(
-      'user_id', u.user_id,
-      'user_first_name', u.user_first_name,
-      'user_last_name', u.user_last_name,
-      'user_phone', u.user_phone,
-      'user_email', u.user_email
-    )
-  ) as users
-FROM task t
-LEFT JOIN user_task ut ON t.task_id = ut.task_id
-LEFT JOIN app_user u ON ut.user_id = u.user_id
-JOIN phase p ON t.phase_id = p.phase_id
-WHERE p.job_id = ?
-GROUP BY t.task_id`,
-    [params.id]
-  );
-
-  const [allMaterials] = await connection.query<Material[]>(
-    `
-SELECT
-  m.material_id,
-  m.phase_id,
-  m.material_title,
-  m.material_duedate,
-  m.material_status,
-  m.material_description,
-  JSON_ARRAYAGG(
-    JSON_OBJECT(
-      'user_id', u.user_id,
-      'user_first_name', u.user_first_name,
-      'user_last_name', u.user_last_name,
-      'user_phone', u.user_phone,
-      'user_email', u.user_email
-    )
-  ) as users
-FROM material m
-LEFT JOIN user_material um ON m.material_id = um.material_id
-LEFT JOIN app_user u ON um.user_id = u.user_id
-JOIN phase p ON m.phase_id = p.phase_id
-WHERE p.job_id = ?
-GROUP BY m.material_id`,
-    [params.id]
-  );
-
-  const transformedTasks = allTasks.map((task) => ({
-    ...task,
-    users: task.users[0]?.user_id ? task.users : [],
-  }));
-
-  const transformedMaterials = allMaterials.map((material) => ({
-    ...material,
-    users: material.users[0]?.user_id ? material.users : [],
-  }));
-
-  const enhancedPhases = await Promise.all(
-    phases.map(async (phase) => {
-      const [tasks] = await connection.query<Task[]>(
-        `SELECT
+          (task_overdue + material_overdue) as overdue,
+          (task_next_seven + material_next_seven) as nextSevenDays,
+          (task_beyond_seven + material_beyond_seven) as sevenDaysPlus
+      FROM task_counts, material_counts
+    `,
+      [job.job_id, job.job_id]
+    ),
+    connection.query<Task[]>(
+      `
+      SELECT
         t.task_id,
         t.phase_id,
         t.task_title,
@@ -301,13 +242,14 @@ GROUP BY m.material_id`,
       FROM task t
       LEFT JOIN user_task ut ON t.task_id = ut.task_id
       LEFT JOIN app_user u ON ut.user_id = u.user_id
-      WHERE t.phase_id = ?
+      JOIN phase p ON t.phase_id = p.phase_id
+      WHERE p.job_id = ?
       GROUP BY t.task_id`,
-        [phase.id]
-      );
-
-      const [materials] = await connection.query<Material[]>(
-        `SELECT
+      [params.id]
+    ),
+    connection.query<Material[]>(
+      `
+      SELECT
         m.material_id,
         m.phase_id,
         m.material_title,
@@ -326,84 +268,117 @@ GROUP BY m.material_id`,
       FROM material m
       LEFT JOIN user_material um ON m.material_id = um.material_id
       LEFT JOIN app_user u ON um.user_id = u.user_id
-      WHERE m.phase_id = ?
+      JOIN phase p ON m.phase_id = p.phase_id
+      WHERE p.job_id = ?
       GROUP BY m.material_id`,
-        [phase.id]
-      );
+      [params.id]
+    ),
+    phaseIds.length > 0
+      ? connection.query<RowDataPacket[]>(
+          `SELECT
+            n.phase_id,
+            n.note_details,
+            n.created_at,
+            JSON_OBJECT(
+              'user', JSON_OBJECT(
+                'user_id', u.user_id,
+                'first_name', u.user_first_name,
+                'last_name', u.user_last_name,
+                'user_email', u.user_email,
+                'user_phone', u.user_phone
+              )
+            ) as created_by
+          FROM note n
+          JOIN app_user u ON n.created_by = u.user_id
+          WHERE n.phase_id IN (?)`,
+          [phaseIds]
+        )
+      : [[] as RowDataPacket[]],
+  ]);
 
-      const [notes] = await connection.query<RowDataPacket[]>(
-        `SELECT
-        n.note_details,
-        n.created_at,
-        JSON_OBJECT(
-          'user', JSON_OBJECT(
-            'user_id', u.user_id,
-            'first_name', u.user_first_name,
-            'last_name', u.user_last_name,
-            'user_email', u.user_email,
-            'user_phone', u.user_phone
-          )
-        ) as created_by
-      FROM note n
-      JOIN app_user u ON n.created_by = u.user_id
-      WHERE n.phase_id = ?`,
-        [phase.id]
-      );
+  const allNotes = allNotesResult[0] as RowDataPacket[];
 
-      const transformedTasks = tasks.map((task) => ({
-        ...task,
-        users: task.users[0]?.user_id ? task.users : [],
-      }));
+  const transformedTasks = allTasks.map((task) => ({
+    ...task,
+    users: task.users[0]?.user_id ? task.users : [],
+  }));
 
-      const transformedMaterials = materials.map((material) => ({
-        ...material,
-        users: material.users[0]?.user_id ? material.users : [],
-      }));
+  const transformedMaterials = allMaterials.map((material) => ({
+    ...material,
+    users: material.users[0]?.user_id ? material.users : [],
+  }));
 
-      const transformedNotes = notes.map((note) => ({
-        ...note,
-        created_by:
-          typeof note.created_by === "string"
-            ? JSON.parse(note.created_by)
-            : note.created_by,
-      }));
+  const tasksByPhase = new Map<number, typeof transformedTasks>();
+  for (const task of transformedTasks) {
+    const list = tasksByPhase.get(task.phase_id) || [];
+    list.push(task);
+    tasksByPhase.set(task.phase_id, list);
+  }
 
-      let latestEndDate = new Date(phase.startDate);
+  const materialsByPhase = new Map<number, typeof transformedMaterials>();
+  for (const material of transformedMaterials) {
+    const list = materialsByPhase.get(material.phase_id) || [];
+    list.push(material);
+    materialsByPhase.set(material.phase_id, list);
+  }
 
-      transformedTasks.forEach((task) => {
-        const taskStart = new Date(task.task_startdate);
-        const taskDuration = task.task_duration;
-        let taskEnd = new Date(taskStart);
-        let daysToAdd = taskDuration;
+  const transformedNotes = allNotes.map((note) => ({
+    phase_id: note.phase_id as number,
+    note_details: note.note_details,
+    created_at: note.created_at,
+    created_by:
+      typeof note.created_by === "string"
+        ? JSON.parse(note.created_by)
+        : note.created_by,
+  }));
 
-        while (daysToAdd > 1) {
-          taskEnd.setDate(taskEnd.getDate() + 1);
-          if (taskEnd.getDay() !== 0 && taskEnd.getDay() !== 6) {
-            daysToAdd--;
-          }
+  const notesByPhase = new Map<number, typeof transformedNotes>();
+  for (const note of transformedNotes) {
+    const list = notesByPhase.get(note.phase_id) || [];
+    list.push(note);
+    notesByPhase.set(note.phase_id, list);
+  }
+
+  const enhancedPhases = phases.map((phase) => {
+    const phaseTasks = tasksByPhase.get(phase.id) || [];
+    const phaseMaterials = materialsByPhase.get(phase.id) || [];
+    const phaseNotes = notesByPhase.get(phase.id) || [];
+
+    let latestEndDate = new Date(phase.startDate);
+
+    phaseTasks.forEach((task) => {
+      const taskStart = new Date(task.task_startdate);
+      const taskDuration = task.task_duration;
+      let taskEnd = new Date(taskStart);
+      let daysToAdd = taskDuration;
+
+      while (daysToAdd > 1) {
+        taskEnd.setDate(taskEnd.getDate() + 1);
+        if (taskEnd.getDay() !== 0 && taskEnd.getDay() !== 6) {
+          daysToAdd--;
         }
+      }
 
-        if (taskEnd > latestEndDate) {
-          latestEndDate = taskEnd;
-        }
-      });
+      if (taskEnd > latestEndDate) {
+        latestEndDate = taskEnd;
+      }
+    });
 
-      transformedMaterials.forEach((material) => {
-        const materialDate = new Date(material.material_duedate);
-        if (materialDate > latestEndDate) {
-          latestEndDate = materialDate;
-        }
-      });
+    phaseMaterials.forEach((material) => {
+      const materialDate = new Date(material.material_duedate);
+      if (materialDate > latestEndDate) {
+        latestEndDate = materialDate;
+      }
+    });
 
-      return {
-        ...phase,
-        endDate: latestEndDate.toISOString().split('T')[0],
-        tasks: transformedTasks.filter(task => task.phase_id === phase.id),
-        materials: transformedMaterials.filter(material => material.phase_id === phase.id),
-        notes: transformedNotes,
-      };
-    })
-  );
+    return {
+      ...phase,
+      endDate: latestEndDate.toISOString().split('T')[0],
+      tasks: phaseTasks,
+      materials: phaseMaterials,
+      notes: phaseNotes,
+    };
+  });
 
   let jobEndDate = new Date(job.job_startdate);
   enhancedPhases.forEach(phase => {

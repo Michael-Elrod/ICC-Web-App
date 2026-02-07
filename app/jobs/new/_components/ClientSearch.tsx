@@ -113,7 +113,7 @@ export default function ClientSearchSelect({
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           className={getInputClassName("clientSearch")}
-          placeholder="Search clients..."
+          placeholder="Search..."
           aria-expanded={isOpen}
           aria-haspopup="listbox"
           role="combobox"

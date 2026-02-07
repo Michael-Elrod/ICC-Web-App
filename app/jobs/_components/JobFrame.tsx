@@ -1,7 +1,7 @@
 // components/JobFrame.tsx
 
 import React from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import CardFrame from "@/components/CardFrame";
 import { JobCardView } from "@/app/types/views";
 
@@ -19,6 +19,7 @@ const JobFrame: React.FC<JobFrameProps> = ({
   isSelected,
   onSelect,
 }) => {
+  const router = useRouter();
   const total = overdue_count + next_week_count + later_weeks_count;
 
   return (
@@ -81,13 +82,15 @@ const JobFrame: React.FC<JobFrameProps> = ({
               </div>
             )}
           </div>
-          <Link
-            href={`/jobs/${job_id}`}
+          <button
             className="px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600 transition-colors"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/jobs/active?search=${encodeURIComponent(job_title)}`);
+            }}
           >
             View
-          </Link>
+          </button>
         </div>
       </div>
     </CardFrame>

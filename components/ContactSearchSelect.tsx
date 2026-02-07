@@ -63,7 +63,7 @@ export default function ContactSearchSelect({
         onFocus={() => setIsOpen(true)}
         onKeyDown={handleKeyDown}
         className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded dark:bg-zinc-800 dark:text-white"
-        placeholder="Search people..."
+        placeholder="Search..."
         role="combobox"
         aria-expanded={isOpen}
         aria-haspopup="listbox"

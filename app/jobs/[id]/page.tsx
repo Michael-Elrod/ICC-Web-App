@@ -1509,9 +1509,9 @@ export default function JobDetailPage() {
     <>
       <header className="mb-4 sm:mb-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-baseline gap-2 sm:gap-4">
             <h1 className="text-2xl sm:text-3xl font-bold">{job.jobName}</h1>
-            <span className="text-base sm:text-lg text-gray-600">
+            <span className="text-base sm:text-lg text-zinc-600 dark:text-white/70">
               {job.dateRange}
             </span>
           </div>

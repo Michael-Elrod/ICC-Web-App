@@ -385,7 +385,7 @@ const TasksCard: React.FC<TasksCardProps> = ({
                           <div className="relative" ref={dropdownRef}>
                             <input
                               type="text"
-                              placeholder="Search people..."
+                              placeholder="Search..."
                               value={userSearchQuery}
                               onChange={(e) =>
                                 setUserSearchQuery(e.target.value)

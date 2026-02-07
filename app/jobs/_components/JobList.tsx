@@ -95,7 +95,13 @@ function JobListContent({ status }: JobListProps) {
             overdue: job.overdue,
             nextSevenDays: job.nextSevenDays,
             sevenDaysPlus: job.sevenDaysPlus,
-            contacts: job.workers || [],
+            contacts: (job.workers || []).map((w: any) => ({
+              user_id: w.user_id,
+              first_name: w.user_first_name,
+              last_name: w.user_last_name,
+              user_email: w.user_email,
+              user_phone: w.user_phone || '',
+            })),
           };
         });
 

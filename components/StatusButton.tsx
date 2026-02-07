@@ -90,7 +90,7 @@ const StatusButton: React.FC<StatusButtonProps> = ({
       </button>
 
       {isOpen && !disabled && (
-        <div className="absolute right-0 mt-1 w-36 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+        <div className="absolute right-0 mt-1 w-36 bg-white dark:bg-zinc-700 rounded-md shadow-lg z-10 border border-gray-200 dark:border-zinc-600">
           <div className="py-1">
             {statuses
               .filter((status) => status !== currentStatus)
@@ -98,7 +98,7 @@ const StatusButton: React.FC<StatusButtonProps> = ({
                 <button
                   key={status}
                   onClick={(e) => handleStatusClick(e, status)}
-                  className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 font-bold"
+                  className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-zinc-600 font-bold dark:text-white"
                 >
                   {status}
                 </button>
@@ -109,17 +109,17 @@ const StatusButton: React.FC<StatusButtonProps> = ({
 
       {showConfirmation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">
+          <div className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-xl max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4 dark:text-white">
               Confirm Status Change
             </h3>
-            <p className="mb-6">
+            <p className="mb-6 dark:text-zinc-300">
               Are you sure you want to change the status to {pendingStatus}?
             </p>
             <div className="flex justify-end space-x-4">
               <button
                 onClick={handleCancel}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 font-bold"
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-zinc-400 dark:hover:text-zinc-200 font-bold"
               >
                 Cancel
               </button>

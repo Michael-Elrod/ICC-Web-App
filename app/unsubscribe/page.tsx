@@ -34,7 +34,8 @@ function UnsubscribeContent() {
           setStatus('choice');
         } else {
           setStatus('error');
-          setMessage('Invalid or expired link. Please check your email for a valid unsubscribe link.');
+          setMessage('Invalid or expired link. Please check your email for a valid unsubscribe link or log ' +
+              'into your account and change your email preferences in the settings page.');
         }
       } catch (error) {
         setStatus('error');

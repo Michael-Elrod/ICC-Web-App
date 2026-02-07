@@ -326,12 +326,12 @@ const ItemDetailPopup = ({
           {canEdit ? (
             <div className="pt-4 flex justify-between items-center">
               <select
-                className="appearance-none border border-zinc-200 dark:border-zinc-600 rounded-lg pl-4 pr-10 py-2 bg-white dark:bg-zinc-700 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.23%207.21a.75.75%200%20011.06.02L10%2011.168l3.71-3.938a.75.75%200%20111.08%201.04l-4.25%204.5a.75.75%200%2001-1.08%200l-4.25-4.5a.75.75%200%2001.02-1.06z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="appearance-none border border-zinc-200 dark:border-zinc-600 rounded-lg pl-4 pr-10 py-2 bg-white dark:bg-zinc-700 dark:text-white bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.23%207.21a.75.75%200%20011.06.02L10%2011.168l3.71-3.938a.75.75%200%20111.08%201.04l-4.25%204.5a.75.75%200%2001-1.08%200l-4.25-4.5a.75.75%200%2001.02-1.06z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value as StatusType)}
               >
                 {allStatuses.map((status) => (
-                  <option key={status} value={status}>
+                  <option key={status} value={status} className="bg-white dark:bg-zinc-700 dark:text-white">
                     {status}
                   </option>
                 ))}

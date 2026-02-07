@@ -32,7 +32,7 @@ export interface JobDetailView {
   nextSevenDays: number;
   tasks: TaskView[];
   materials: MaterialView[];
-  contacts: string[];
+  contacts: UserView[];
   floorplans: FloorPlan[];
   status?: string;
   location?: string | null;

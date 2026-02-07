@@ -26,7 +26,11 @@ interface Material extends RowDataPacket {
 
 interface Worker extends RowDataPacket {
   job_id: number;
-  user_full_name: string;
+  user_id: number;
+  user_first_name: string;
+  user_last_name: string;
+  user_email: string;
+  user_phone: string;
 }
 
 interface Phase extends RowDataPacket {
@@ -280,14 +284,14 @@ export const GET = withDb(async (connection, request) => {
     `, [jobIds]),
 
     connection.query<Worker[]>(`
-      SELECT p.job_id, CONCAT(u.user_first_name, ' ', u.user_last_name) as user_full_name
+      SELECT DISTINCT p.job_id, u.user_id, u.user_first_name, u.user_last_name, u.user_email, u.user_phone
       FROM app_user u
       JOIN user_task ut ON u.user_id = ut.user_id
       JOIN task t ON ut.task_id = t.task_id
       JOIN phase p ON t.phase_id = p.phase_id
       WHERE p.job_id IN (?)
       UNION
-      SELECT p.job_id, CONCAT(u.user_first_name, ' ', u.user_last_name) as user_full_name
+      SELECT DISTINCT p.job_id, u.user_id, u.user_first_name, u.user_last_name, u.user_email, u.user_phone
       FROM app_user u
       JOIN user_material um ON u.user_id = um.user_id
       JOIN material m ON um.material_id = m.material_id
@@ -372,12 +376,12 @@ export const GET = withDb(async (connection, request) => {
     materialsByJob.get(row.job_id)!.push(row);
   }
 
-  const workersByJob = new Map<number, Set<string>>();
+  const workersByJob = new Map<number, Map<number, Worker>>();
   for (const row of workersRows) {
     if (!workersByJob.has(row.job_id)) {
-      workersByJob.set(row.job_id, new Set());
+      workersByJob.set(row.job_id, new Map());
     }
-    workersByJob.get(row.job_id)!.add(row.user_full_name);
+    workersByJob.get(row.job_id)!.set(row.user_id, row);
   }
 
   const phasesByJob = new Map<number, Phase[]>();
@@ -417,7 +421,13 @@ export const GET = withDb(async (connection, request) => {
     const materialCounts = materialCountsByJob.get(job.job_id) || { overdue: 0, next_seven_days: 0, beyond_seven_days: 0 };
     const tasks = tasksByJob.get(job.job_id) || [];
     const materials = materialsByJob.get(job.job_id) || [];
-    const workers = Array.from(workersByJob.get(job.job_id) || []);
+    const workers = Array.from((workersByJob.get(job.job_id) || new Map()).values()).map(w => ({
+      user_id: w.user_id,
+      user_first_name: w.user_first_name,
+      user_last_name: w.user_last_name,
+      user_email: w.user_email,
+      user_phone: w.user_phone || '',
+    }));
     const phases = phasesByJob.get(job.job_id) || [];
     const floorplans = floorplansByJob.get(job.job_id) || [];
 

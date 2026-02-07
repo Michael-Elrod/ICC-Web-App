@@ -748,13 +748,13 @@ function NewJobContent() {
         </div>
       ) : (
         <>
-          <div className="flex items-center gap-4 mb-4">
+          <div className="flex items-baseline gap-4 mb-4">
             <h2 className="text-2xl font-bold">
               {jobType === "copy"
                 ? `Copy of ${originalJobName}`
                 : `Job Type - ${jobType}`}
             </h2>
-            <span className="text-lg text-gray-600">
+            <span className="text-lg text-zinc-600 dark:text-white/70">
               {startDate
                 ? (() => {
                     const date = createLocalDate(startDate);

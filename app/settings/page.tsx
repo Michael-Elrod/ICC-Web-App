@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import PasswordChangeModal from "./_components/PasswordModal";
+import { formatPhoneNumberInput } from "@/app/utils";
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -44,6 +45,18 @@ const SettingsForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [firstName, setFirstName] = useState(session?.user.firstName ?? "");
+  const [lastName, setLastName] = useState(session?.user.lastName ?? "");
+  const [phone, setPhone] = useState(formatPhoneNumberInput(session?.user.phone ?? ""));
+  const [email, setEmail] = useState(session?.user.email ?? "");
+  const [notificationPref, setNotificationPref] = useState(session?.user.notificationPref ?? "email");
+
+  const hasChanges =
+    firstName !== (session?.user.firstName ?? "") ||
+    lastName !== (session?.user.lastName ?? "") ||
+    phone !== formatPhoneNumberInput(session?.user.phone ?? "") ||
+    email !== (session?.user.email ?? "") ||
+    notificationPref !== (session?.user.notificationPref ?? "email");
 
   const getInputClassName = (fieldName: string) => {
     const baseClass = "mt-1 block w-full border rounded-md shadow-sm p-2";
@@ -151,9 +164,12 @@ const SettingsForm: React.FC = () => {
   return (
     <>
       <div className="bg-white dark:bg-zinc-800 p-8 rounded-lg shadow-lg w-96 mb-6">
-        <h2 className="text-2xl font-bold mb-6 text-center text-zinc-700 dark:text-white">
+        <h2 className="text-2xl font-bold mb-1 text-center text-zinc-700 dark:text-white">
           Settings
         </h2>
+        <p className="text-sm text-zinc-600 dark:text-white/70 text-center mb-6">
+          Edit contact info
+        </p>
 
         {error && (
           <div className="mb-4 text-red-500 text-sm text-center">{error}</div>
@@ -177,7 +193,8 @@ const SettingsForm: React.FC = () => {
               type="text"
               id="firstName"
               name="firstName"
-              defaultValue={session?.user.firstName ?? ""}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
               required
               className={getInputClassName("firstName")}
             />
@@ -194,7 +211,8 @@ const SettingsForm: React.FC = () => {
               type="text"
               id="lastName"
               name="lastName"
-              defaultValue={session?.user.lastName ?? ""}
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
               required
               className={getInputClassName("lastName")}
             />
@@ -211,7 +229,8 @@ const SettingsForm: React.FC = () => {
               type="tel"
               id="phone"
               name="phone"
-              defaultValue={session?.user.phone ?? ""}
+              value={phone}
+              onChange={(e) => setPhone(formatPhoneNumberInput(e.target.value))}
               className={getInputClassName("phone")}
             />
           </div>
@@ -227,7 +246,8 @@ const SettingsForm: React.FC = () => {
               type="email"
               id="email"
               name="email"
-              defaultValue={session?.user.email ?? ""}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               className={getInputClassName("email")}
             />
@@ -243,7 +263,8 @@ const SettingsForm: React.FC = () => {
             <select
               id="notificationPref"
               name="notificationPref"
-              defaultValue={session?.user.notificationPref}
+              value={notificationPref}
+              onChange={(e) => setNotificationPref(e.target.value)}
               className={getInputClassName("notifications")}
             >
               <option value="email">Email</option>
@@ -257,8 +278,10 @@ const SettingsForm: React.FC = () => {
         <button
           type="submit"
           form="settingsForm"
-          disabled={isUpdating}
-          className="w-full bg-green-500 text-white py-2 rounded-md shadow-sm hover:bg-green-600 transition duration-300 font-bold disabled:opacity-50"
+          disabled={isUpdating || !hasChanges}
+          className={`w-full text-white py-2 rounded-md shadow-sm transition duration-300 font-bold disabled:opacity-50 disabled:cursor-not-allowed ${
+            hasChanges ? "bg-green-500 hover:bg-green-600" : "bg-gray-400"
+          }`}
         >
           {isUpdating ? (
             <span className="flex items-center justify-center">
@@ -278,10 +301,10 @@ const SettingsForm: React.FC = () => {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                 />
               </svg>
-              Updating...
+              Saving...
             </span>
           ) : (
-            "Update"
+            "Save"
           )}
         </button>
 
