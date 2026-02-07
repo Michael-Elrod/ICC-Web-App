@@ -110,6 +110,24 @@ describe('AuthForm', () => {
       })
     })
 
+    it('shows generic error when login throws a network error', async () => {
+      mockSignIn.mockRejectedValueOnce(new Error('Network failure'))
+
+      const user = userEvent.setup()
+      render(<AuthForm />)
+
+      const emailInputs = screen.getAllByLabelText('Email')
+      const passwordInputs = screen.getAllByLabelText('Password')
+
+      await user.type(emailInputs[0], 'test@example.com')
+      await user.type(passwordInputs[0], 'password123')
+      await user.click(screen.getAllByRole('button', { name: 'Login' })[0])
+
+      await waitFor(() => {
+        expect(screen.getByText('An error occurred during login')).toBeInTheDocument()
+      })
+    })
+
     it('shows password error for incorrect password', async () => {
       mockSignIn.mockResolvedValueOnce({
         ok: false,
@@ -284,6 +302,162 @@ describe('AuthForm', () => {
         expect(mockSignIn).toHaveBeenCalled()
       })
     })
+
+    it('shows email error when registration returns 400', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        json: async () => ({ message: 'Email already exists' }),
+      })
+
+      const user = userEvent.setup()
+      render(<AuthForm />)
+
+      const toggleButtons = screen.getAllByRole('button', { name: 'Register' })
+      await user.click(toggleButtons[toggleButtons.length - 1])
+      await waitFor(() => {
+        expect(screen.getByLabelText('First Name')).toBeInTheDocument()
+      })
+
+      await user.type(screen.getByLabelText('First Name'), 'John')
+      await user.type(screen.getByLabelText('Last Name'), 'Doe')
+      const emailInputs = screen.getAllByLabelText('Email')
+      await user.type(emailInputs[1], 'john@example.com')
+      await user.type(screen.getByLabelText('Phone Number'), '5551234567')
+      const passwordInputs = screen.getAllByLabelText('Password')
+      await user.type(passwordInputs[1], 'password123')
+      await user.type(screen.getByLabelText('Retype Password'), 'password123')
+      await user.type(screen.getByLabelText('Invite Code'), 'INVITE123')
+
+      const submitButtons = screen.getAllByRole('button', { name: 'Register' })
+      expect(submitButtons[0]).not.toBeDisabled()
+      await user.click(submitButtons[0])
+
+      await waitFor(() => {
+        expect(mockFetch).toHaveBeenCalled()
+      })
+
+      await waitFor(() => {
+        const errorMessages = screen.getAllByText('Email already exists')
+        expect(errorMessages.length).toBeGreaterThan(0)
+      })
+    })
+
+    it('shows generic error when registration returns non-400 failure', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: async () => ({ message: 'Server error' }),
+      })
+
+      const user = userEvent.setup()
+      render(<AuthForm />)
+
+      const toggleButtons = screen.getAllByRole('button', { name: 'Register' })
+      await user.click(toggleButtons[toggleButtons.length - 1])
+      await waitFor(() => {
+        expect(screen.getByLabelText('First Name')).toBeInTheDocument()
+      })
+
+      await user.type(screen.getByLabelText('First Name'), 'John')
+      await user.type(screen.getByLabelText('Last Name'), 'Doe')
+      const emailInputs = screen.getAllByLabelText('Email')
+      await user.type(emailInputs[1], 'john@example.com')
+      await user.type(screen.getByLabelText('Phone Number'), '5551234567')
+      const passwordInputs = screen.getAllByLabelText('Password')
+      await user.type(passwordInputs[1], 'password123')
+      await user.type(screen.getByLabelText('Retype Password'), 'password123')
+      await user.type(screen.getByLabelText('Invite Code'), 'INVITE123')
+
+      const submitButtons = screen.getAllByRole('button', { name: 'Register' })
+      await user.click(submitButtons[0])
+
+      await waitFor(() => {
+        expect(screen.getByText('Server error')).toBeInTheDocument()
+      })
+    })
+
+    it('shows error when registration succeeds but auto-login fails', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ message: 'User created' }),
+      })
+      mockSignIn.mockResolvedValueOnce({ ok: false, error: 'Auth failed' })
+
+      const user = userEvent.setup()
+      render(<AuthForm />)
+
+      const toggleButtons = screen.getAllByRole('button', { name: 'Register' })
+      await user.click(toggleButtons[toggleButtons.length - 1])
+      await waitFor(() => {
+        expect(screen.getByLabelText('First Name')).toBeInTheDocument()
+      })
+
+      await user.type(screen.getByLabelText('First Name'), 'John')
+      await user.type(screen.getByLabelText('Last Name'), 'Doe')
+      const emailInputs = screen.getAllByLabelText('Email')
+      await user.type(emailInputs[1], 'john@example.com')
+      await user.type(screen.getByLabelText('Phone Number'), '5551234567')
+      const passwordInputs = screen.getAllByLabelText('Password')
+      await user.type(passwordInputs[1], 'password123')
+      await user.type(screen.getByLabelText('Retype Password'), 'password123')
+      await user.type(screen.getByLabelText('Invite Code'), 'INVITE123')
+
+      const submitButtons = screen.getAllByRole('button', { name: 'Register' })
+      await user.click(submitButtons[0])
+
+      await waitFor(() => {
+        expect(screen.getByText('Auth failed')).toBeInTheDocument()
+      })
+    })
+
+    it('shows generic error on registration network failure', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Network error'))
+
+      const user = userEvent.setup()
+      render(<AuthForm />)
+
+      const toggleButtons = screen.getAllByRole('button', { name: 'Register' })
+      await user.click(toggleButtons[toggleButtons.length - 1])
+      await waitFor(() => {
+        expect(screen.getByLabelText('First Name')).toBeInTheDocument()
+      })
+
+      await user.type(screen.getByLabelText('First Name'), 'John')
+      await user.type(screen.getByLabelText('Last Name'), 'Doe')
+      const emailInputs = screen.getAllByLabelText('Email')
+      await user.type(emailInputs[1], 'john@example.com')
+      await user.type(screen.getByLabelText('Phone Number'), '5551234567')
+      const passwordInputs = screen.getAllByLabelText('Password')
+      await user.type(passwordInputs[1], 'password123')
+      await user.type(screen.getByLabelText('Retype Password'), 'password123')
+      await user.type(screen.getByLabelText('Invite Code'), 'INVITE123')
+
+      const submitButtons = screen.getAllByRole('button', { name: 'Register' })
+      await user.click(submitButtons[0])
+
+      await waitFor(() => {
+        expect(screen.getByText('An error occurred during registration')).toBeInTheDocument()
+      })
+    })
+
+    it('disables register button when fields are empty', async () => {
+      const user = userEvent.setup()
+      render(<AuthForm />)
+
+      // Toggle to register form so isLogin is false
+      const toggleButtons = screen.getAllByRole('button', { name: 'Register' })
+      await user.click(toggleButtons[toggleButtons.length - 1])
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('First Name')).toBeInTheDocument()
+      })
+
+      // The register submit button should be disabled because fields are empty
+      const submitButtons = screen.getAllByRole('button', { name: 'Register' })
+      expect(submitButtons[0]).toBeDisabled()
+    })
   })
 
   describe('form toggle', () => {
@@ -364,8 +538,10 @@ describe('AuthForm', () => {
         expect(loadingElements.length).toBeGreaterThan(0)
       })
 
-      // Resolve the promise
-      resolveSignIn!({ ok: true, error: null })
+      // Resolve the promise and wait for the resulting state update
+      await waitFor(() => {
+        resolveSignIn!({ ok: true, error: null })
+      })
     })
 
     it('disables inputs during loading', async () => {
@@ -390,7 +566,10 @@ describe('AuthForm', () => {
         expect(passwordInputs[0]).toBeDisabled()
       })
 
-      resolveSignIn!({ ok: true, error: null })
+      // Resolve the promise and wait for the resulting state update
+      await waitFor(() => {
+        resolveSignIn!({ ok: true, error: null })
+      })
     })
   })
 })

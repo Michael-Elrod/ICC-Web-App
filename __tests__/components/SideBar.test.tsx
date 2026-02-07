@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import SideBar from '@/components/SideBar'
 
@@ -143,6 +143,51 @@ describe('SideBar', () => {
       const navElements = screen.getAllByRole('navigation')
       // Should have 2 nav elements - desktop sidebar and mobile bottom bar
       expect(navElements).toHaveLength(2)
+    })
+
+    it('mobile settings button navigates to /settings', async () => {
+      const user = userEvent.setup()
+      render(<SideBar />)
+
+      const settingsButtons = screen.getAllByRole('button')
+      // Click the second settings button (mobile version)
+      await user.click(settingsButtons[1])
+
+      expect(mockPush).toHaveBeenCalledWith('/settings')
+    })
+  })
+
+  describe('hover behavior', () => {
+    beforeEach(() => {
+      mockUseSession.mockReturnValue({
+        data: { user: { id: '1', name: 'User', type: 'User' } },
+        status: 'authenticated',
+      })
+    })
+
+    it('expands labels on hover and collapses on mouse leave', () => {
+      render(<SideBar />)
+      const desktopNav = screen.getAllByRole('navigation')[0]
+
+      // Before hover, labels should have opacity-0
+      const labelsBefore = desktopNav.querySelectorAll('span')
+      labelsBefore.forEach((label) => {
+        expect(label.className).toContain('opacity-0')
+      })
+
+      // Hover to expand
+      fireEvent.mouseEnter(desktopNav)
+      const labelsAfterEnter = desktopNav.querySelectorAll('span')
+      labelsAfterEnter.forEach((label) => {
+        expect(label.className).toContain('opacity-100')
+      })
+
+      // Leave to collapse
+      fireEvent.mouseLeave(desktopNav)
+      const labelsAfterLeave = desktopNav.querySelectorAll('span')
+      labelsAfterLeave.forEach((label) => {
+        expect(label.className).toContain('opacity-0')
+      })
     })
   })
 })

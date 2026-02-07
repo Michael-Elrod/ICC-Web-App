@@ -11,7 +11,9 @@ import {
   getCurrentBusinessDate,
   addBusinessDays,
   getBusinessDaysBetween,
+  calculatePhaseDates,
 } from '@/app/utils'
+import { TaskView, MaterialView } from '@/app/types/views'
 
 describe('isEmailValid', () => {
   it('returns true for valid email addresses', () => {
@@ -261,5 +263,71 @@ describe('getBusinessDaysBetween', () => {
     const start = new Date(2024, 0, 15)
     const end = new Date(2024, 0, 22)
     expect(getBusinessDaysBetween(start, end)).toBe(5)
+  })
+})
+
+describe('calculatePhaseDates', () => {
+  const makeTask = (startdate: string, duration: number): TaskView => ({
+    task_id: 1,
+    phase_id: 1,
+    task_title: 'Test Task',
+    task_startdate: startdate,
+    task_duration: duration,
+    task_status: 'active',
+    task_description: '',
+    users: [],
+  })
+
+  const makeMaterial = (duedate: string): MaterialView => ({
+    material_id: 1,
+    phase_id: 1,
+    material_title: 'Test Material',
+    material_duedate: duedate,
+    material_status: 'active',
+    material_description: '',
+    users: [],
+  })
+
+  it('calculates correct range with tasks only', () => {
+    const tasks = [
+      makeTask('2024-01-15', 5), // Mon Jan 15 + 5 biz days = Mon Jan 22
+      makeTask('2024-01-10', 3), // Wed Jan 10 + 3 biz days = Mon Jan 15
+    ]
+    const result = calculatePhaseDates(tasks, [])
+    expect(result.startDate).toBe('2024-01-10')
+    expect(result.endDate).toBe('2024-01-22')
+  })
+
+  it('calculates correct range with materials only', () => {
+    const materials = [
+      makeMaterial('2024-02-01'),
+      makeMaterial('2024-03-15'),
+    ]
+    const result = calculatePhaseDates([], materials)
+    expect(result.startDate).toBe('2024-02-01')
+    expect(result.endDate).toBe('2024-03-15')
+  })
+
+  it('extends endDate when material due date is beyond last task', () => {
+    const tasks = [makeTask('2024-01-15', 3)]
+    const materials = [makeMaterial('2024-06-01')]
+    const result = calculatePhaseDates(tasks, materials)
+    expect(result.startDate).toBe('2024-01-15')
+    expect(result.endDate).toBe('2024-06-01')
+  })
+
+  it('handles single task and single material', () => {
+    const tasks = [makeTask('2024-02-05', 1)] // Mon Feb 5 + 1 biz day = Tue Feb 6
+    const materials = [makeMaterial('2024-02-07')]
+    const result = calculatePhaseDates(tasks, materials)
+    expect(result.startDate).toBe('2024-02-05')
+    expect(result.endDate).toBe('2024-02-07')
+  })
+
+  it('uses material as startDate when earlier than all tasks', () => {
+    const tasks = [makeTask('2024-03-01', 2)]
+    const materials = [makeMaterial('2024-01-01')]
+    const result = calculatePhaseDates(tasks, materials)
+    expect(result.startDate).toBe('2024-01-01')
   })
 })
