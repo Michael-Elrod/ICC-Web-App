@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import EditUserModal from "./_components/EditUserModal";
 import ContactCard from "@/components/ContactCard";
 import InviteModal from "./_components/InviteModal";
+import ContactsSkeleton from "./_components/ContactsSkeleton";
 import { User } from "@/app/types/database";
 
 type FilterType = "all" | "workers" | "clients";
@@ -66,22 +67,7 @@ export default function ContactsPage() {
     }
   });
 
-  if (loading)
-    return (
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="animate-pulse">
-            <div className="h-8 bg-zinc-200 dark:bg-zinc-700 rounded w-48 mb-6"></div>
-            {[1, 2, 3].map((n) => (
-              <div
-                key={n}
-                className="h-24 bg-zinc-200 dark:bg-zinc-700 rounded mb-4"
-              ></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+  if (loading) return <ContactsSkeleton />;
 
   if (error)
     return (

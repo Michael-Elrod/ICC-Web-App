@@ -9,6 +9,7 @@ import PhaseCard from "@/components/PhaseCard";
 import ContactCard from "@/components/ContactCard";
 import UserInfoRow from "@/components/UserInfoRow";
 import StatusBar from "@/components/StatusBar";
+import JobDetailSkeleton from "./_components/JobDetailSkeleton";
 import CopyJobModal from "./_components/CopyJobModal";
 import CloseJobModal from "./_components/CloseJobModal";
 import DeleteJobModal from "./_components/DeleteJobModal";
@@ -1270,7 +1271,7 @@ export default function JobDetailPage() {
     );
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <JobDetailSkeleton />;
   if (error) return <div>Error: {error}</div>;
   if (!job) return <div>Job not found</div>;
 

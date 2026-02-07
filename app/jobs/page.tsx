@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import JobFrame from "./_components/JobFrame";
+import Skeleton from "@/components/skeletons/Skeleton";
 import { useRouter } from "next/navigation";
 import { JobCardView } from "../types/views";
 
@@ -9,6 +10,7 @@ export default function JobsPage() {
   const [localSearchQuery, setLocalSearchQuery] = useState("");
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
   const [jobs, setJobs] = useState<JobCardView[]>([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -19,6 +21,8 @@ export default function JobsPage() {
         setJobs(data.jobs);
       } catch (error) {
         console.error("Failed to fetch jobs:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -53,6 +57,35 @@ export default function JobsPage() {
       );
     }
   };
+
+  if (loading) {
+    return (
+      <>
+        <div className="mb-4 flex items-center space-x-4">
+          <Skeleton className="flex-grow h-10 rounded-md" />
+          <Skeleton className="h-10 w-32 rounded" />
+        </div>
+        <div className="flex justify-center items-center space-x-6 mb-6">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+        {[1, 2, 3].map((n) => (
+          <div
+            key={n}
+            className="bg-white dark:bg-zinc-800 shadow-md sm:rounded-lg mb-4 px-4 py-5 sm:p-6"
+          >
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-0">
+              <Skeleton className="h-5 w-6 flex-shrink-0" />
+              <Skeleton className="h-6 w-48 sm:ml-4" />
+              <div className="flex-1" />
+              <Skeleton className="h-4 w-full sm:w-48 rounded-full" />
+            </div>
+          </div>
+        ))}
+      </>
+    );
+  }
 
   return (
     <>

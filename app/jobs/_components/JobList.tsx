@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import LargeJobFrame from "./LargeJobFrame";
+import JobListSkeleton from "./JobListSkeleton";
 import { useSearchParams } from "next/navigation";
 import { JobDetailView, TaskView, MaterialView } from "../../types/views";
 
@@ -11,7 +12,7 @@ interface JobListProps {
 
 export default function JobList({ status }: JobListProps) {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<JobListSkeleton />}>
       <JobListContent status={status} />
     </Suspense>
   );
@@ -23,6 +24,7 @@ function JobListContent({ status }: JobListProps) {
     searchParams?.get("search") || ""
   );
   const [jobs, setJobs] = useState<JobDetailView[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -108,6 +110,8 @@ function JobListContent({ status }: JobListProps) {
         setJobs(transformedJobs);
       } catch (error) {
         console.error("Failed to fetch jobs:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -187,6 +191,8 @@ function JobListContent({ status }: JobListProps) {
       })
     );
   };
+
+  if (loading) return <JobListSkeleton />;
 
   return (
     <div className="px-0 sm:px-4 md:px-0">

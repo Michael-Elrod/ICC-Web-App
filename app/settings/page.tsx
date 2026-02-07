@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import PasswordChangeModal from "./_components/PasswordModal";
+import SettingsSkeleton from "./_components/SettingsSkeleton";
 import { formatPhoneNumberInput } from "@/app/utils";
 
 export default function SettingsPage() {
@@ -17,11 +18,7 @@ export default function SettingsPage() {
   }, [status, router]);
 
   if (status === "loading") {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        Loading...
-      </div>
-    );
+    return <SettingsSkeleton />;
   }
 
   if (!session) {
