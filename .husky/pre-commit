@@ -1,0 +1,2 @@
+node scripts/check-file-headers.mjs
+node scripts/run-tests.mjs

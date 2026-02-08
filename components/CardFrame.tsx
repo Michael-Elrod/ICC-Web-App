@@ -1,4 +1,5 @@
 // CardFrame.tsx
+
 interface CardFrameProps {
   children: React.ReactNode;
   className?: string;
