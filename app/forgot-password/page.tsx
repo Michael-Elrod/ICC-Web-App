@@ -1,4 +1,5 @@
-// app/forgot-password/page.tsx
+// page.tsx
+
 "use client";
 
 import ForgotPasswordForm from "./_components/ForgotPasswordForm";

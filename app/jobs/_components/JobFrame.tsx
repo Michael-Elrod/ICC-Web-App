@@ -1,4 +1,4 @@
-// components/JobFrame.tsx
+// JobFrame.tsx
 
 import React from "react";
 import { useRouter } from "next/navigation";
@@ -86,7 +86,9 @@ const JobFrame: React.FC<JobFrameProps> = ({
             className="px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
-              router.push(`/jobs/active?search=${encodeURIComponent(job_title)}`);
+              router.push(
+                `/jobs/active?search=${encodeURIComponent(job_title)}`,
+              );
             }}
           >
             View

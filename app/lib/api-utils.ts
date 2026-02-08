@@ -1,3 +1,5 @@
+// api-utils.ts
+
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/lib/auth";
@@ -10,17 +12,20 @@ import type { Session } from "next-auth";
 type DbHandler = (
   connection: PoolConnection,
   request: Request,
-  params: any
+  params: any,
 ) => Promise<NextResponse>;
 
 type AuthHandler = (
   connection: PoolConnection,
   session: Session,
   request: Request,
-  params: any
+  params: any,
 ) => Promise<NextResponse>;
 
-export function withDb(handler: DbHandler, errorMessage = "Internal server error") {
+export function withDb(
+  handler: DbHandler,
+  errorMessage = "Internal server error",
+) {
   return async (request: Request, context?: { params: any }) => {
     const connection = await pool.getConnection();
     try {
@@ -34,7 +39,10 @@ export function withDb(handler: DbHandler, errorMessage = "Internal server error
   };
 }
 
-export function withAuth(handler: AuthHandler, errorMessage = "Internal server error") {
+export function withAuth(
+  handler: AuthHandler,
+  errorMessage = "Internal server error",
+) {
   return withDb(async (connection, request, params) => {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -44,7 +52,11 @@ export function withAuth(handler: AuthHandler, errorMessage = "Internal server e
   }, errorMessage);
 }
 
-export function withRole(roles: string[], handler: AuthHandler, errorMessage = "Internal server error") {
+export function withRole(
+  roles: string[],
+  handler: AuthHandler,
+  errorMessage = "Internal server error",
+) {
   return withAuth(async (connection, session, request, params) => {
     if (!roles.includes(session.user.type)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -53,7 +65,10 @@ export function withRole(roles: string[], handler: AuthHandler, errorMessage = "
   }, errorMessage);
 }
 
-export async function withTransaction<T>(connection: PoolConnection, fn: () => Promise<T>): Promise<T> {
+export async function withTransaction<T>(
+  connection: PoolConnection,
+  fn: () => Promise<T>,
+): Promise<T> {
   await connection.beginTransaction();
   try {
     const result = await fn();
@@ -66,14 +81,14 @@ export async function withTransaction<T>(connection: PoolConnection, fn: () => P
 }
 
 export async function generateRandomPasswordHash(): Promise<string> {
-  const randomPassword = crypto.randomBytes(32).toString('hex');
+  const randomPassword = crypto.randomBytes(32).toString("hex");
   return hash(randomPassword, 12);
 }
 
 export async function checkEmailExists(
   connection: PoolConnection,
   email: string,
-  excludeUserId?: string | number
+  excludeUserId?: string | number,
 ): Promise<boolean> {
   const query = excludeUserId
     ? "SELECT user_id FROM app_user WHERE user_email = ? AND user_id != ?"
@@ -84,8 +99,8 @@ export async function checkEmailExists(
 }
 
 export const NO_CACHE_HEADERS = {
-  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-  'Pragma': 'no-cache',
-  'Expires': '0',
-  'Surrogate-Control': 'no-store'
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+  Pragma: "no-cache",
+  Expires: "0",
+  "Surrogate-Control": "no-store",
 } as const;

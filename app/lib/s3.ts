@@ -1,11 +1,17 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+// s3.ts
+
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 
 function getS3Client() {
   return new S3Client({
-    region: process.env.S3_REGION || 'us-east-1',
+    region: process.env.S3_REGION || "us-east-1",
     credentials: {
-      accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
-      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+      accessKeyId: process.env.S3_ACCESS_KEY_ID || "",
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",
     },
   });
 }
@@ -62,12 +68,16 @@ export async function deleteFloorPlan(fileUrl: string) {
 
   try {
     const s3Client = getS3Client();
-    const key = fileUrl.split(`${process.env.S3_BUCKET_NAME}.s3.${process.env.S3_REGION}.amazonaws.com/`)[1];
-    
-    await s3Client.send(new DeleteObjectCommand({
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: key
-    }));
+    const key = fileUrl.split(
+      `${process.env.S3_BUCKET_NAME}.s3.${process.env.S3_REGION}.amazonaws.com/`,
+    )[1];
+
+    await s3Client.send(
+      new DeleteObjectCommand({
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: key,
+      }),
+    );
   } catch (error) {
     console.error("Error deleting file from S3:", error);
     throw error;
@@ -75,14 +85,21 @@ export async function deleteFloorPlan(fileUrl: string) {
 }
 
 export function validateFile(file: File): boolean {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "application/pdf",
+  ];
   if (!allowedTypes.includes(file.type)) {
-    throw new Error('Invalid file type. Only JPEG, PNG, GIF, and PDF files are allowed.');
+    throw new Error(
+      "Invalid file type. Only JPEG, PNG, GIF, and PDF files are allowed.",
+    );
   }
 
   const maxSize = 5 * 1024 * 1024;
   if (file.size > maxSize) {
-    throw new Error('File size exceeds 5MB limit.');
+    throw new Error("File size exceeds 5MB limit.");
   }
 
   return true;
@@ -100,5 +117,7 @@ export function getS3Url(fileName: string): string {
 }
 
 export function getKeyFromUrl(url: string): string {
-  return url.split(`${process.env.S3_BUCKET_NAME}.s3.${process.env.S3_REGION}.amazonaws.com/`)[1];
+  return url.split(
+    `${process.env.S3_BUCKET_NAME}.s3.${process.env.S3_REGION}.amazonaws.com/`,
+  )[1];
 }

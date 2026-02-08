@@ -1,4 +1,5 @@
-// app/api/reset-password/route.ts
+// route.ts
+
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
@@ -13,7 +14,7 @@ export const POST = withDb(async (connection, request) => {
     if (!isEmailValid(body.email)) {
       return NextResponse.json(
         { message: "Invalid email format" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -21,17 +22,17 @@ export const POST = withDb(async (connection, request) => {
       `DELETE FROM password_reset_token
        WHERE expires_at < NOW()
        OR used = true
-       OR created_at < DATE_SUB(NOW(), INTERVAL 24 HOUR)`
+       OR created_at < DATE_SUB(NOW(), INTERVAL 24 HOUR)`,
     );
 
     const [users] = await connection.query(
       "SELECT user_id, user_email FROM app_user WHERE user_email = ?",
-      [body.email]
+      [body.email],
     );
 
     if (!users || (users as any[]).length === 0) {
       return NextResponse.json({
-        message: "If an account exists, a reset link has been sent"
+        message: "If an account exists, a reset link has been sent",
       });
     }
 
@@ -39,31 +40,31 @@ export const POST = withDb(async (connection, request) => {
 
     await connection.query(
       "DELETE FROM password_reset_token WHERE user_id = ?",
-      [user.user_id]
+      [user.user_id],
     );
 
-    const token = crypto.randomBytes(32).toString('hex');
+    const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 3600000); // 1 hour from now
 
     await connection.query(
       "INSERT INTO password_reset_token (token, user_id, expires_at) VALUES (?, ?, ?)",
-      [token, user.user_id, expiresAt]
+      [token, user.user_id, expiresAt],
     );
 
     try {
       await sendPasswordResetEmail(user.user_email, token);
       return NextResponse.json({
-        message: "If an account exists, a reset link has been sent"
+        message: "If an account exists, a reset link has been sent",
       });
     } catch (emailError) {
       console.error("Error sending reset email:", emailError);
       await connection.query(
         "DELETE FROM password_reset_token WHERE token = ?",
-        [token]
+        [token],
       );
       return NextResponse.json(
         { error: "Failed to send reset email" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   }
@@ -73,7 +74,7 @@ export const POST = withDb(async (connection, request) => {
       `DELETE FROM password_reset_token
        WHERE expires_at < NOW()
        OR used = true
-       OR created_at < DATE_SUB(NOW(), INTERVAL 24 HOUR)`
+       OR created_at < DATE_SUB(NOW(), INTERVAL 24 HOUR)`,
     );
 
     const [tokens] = await connection.query(
@@ -84,13 +85,13 @@ export const POST = withDb(async (connection, request) => {
        AND t.used = false
        AND t.expires_at > NOW()
        AND t.created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)`,
-      [body.token]
+      [body.token],
     );
 
     if (!tokens || (tokens as any[]).length === 0) {
       return NextResponse.json(
         { message: "Invalid or expired reset token" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -99,19 +100,16 @@ export const POST = withDb(async (connection, request) => {
 
     await connection.query(
       "UPDATE app_user SET password = ? WHERE user_id = ?",
-      [hashedPassword, tokenRecord.user_id]
+      [hashedPassword, tokenRecord.user_id],
     );
 
     await connection.query(
       "UPDATE password_reset_token SET used = true WHERE token = ?",
-      [body.token]
+      [body.token],
     );
 
     return NextResponse.json({ message: "Password successfully reset" });
   }
 
-  return NextResponse.json(
-    { message: "Invalid request" },
-    { status: 400 }
-  );
+  return NextResponse.json({ message: "Invalid request" }, { status: 400 });
 }, "An error occurred processing your request");

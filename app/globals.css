@@ -1,7 +1,8 @@
+/* globals.css */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -39,14 +40,14 @@ input[type="date"]::-webkit-datetime-edit-text,
 input[type="date"]::-webkit-datetime-edit-month-field,
 input[type="date"]::-webkit-datetime-edit-day-field,
 input[type="date"]::-webkit-datetime-edit-year-field {
-    color: #71717a;  /* zinc-500 for light mode */
+  color: #71717a; /* zinc-500 for light mode */
 }
 
 .dark input[type="date"]::-webkit-datetime-edit-text,
 .dark input[type="date"]::-webkit-datetime-edit-month-field,
 .dark input[type="date"]::-webkit-datetime-edit-day-field,
 .dark input[type="date"]::-webkit-datetime-edit-year-field {
-    color: #a1a1aa;  /* zinc-400 for dark mode */
+  color: #a1a1aa; /* zinc-400 for dark mode */
 }
 
 /* Changes color when a date is selected */
@@ -54,7 +55,7 @@ input[type="date"]:valid::-webkit-datetime-edit-text,
 input[type="date"]:valid::-webkit-datetime-edit-month-field,
 input[type="date"]:valid::-webkit-datetime-edit-day-field,
 input[type="date"]:valid::-webkit-datetime-edit-year-field {
-    color: currentColor;
+  color: currentColor;
 }
 
 .no-hover-highlight option:hover {

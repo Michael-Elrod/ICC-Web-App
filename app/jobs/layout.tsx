@@ -1,19 +1,25 @@
+// layout.tsx
+
 "use client";
 
-import React, { useEffect } from 'react';
-import NavTabs from './_components/NavTabs';
-import { usePathname } from 'next/navigation';
-import { NavTab } from '../types/views';
+import React, { useEffect } from "react";
+import NavTabs from "./_components/NavTabs";
+import { usePathname } from "next/navigation";
+import { NavTab } from "../types/views";
 
-export default function JobsLayout({ children }: { children: React.ReactNode; }) {
+export default function JobsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const isJobDetailPage = /^\/jobs\/\d+$/.test(pathname);
-  const isNewJobPage = pathname === '/jobs/new';
+  const isNewJobPage = pathname === "/jobs/new";
   const getActiveTab = (path: string) => {
-    if (path === '/jobs') return 'Overview';
-    if (path === '/jobs/active') return 'Active';
-    if (path === '/jobs/closed') return 'Closed';
-    return 'Overview';
+    if (path === "/jobs") return "Overview";
+    if (path === "/jobs/active") return "Active";
+    if (path === "/jobs/closed") return "Closed";
+    return "Overview";
   };
 
   const [activeTab, setActiveTab] = React.useState(getActiveTab(pathname));
@@ -44,9 +50,7 @@ export default function JobsLayout({ children }: { children: React.ReactNode; })
           </header>
         )}
         <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="px-4 py-6 sm:px-0">
-            {children}
-          </div>
+          <div className="px-4 py-6 sm:px-0">{children}</div>
         </main>
       </div>
     </div>

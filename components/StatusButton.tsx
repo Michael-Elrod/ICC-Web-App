@@ -1,4 +1,5 @@
-// components/StatusButton.tsx
+// StatusButton.tsx
+
 import React, { useState } from "react";
 import { useParams } from "next/navigation";
 
@@ -80,9 +81,9 @@ const StatusButton: React.FC<StatusButtonProps> = ({
           currentStatus === "Complete"
             ? "bg-green-500 text-white"
             : currentStatus === "In Progress"
-            ? "bg-yellow-500 text-white"
-            : "bg-red-500 text-white"
-        } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              ? "bg-yellow-500 text-white"
+              : "bg-red-500 text-white"
+        } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
         disabled={disabled}
         title={disabled ? "You are not assigned to this item" : ""}
       >

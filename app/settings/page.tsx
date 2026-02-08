@@ -1,3 +1,5 @@
+// page.tsx
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -44,9 +46,13 @@ const SettingsForm: React.FC = () => {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [firstName, setFirstName] = useState(session?.user.firstName ?? "");
   const [lastName, setLastName] = useState(session?.user.lastName ?? "");
-  const [phone, setPhone] = useState(formatPhoneNumberInput(session?.user.phone ?? ""));
+  const [phone, setPhone] = useState(
+    formatPhoneNumberInput(session?.user.phone ?? ""),
+  );
   const [email, setEmail] = useState(session?.user.email ?? "");
-  const [notificationPref, setNotificationPref] = useState(session?.user.notificationPref ?? "email");
+  const [notificationPref, setNotificationPref] = useState(
+    session?.user.notificationPref ?? "email",
+  );
 
   const hasChanges =
     firstName !== (session?.user.firstName ?? "") ||
@@ -132,7 +138,7 @@ const SettingsForm: React.FC = () => {
 
   const handlePasswordChange = async (
     currentPassword: string,
-    newPassword: string
+    newPassword: string,
   ) => {
     try {
       const response = await fetch("/api/settings/password", {

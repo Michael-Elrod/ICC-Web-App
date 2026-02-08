@@ -1,3 +1,5 @@
+// NewJobCard.tsx
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -73,7 +75,7 @@ export default function NewJobCard({
         ? `${updatedFloorPlans.length} file${
             updatedFloorPlans.length > 1 ? "s" : ""
           } selected`
-        : ""
+        : "",
     );
 
     onJobDetailsChange({
@@ -107,7 +109,7 @@ export default function NewJobCard({
         setUploadStatus(
           `${updatedFloorPlans.length} file${
             updatedFloorPlans.length > 1 ? "s" : ""
-          } selected`
+          } selected`,
         );
 
         onJobDetailsChange({
@@ -119,7 +121,7 @@ export default function NewJobCard({
         });
 
         const fileInput = document.getElementById(
-          "floorplan-upload"
+          "floorplan-upload",
         ) as HTMLInputElement;
         if (fileInput) {
           fileInput.value = "";

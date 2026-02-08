@@ -1,7 +1,7 @@
-// handlers/new/materials.ts
+// materials.tsx
+
 import { FormMaterial } from "@/app/types/database";
 import { UserView } from "@/app/types/views";
-
 
 export const handleDeleteConfirm = (
   materialId: string,
@@ -13,7 +13,7 @@ export const handleDeleteConfirm = (
 };
 
 export const handleDeleteClick = (
-  setShowDeleteConfirm: React.Dispatch<React.SetStateAction<boolean>>
+  setShowDeleteConfirm: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   setShowDeleteConfirm(true);
 };
@@ -23,13 +23,15 @@ export const handleDueDateChange = (
   value: string,
   phaseStartDate: string,
   setLocalMaterial: React.Dispatch<React.SetStateAction<FormMaterial>>,
-  setErrors: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>
+  setErrors: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>,
 ) => {
   if (field === "dueDate") {
     // Create Date objects for comparison, setting time to midnight
-    const selectedDate = value ? new Date(new Date(value).setHours(0,0,0,0)) : null;
+    const selectedDate = value
+      ? new Date(new Date(value).setHours(0, 0, 0, 0))
+      : null;
     const phaseStart = new Date(phaseStartDate);
-    phaseStart.setHours(0,0,0,0);
+    phaseStart.setHours(0, 0, 0, 0);
 
     if (selectedDate && selectedDate >= phaseStart) {
       setLocalMaterial((prev) => ({
@@ -55,7 +57,7 @@ export const handleDueDateChange = (
 export const handleContactSelect = (
   contact: UserView,
   selectedContacts: UserView[],
-  setSelectedContacts: React.Dispatch<React.SetStateAction<UserView[]>>
+  setSelectedContacts: React.Dispatch<React.SetStateAction<UserView[]>>,
 ) => {
   setSelectedContacts([...selectedContacts, contact]);
 };
@@ -63,30 +65,30 @@ export const handleContactSelect = (
 export const handleContactRemove = (
   userId: string,
   selectedContacts: UserView[],
-  setSelectedContacts: React.Dispatch<React.SetStateAction<UserView[]>>
+  setSelectedContacts: React.Dispatch<React.SetStateAction<UserView[]>>,
 ) => {
   setSelectedContacts(
-    selectedContacts.filter((contact) => contact.user_id.toString() !== userId)
+    selectedContacts.filter((contact) => contact.user_id.toString() !== userId),
   );
 };
 
 export const validateMaterial = (
   localMaterial: FormMaterial,
   setErrors: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>,
-  phaseStartDate: string
+  phaseStartDate: string,
 ): boolean => {
   const newErrors: { [key: string]: string } = {};
-  
+
   if (!localMaterial.title.trim()) {
     newErrors.title = "Title is required";
   }
-  
+
   if (!localMaterial.dueDate) {
     newErrors.dueDate = "Due date is required";
   } else if (localMaterial.dueDate < phaseStartDate) {
     newErrors.dueDate = "Due date cannot be before phase start date";
   }
-  
+
   setErrors(newErrors);
   return Object.keys(newErrors).length === 0;
 };
@@ -97,7 +99,7 @@ export const handleDone = (
   setLocalMaterial: React.Dispatch<React.SetStateAction<FormMaterial>>,
   setErrors: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>,
   onUpdate: (material: FormMaterial) => void,
-  phaseStartDate: string
+  phaseStartDate: string,
 ) => {
   if (validateMaterial(localMaterial, setErrors, phaseStartDate)) {
     const updatedMaterial = {

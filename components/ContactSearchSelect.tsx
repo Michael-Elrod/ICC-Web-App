@@ -1,3 +1,5 @@
+// ContactSearchSelect.tsx
+
 import React, { useState, useEffect, useRef } from "react";
 import { UserView } from "@/app/types/views";
 
@@ -19,8 +21,8 @@ export default function ContactSearchSelect({
   const availableContacts = contacts.filter(
     (contact) =>
       !selectedContacts.some(
-        (selected) => selected.user_id === contact.user_id
-      )
+        (selected) => selected.user_id === contact.user_id,
+      ),
   );
 
   const filteredContacts = search.trim()

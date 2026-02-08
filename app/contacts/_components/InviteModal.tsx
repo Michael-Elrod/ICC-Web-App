@@ -1,4 +1,5 @@
-// components/contact/InviteModal.tsx
+// InviteModal.tsx
+
 import { useState, useEffect } from "react";
 
 interface InviteModalProps {
@@ -224,7 +225,7 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                     Invitation email sent successfully!
                   </div>
                 )}
-                
+
                 {emailError && (
                   <div className="bg-red-100 dark:bg-red-900/20 p-3 rounded text-red-700 dark:text-red-300">
                     {emailError}

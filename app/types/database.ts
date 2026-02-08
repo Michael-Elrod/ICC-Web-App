@@ -1,8 +1,8 @@
-// types/database.ts
+// database.ts
 
-export type UserType = 'Owner' | 'Admin' | 'User' | 'Client';
-export type JobStatus = 'active' | 'closed';
-export type ItemStatus = 'Incomplete' | 'Complete';
+export type UserType = "Owner" | "Admin" | "User" | "Client";
+export type JobStatus = "active" | "closed";
+export type ItemStatus = "Incomplete" | "Complete";
 
 interface BaseEntity {
   created_at: Date;

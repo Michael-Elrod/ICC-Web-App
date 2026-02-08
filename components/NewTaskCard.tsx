@@ -1,4 +1,4 @@
-// components/new/TaskCard.tsx
+// NewTaskCard.tsx
 
 import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
@@ -40,9 +40,9 @@ const NewTaskCard: React.FC<TaskCardProps> = ({
     task.selectedContacts
       ?.map(
         (contact) =>
-          contacts.find((c) => c.user_id === parseInt(contact.id)) as UserView
+          contacts.find((c) => c.user_id === parseInt(contact.id)) as UserView,
       )
-      .filter(Boolean) || []
+      .filter(Boolean) || [],
   );
 
   useEffect(() => {
@@ -78,7 +78,7 @@ const NewTaskCard: React.FC<TaskCardProps> = ({
                   "title",
                   e.target.value,
                   setLocalTask,
-                  setErrors
+                  setErrors,
                 )
               }
               className={`w-full p-2 border ${
@@ -107,7 +107,7 @@ const NewTaskCard: React.FC<TaskCardProps> = ({
                     date,
                     phaseStartDate,
                     setLocalTask,
-                    setErrors
+                    setErrors,
                   )
                 }
                 filterDate={(date: Date) => {
@@ -160,7 +160,7 @@ const NewTaskCard: React.FC<TaskCardProps> = ({
                   "title",
                   e.target.value,
                   setLocalTask,
-                  setErrors
+                  setErrors,
                 )
               }
               className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded dark:bg-zinc-800 dark:text-white"
@@ -178,7 +178,7 @@ const NewTaskCard: React.FC<TaskCardProps> = ({
                 handleContactSelect(
                   contact,
                   selectedContacts,
-                  setSelectedContacts
+                  setSelectedContacts,
                 )
               }
             />
@@ -198,7 +198,7 @@ const NewTaskCard: React.FC<TaskCardProps> = ({
                       handleContactRemove(
                         contact.user_id.toString(),
                         selectedContacts,
-                        setSelectedContacts
+                        setSelectedContacts,
                       )
                     }
                     className="absolute top-2 right-2 text-zinc-400 hover:text-red-600"
@@ -218,7 +218,7 @@ const NewTaskCard: React.FC<TaskCardProps> = ({
                   setLocalTask,
                   setErrors,
                   onUpdate,
-                  phase.startDate
+                  phase.startDate,
                 )
               }
               className="mr-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded"

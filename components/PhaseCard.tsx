@@ -1,4 +1,5 @@
-// components/PhaseCard.tsx
+// PhaseCard.tsx
+
 import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { FaChevronUp, FaChevronDown } from "react-icons/fa";
@@ -49,7 +50,7 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
       month: "numeric",
       day: "numeric",
       year: "2-digit",
-    }
+    },
   );
   const endDate = createLocalDate(phase.endDate).toLocaleDateString("en-US", {
     month: "numeric",
@@ -81,7 +82,7 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
             created_at: noteTimestamp,
             note_details: newDetails,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -92,8 +93,8 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
         prevNotes.map((note) =>
           note.created_at === noteTimestamp
             ? { ...note, note_details: newDetails }
-            : note
-        )
+            : note,
+        ),
       );
       setActiveNoteModal(null);
     } catch (error) {
@@ -413,7 +414,10 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
                           contacts={contacts}
                           onUpdate={async (updatedMaterial) => {
                             try {
-                              await onMaterialCreate(phase.phase_id, updatedMaterial);
+                              await onMaterialCreate(
+                                phase.phase_id,
+                                updatedMaterial,
+                              );
                               setIsAddingMaterial(false);
                             } catch (error) {
                               console.error("Error creating material:", error);
@@ -461,7 +465,9 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
                     <Note
                       {...note}
                       onClick={() =>
-                        setExpandedNoteId(expandedNoteId === index ? null : index)
+                        setExpandedNoteId(
+                          expandedNoteId === index ? null : index,
+                        )
                       }
                       isExpanded={expandedNoteId === index}
                     />

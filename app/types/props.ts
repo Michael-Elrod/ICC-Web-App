@@ -1,4 +1,5 @@
-// types/props.ts
+// props.ts
+
 import { FormPhase, FormMaterial, FormTask } from "./database";
 import { UserView, PhaseView } from "./views";
 
@@ -49,7 +50,7 @@ export interface DetailPhaseCardProps {
   onStatusUpdate: (
     id: number,
     type: "task" | "material",
-    newStatus: string
+    newStatus: string,
   ) => void;
   onTaskDelete: (taskId: number) => Promise<void>;
   onMaterialDelete: (materialId: number) => Promise<void>;
@@ -58,7 +59,7 @@ export interface DetailPhaseCardProps {
   onNoteDelete: (phaseId: number, noteTimestamp: string) => Promise<void>;
   jobStartDate: string;
   onPhaseUpdate: (
-    phaseId: number, 
+    phaseId: number,
     updates: {
       title: string;
       startDate: string;
@@ -95,7 +96,7 @@ export interface DetailPhaseCardProps {
           user_phone: string;
         }>;
       }>;
-    }
+    },
   ) => Promise<void>;
   userType?: string;
 }
@@ -104,18 +105,25 @@ export interface PhaseCardProps {
   phase: FormPhase;
   onDelete: () => void;
   jobStartDate: string;
-  onUpdate: (phase: FormPhase, extend?: number, extendFuturePhases?: boolean) => void;
+  onUpdate: (
+    phase: FormPhase,
+    extend?: number,
+    extendFuturePhases?: boolean,
+  ) => void;
   onAddPhaseAfter: (phaseId: string) => void;
   onMovePhase: (direction: "up" | "down" | "future", amount?: number) => void;
   contacts: UserView[];
-  onPhaseUpdate?: (phaseId: number, updates: {
-    title: string;
-    startDate: string;
-    extend: number;
-    extendFuturePhases: boolean;
-    adjustItems?: boolean;
-    daysDiff?: number;
-  }) => void;
+  onPhaseUpdate?: (
+    phaseId: number,
+    updates: {
+      title: string;
+      startDate: string;
+      extend: number;
+      extendFuturePhases: boolean;
+      adjustItems?: boolean;
+      daysDiff?: number;
+    },
+  ) => void;
 }
 
 export interface TaskCardProps {
@@ -124,7 +132,7 @@ export interface TaskCardProps {
   onDelete: () => void;
   phaseStartDate: string;
   contacts: UserView[];
-  phase: FormPhase; 
+  phase: FormPhase;
   onPhaseUpdate: (phase: FormPhase) => void;
 }
 
@@ -154,7 +162,7 @@ export interface TimelineProps {
   onStatusUpdate: (
     itemId: number,
     type: "task" | "material",
-    newStatus: "Complete" | "Incomplete" | "In Progress"
+    newStatus: "Complete" | "Incomplete" | "In Progress",
   ) => void;
 }
 

@@ -1,4 +1,5 @@
-// components/job/CloseJobModal.tsx
+// CloseJobModal.tsx
+
 import React, { useState } from "react";
 
 interface CloseJobModalProps {
@@ -85,10 +86,11 @@ export default function CloseJobModal({
           ) : (
             <>
               <p className="mb-6">
-                Closing a job will set the job status to Closed. This will automatically 
-                complete all tasks and materials and stop any future notifications about this job. 
-                You will still be able to see the job for a limited time under the Closed tab in 
-                the Jobs page if you would like to copy its contents to create a new one.
+                Closing a job will set the job status to Closed. This will
+                automatically complete all tasks and materials and stop any
+                future notifications about this job. You will still be able to
+                see the job for a limited time under the Closed tab in the Jobs
+                page if you would like to copy its contents to create a new one.
               </p>
               <div className="flex justify-end gap-4">
                 <button

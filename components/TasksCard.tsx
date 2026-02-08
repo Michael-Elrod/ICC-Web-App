@@ -1,4 +1,5 @@
-// components/TasksCard.tsx
+// TasksCard.tsx
+
 import { useSession } from "next-auth/react";
 import React, { useState, useEffect, useRef } from "react";
 import SmallCardFrame from "./SmallCardFrame";
@@ -15,7 +16,7 @@ interface TasksCardProps {
   onStatusUpdate: (
     id: number,
     type: "task" | "material",
-    newStatus: string
+    newStatus: string,
   ) => void;
   onDelete: (id: number) => Promise<void>;
   userType?: string;
@@ -45,7 +46,7 @@ const TasksCard: React.FC<TasksCardProps> = ({
   const sortedTasks = [...tasks].sort(
     (a, b) =>
       new Date(a.task_startdate).getTime() -
-      new Date(b.task_startdate).getTime()
+      new Date(b.task_startdate).getTime(),
   );
   const canEditTask = (task: TaskView) => {
     if (hasAdminAccess) return true;
@@ -128,8 +129,8 @@ const TasksCard: React.FC<TasksCardProps> = ({
     if (!task || !canEditTask(task)) return;
     setLocalTasks((prevTasks) =>
       prevTasks.map((task) =>
-        task.task_id === taskId ? { ...task, task_status: newStatus } : task
-      )
+        task.task_id === taskId ? { ...task, task_status: newStatus } : task,
+      ),
     );
     onStatusUpdate(taskId, "task", newStatus);
   };
@@ -155,13 +156,13 @@ const TasksCard: React.FC<TasksCardProps> = ({
     let hasChanges = false;
 
     const titleInput = document.getElementById(
-      `task-title-${taskId}`
+      `task-title-${taskId}`,
     ) as HTMLInputElement;
     const descriptionInput = document.getElementById(
-      `task-description-${taskId}`
+      `task-description-${taskId}`,
     ) as HTMLTextAreaElement;
     const extensionInput = document.getElementById(
-      `task-extension-${taskId}`
+      `task-extension-${taskId}`,
     ) as HTMLInputElement;
 
     if (titleInput && titleInput.value !== task.task_title) {
@@ -216,7 +217,6 @@ const TasksCard: React.FC<TasksCardProps> = ({
     <CollapsibleSection title="Tasks" itemCount={sortedTasks.length}>
       <div className="space-y-2">
         {sortedTasks.map((task) => {
-
           return (
             <div key={task.task_id}>
               <SmallCardFrame>
@@ -233,7 +233,7 @@ const TasksCard: React.FC<TasksCardProps> = ({
                         <span className="text-sm text-gray-600 sm:hidden mt-1">
                           {calculateDateRange(
                             task.task_startdate,
-                            task.task_duration
+                            task.task_duration,
                           )}
                         </span>
                       </div>
@@ -241,7 +241,7 @@ const TasksCard: React.FC<TasksCardProps> = ({
                     <span className="hidden sm:block text-sm text-center col-span-1">
                       {calculateDateRange(
                         task.task_startdate,
-                        task.task_duration
+                        task.task_duration,
                       )}
                     </span>
                     <div className="col-span-1 flex justify-end">
@@ -402,13 +402,13 @@ const TasksCard: React.FC<TasksCardProps> = ({
                                       (`${user.first_name} ${user.last_name}`
                                         .toLowerCase()
                                         .includes(
-                                          userSearchQuery.toLowerCase()
+                                          userSearchQuery.toLowerCase(),
                                         ) ||
                                         user.user_email
                                           .toLowerCase()
                                           .includes(
-                                            userSearchQuery.toLowerCase()
-                                          ))
+                                            userSearchQuery.toLowerCase(),
+                                          )),
                                   )
                                   .map((user) => (
                                     <div
@@ -429,7 +429,7 @@ const TasksCard: React.FC<TasksCardProps> = ({
                             <div className="flex flex-wrap gap-2 mt-4">
                               {Array.from(selectedUsers).map((userId) => {
                                 const user = contacts.find(
-                                  (u) => u.user_id === userId
+                                  (u) => u.user_id === userId,
                                 );
                                 if (!user) return null;
 

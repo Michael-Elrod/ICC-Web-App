@@ -1,3 +1,5 @@
+// page.tsx
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -41,7 +43,7 @@ export default function CalendarPage() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<SelectedEventInfo | null>(
-    null
+    null,
   );
   const [legendItems, setLegendItems] = useState<
     Array<{ label: string; color: string }>
@@ -67,7 +69,7 @@ export default function CalendarPage() {
   const updateEventStatus = (
     itemId: number,
     type: "task" | "material",
-    newStatus: "Complete" | "Incomplete" | "In Progress"
+    newStatus: "Complete" | "Incomplete" | "In Progress",
   ) => {
     setEvents((currentEvents) =>
       currentEvents.map((event) => {
@@ -83,7 +85,7 @@ export default function CalendarPage() {
           };
         }
         return event;
-      })
+      }),
     );
   };
 
@@ -182,7 +184,7 @@ export default function CalendarPage() {
           setEvents(calendarEvents);
         } else {
           const responses = await Promise.all(
-            jobs.map((job) => fetch(`/api/calendar?jobId=${job.job_id}`))
+            jobs.map((job) => fetch(`/api/calendar?jobId=${job.job_id}`)),
           );
           const jobsData = await Promise.all(responses.map((r) => r.json()));
 
@@ -281,8 +283,8 @@ export default function CalendarPage() {
             eventInfo.event.extendedProps.status === "Complete"
               ? "bg-green-500"
               : eventInfo.event.extendedProps.status === "In Progress"
-              ? "bg-yellow-500"
-              : "bg-red-500"
+                ? "bg-yellow-500"
+                : "bg-red-500"
           }`}
         />
         <div className="min-w-0">

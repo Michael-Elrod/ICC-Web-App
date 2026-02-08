@@ -1,3 +1,5 @@
+// utils.tsx
+
 import { TaskView, MaterialView } from "./types/views";
 
 export const isEmailValid = (email: string) => {
@@ -27,21 +29,22 @@ export const formatPhoneNumberInput = (value: string): string => {
   const numbers = value.replace(/\D/g, "");
   if (!numbers) return "";
   if (numbers.length <= 3) return `(${numbers}`;
-  if (numbers.length <= 6) return `(${numbers.slice(0, 3)}) ${numbers.slice(3)}`;
+  if (numbers.length <= 6)
+    return `(${numbers.slice(0, 3)}) ${numbers.slice(3)}`;
   return `(${numbers.slice(0, 3)}) ${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
 };
 
 export const formatCardDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
+  return new Date(dateString).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 };
 
 export const calculateEndDate = (
   start: string,
-  durationDays: number
+  durationDays: number,
 ): string => {
   const date = new Date(start);
   date.setDate(date.getDate() + durationDays);
@@ -56,7 +59,7 @@ export function formatDate(dateString: string): string {
   const date = new Date(
     /^\d{4}-\d{2}-\d{2}$/.test(dateString)
       ? `${dateString}T00:00:00`
-      : dateString
+      : dateString,
   );
 
   if (isNaN(date.getTime())) {
@@ -71,31 +74,31 @@ export function formatDate(dateString: string): string {
 }
 
 export const createLocalDate = (dateString: string): Date => {
-  if (dateString.includes('T')) {
+  if (dateString.includes("T")) {
     const date = new Date(dateString);
     return new Date(
       date.getFullYear(),
       date.getMonth(),
       date.getDate(),
-      0, 0, 0, 0
+      0,
+      0,
+      0,
+      0,
     );
   }
-  
-  const [year, month, day] = dateString.split('-').map(Number);
-  return new Date(
-    year,
-    month - 1,
-    day,
-    0, 0, 0, 0
-  );
+
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day, 0, 0, 0, 0);
 };
 
 export const formatToDateString = (date: Date): string => {
-  return date.toLocaleDateString('en-CA');
-}
+  return date.toLocaleDateString("en-CA");
+};
 
 export const getCurrentBusinessDate = (currentDate: Date): Date => {
-  const [year, month, day] = formatToDateString(currentDate).split('-').map(Number);
+  const [year, month, day] = formatToDateString(currentDate)
+    .split("-")
+    .map(Number);
   const result = new Date(
     year,
     month - 1,
@@ -103,14 +106,16 @@ export const getCurrentBusinessDate = (currentDate: Date): Date => {
     currentDate.getHours(),
     currentDate.getMinutes(),
     currentDate.getSeconds(),
-    currentDate.getMilliseconds()
+    currentDate.getMilliseconds(),
   );
 
   const dayOfWeek = result.getDay();
 
-  if (dayOfWeek === 0) { // Sunday
+  if (dayOfWeek === 0) {
+    // Sunday
     result.setDate(result.getDate() + 1);
-  } else if (dayOfWeek === 6) { // Saturday
+  } else if (dayOfWeek === 6) {
+    // Saturday
     result.setDate(result.getDate() + 2);
   }
 
@@ -146,29 +151,32 @@ export function getBusinessDaysBetween(startDate: Date, endDate: Date): number {
   let count = 0;
   const curDate = new Date(startDate.getTime());
   curDate.setDate(curDate.getDate() + 1);
-  
+
   while (curDate <= endDate) {
     const dayOfWeek = curDate.getDay();
     if (dayOfWeek !== 0 && dayOfWeek !== 6) count++;
     curDate.setDate(curDate.getDate() + 1);
   }
-  
+
   return count;
 }
 
-export const calculatePhaseDates = (tasks: TaskView[], materials: MaterialView[]) => {
+export const calculatePhaseDates = (
+  tasks: TaskView[],
+  materials: MaterialView[],
+) => {
   let phaseStart = new Date(8640000000000000); // Max date
   let phaseEnd = new Date(-8640000000000000); // Min date
 
-  tasks.forEach(task => {
+  tasks.forEach((task) => {
     const taskStart = createLocalDate(task.task_startdate);
     const taskEnd = addBusinessDays(taskStart, task.task_duration);
-    
+
     if (taskStart < phaseStart) phaseStart = taskStart;
     if (taskEnd > phaseEnd) phaseEnd = taskEnd;
   });
 
-  materials.forEach(material => {
+  materials.forEach((material) => {
     const materialDate = createLocalDate(material.material_duedate);
     if (materialDate < phaseStart) phaseStart = materialDate;
     if (materialDate > phaseEnd) phaseEnd = materialDate;
@@ -176,6 +184,6 @@ export const calculatePhaseDates = (tasks: TaskView[], materials: MaterialView[]
 
   return {
     startDate: formatToDateString(phaseStart),
-    endDate: formatToDateString(phaseEnd)
+    endDate: formatToDateString(phaseEnd),
   };
 };

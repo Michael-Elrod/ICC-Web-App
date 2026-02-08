@@ -1,4 +1,5 @@
-// app/contacts/page.tsx
+// page.tsx
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -26,12 +27,12 @@ export default function ContactsPage() {
       try {
         const response = await fetch(`/api/users?t=${Date.now()}`, {
           headers: {
-            'Cache-Control': 'no-cache, no-store',
-            'Pragma': 'no-cache'
+            "Cache-Control": "no-cache, no-store",
+            Pragma: "no-cache",
           },
-          cache: 'no-store'
+          cache: "no-store",
         });
-        
+
         if (!response.ok) throw new Error("Failed to load contacts");
         const data = await response.json();
         setUsers(data);
@@ -42,11 +43,11 @@ export default function ContactsPage() {
         setLoading(false);
       }
     }
-  
+
     loadUsers();
-    
+
     const intervalId = setInterval(loadUsers, 60000);
-    
+
     return () => clearInterval(intervalId);
   }, []);
 
@@ -169,8 +170,8 @@ export default function ContactsPage() {
         onUserUpdated={(updatedUser) => {
           setUsers(
             users.map((u) =>
-              u.user_id === updatedUser.user_id ? updatedUser : u
-            )
+              u.user_id === updatedUser.user_id ? updatedUser : u,
+            ),
           );
           setSelectedUser(null);
         }}

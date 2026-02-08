@@ -1,3 +1,5 @@
+// SideBar.tsx
+
 "use client";
 
 import React, { useState } from "react";
@@ -24,42 +26,62 @@ const SideBar = () => {
       >
         <ul className="space-y-8 pt-10">
           <li>
-            <Link href="/jobs" className="flex items-center text-zinc-300 hover:text-white">
+            <Link
+              href="/jobs"
+              className="flex items-center text-zinc-300 hover:text-white"
+            >
               <div className="w-12 flex justify-center shrink-0">
                 <FaBriefcase size={28} />
               </div>
-              <span className={`whitespace-nowrap text-sm transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}>
+              <span
+                className={`whitespace-nowrap text-sm transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}
+              >
                 Overview
               </span>
             </Link>
           </li>
           <li>
-            <Link href="/calendar" className="flex items-center text-zinc-300 hover:text-white">
+            <Link
+              href="/calendar"
+              className="flex items-center text-zinc-300 hover:text-white"
+            >
               <div className="w-12 flex justify-center shrink-0">
                 <FaCalendar size={28} />
               </div>
-              <span className={`whitespace-nowrap text-sm transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}>
+              <span
+                className={`whitespace-nowrap text-sm transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}
+              >
                 Calendar
               </span>
             </Link>
           </li>
           <li>
-            <Link href="/contacts" className="flex items-center text-zinc-300 hover:text-white">
+            <Link
+              href="/contacts"
+              className="flex items-center text-zinc-300 hover:text-white"
+            >
               <div className="w-12 flex justify-center shrink-0">
                 <FaAddressBook size={28} />
               </div>
-              <span className={`whitespace-nowrap text-sm transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}>
+              <span
+                className={`whitespace-nowrap text-sm transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}
+              >
                 Contacts
               </span>
             </Link>
           </li>
           {canCreateJobs && (
             <li>
-              <Link href="/jobs/new" className="flex items-center text-zinc-300 hover:text-white">
+              <Link
+                href="/jobs/new"
+                className="flex items-center text-zinc-300 hover:text-white"
+              >
                 <div className="w-12 flex justify-center shrink-0">
                   <FaCirclePlus size={28} />
                 </div>
-                <span className={`whitespace-nowrap text-sm transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}>
+                <span
+                  className={`whitespace-nowrap text-sm transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}
+                >
                   Create Job
                 </span>
               </Link>
@@ -73,7 +95,9 @@ const SideBar = () => {
               <div className="w-12 flex justify-center shrink-0">
                 <FaCog size={28} />
               </div>
-              <span className={`whitespace-nowrap text-sm transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}>
+              <span
+                className={`whitespace-nowrap text-sm transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}
+              >
                 Settings
               </span>
             </button>

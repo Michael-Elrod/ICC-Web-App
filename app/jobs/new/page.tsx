@@ -1,3 +1,5 @@
+// page.tsx
+
 "use client";
 
 import React, { useEffect, useState, Suspense } from "react";
@@ -103,7 +105,7 @@ function NewJobContent() {
               JSON.stringify({
                 originalJobId: jobData.originalJobId,
                 floorplans: jobData.floorplans,
-              })
+              }),
             );
           }
           console.log("Job data from localStorage:", jobData);
@@ -111,7 +113,7 @@ function NewJobContent() {
           console.log("Floorplans count:", floorplansToCopyCount);
           // Calculate offsets and new dates
           const originalStartDate = createLocalDate(
-            jobData.jobDetails.originalStartDate
+            jobData.jobDetails.originalStartDate,
           );
           const newStartDate = createLocalDate(jobData.newStartDate);
 
@@ -139,7 +141,7 @@ function NewJobContent() {
                       id: `task-${Date.now()}-${Math.random()}`,
                       title: task.task_title,
                       startDate: formatToDateString(
-                        addBusinessDays(newStartDate, -10)
+                        addBusinessDays(newStartDate, -10),
                       ),
                       duration: task.task_duration,
                       details: task.task_description || "",
@@ -151,7 +153,7 @@ function NewJobContent() {
                     id: `task-${Date.now()}-${Math.random()}`,
                     title: task.task_title,
                     startDate: formatToDateString(
-                      getCurrentBusinessDate(new Date())
+                      getCurrentBusinessDate(new Date()),
                     ),
                     duration: task.task_duration,
                     details: task.task_description || "",
@@ -182,7 +184,7 @@ function NewJobContent() {
                         id: `material-${Date.now()}-${Math.random()}`,
                         title: material.material_title,
                         dueDate: formatToDateString(
-                          addBusinessDays(newStartDate, -5)
+                          addBusinessDays(newStartDate, -5),
                         ),
                         details: material.material_description || "",
                         selectedContacts: mappedContacts,
@@ -193,13 +195,13 @@ function NewJobContent() {
                       id: `material-${Date.now()}-${Math.random()}`,
                       title: material.material_title,
                       dueDate: formatToDateString(
-                        getCurrentBusinessDate(new Date())
+                        getCurrentBusinessDate(new Date()),
                       ),
                       details: material.material_description || "",
                       selectedContacts: mappedContacts,
                       isExpanded: false,
                     };
-                  }
+                  },
                 );
 
                 // Calculate phase start date based on earliest task or material
@@ -209,7 +211,7 @@ function NewJobContent() {
                 ];
 
                 const phaseStartDate = allDates.reduce((earliest, current) =>
-                  current < earliest ? current : earliest
+                  current < earliest ? current : earliest,
                 );
 
                 // Only include notes if they should be copied
@@ -236,11 +238,11 @@ function NewJobContent() {
                   const taskStartDate = createLocalDate(task.task_startdate);
                   const taskOffset = getBusinessDaysBetween(
                     originalStartDate,
-                    taskStartDate
+                    taskStartDate,
                   );
                   const newTaskStartDate = addBusinessDays(
                     newStartDate,
-                    taskOffset
+                    taskOffset,
                   );
 
                   // Handle worker assignments based on copy options
@@ -264,15 +266,15 @@ function NewJobContent() {
                 const newMaterials = phase.materials.map(
                   (material: MaterialView) => {
                     const materialDueDate = createLocalDate(
-                      material.material_duedate
+                      material.material_duedate,
                     );
                     const materialOffset = getBusinessDaysBetween(
                       originalStartDate,
-                      materialDueDate
+                      materialDueDate,
                     );
                     const newMaterialDueDate = addBusinessDays(
                       newStartDate,
-                      materialOffset
+                      materialOffset,
                     );
 
                     // Handle worker assignments based on copy options
@@ -290,7 +292,7 @@ function NewJobContent() {
                       selectedContacts: mappedContacts,
                       isExpanded: false,
                     };
-                  }
+                  },
                 );
 
                 // Calculate phase start date based on earliest task or material
@@ -300,7 +302,7 @@ function NewJobContent() {
                 ];
 
                 const phaseStartDate = allDates.reduce((earliest, current) =>
-                  current < earliest ? current : earliest
+                  current < earliest ? current : earliest,
                 );
 
                 // Only include notes if they should be copied
@@ -322,7 +324,7 @@ function NewJobContent() {
                   notes: phaseNotes,
                 };
               }
-            }
+            },
           );
 
           setPhases(copiedPhases);
@@ -351,7 +353,7 @@ function NewJobContent() {
 
   const handleMovePhase = (
     index: number,
-    direction: "up" | "down" | "future"
+    direction: "up" | "down" | "future",
   ) => {
     const newPhases = [...phases];
     if (direction === "up" && index > 0) {
@@ -375,7 +377,7 @@ function NewJobContent() {
       // Check job title first
       if (!jobDetails.jobTitle?.trim()) {
         const jobDetailsElement = document.getElementById(
-          "job-details-section"
+          "job-details-section",
         );
         if (jobDetailsElement) {
           jobDetailsElement.scrollIntoView({
@@ -411,7 +413,7 @@ function NewJobContent() {
         }, 100);
 
         throw new Error(
-          `Please complete all required fields for ${invalidItem.type}`
+          `Please complete all required fields for ${invalidItem.type}`,
         );
       }
 
@@ -439,7 +441,7 @@ function NewJobContent() {
           if (jobData.originalJobId) {
             jobFormData.append(
               "copyFloorplansFromJobId",
-              jobData.originalJobId.toString()
+              jobData.originalJobId.toString(),
             );
           }
         }
@@ -490,7 +492,7 @@ function NewJobContent() {
             console.log("Job to copy data:", jobToCopy);
             if (jobToCopy.originalJobId) {
               console.log(
-                `Making API call to copy floorplans from job ${jobToCopy.originalJobId} to job ${jobData.jobId}`
+                `Making API call to copy floorplans from job ${jobToCopy.originalJobId} to job ${jobData.jobId}`,
               );
               const response = await fetch(
                 `/api/jobs/${jobData.jobId}/copy-floorplans`,
@@ -502,7 +504,7 @@ function NewJobContent() {
                   body: JSON.stringify({
                     originalJobId: jobToCopy.originalJobId,
                   }),
-                }
+                },
               );
               const copyResult = await response.json();
               console.log("Copy floorplans response:", copyResult);
@@ -543,7 +545,7 @@ function NewJobContent() {
             details: material.details?.trim() || "",
             assignedUsers:
               material.selectedContacts?.map((contact) =>
-                parseInt(contact.id)
+                parseInt(contact.id),
               ) || [],
           })),
           notes: phase.notes.map((note) => ({
@@ -614,13 +616,13 @@ function NewJobContent() {
   };
 
   const findFirstInvalidItem = (
-    phases: FormPhase[]
+    phases: FormPhase[],
   ): InvalidItemProp | null => {
     for (let phaseIndex = 0; phaseIndex < phases.length; phaseIndex++) {
       const phase = phases[phaseIndex];
 
       const invalidTask = phase.tasks.findIndex(
-        (task) => !task.title?.trim() || !task.startDate || !task.duration
+        (task) => !task.title?.trim() || !task.startDate || !task.duration,
       );
       if (invalidTask !== -1) {
         return {
@@ -632,7 +634,7 @@ function NewJobContent() {
       }
 
       const invalidMaterial = phase.materials.findIndex(
-        (material) => !material.title?.trim() || !material.dueDate
+        (material) => !material.title?.trim() || !material.dueDate,
       );
       if (invalidMaterial !== -1) {
         return {
@@ -644,7 +646,7 @@ function NewJobContent() {
       }
 
       const invalidNote = phase.notes.findIndex(
-        (note) => !note.content?.trim()
+        (note) => !note.content?.trim(),
       );
       if (invalidNote !== -1) {
         return {
@@ -687,7 +689,7 @@ function NewJobContent() {
                         .split("-")
                         .map(
                           (word: string) =>
-                            word.charAt(0).toUpperCase() + word.slice(1)
+                            word.charAt(0).toUpperCase() + word.slice(1),
                         )
                         .join(" ")}
                     </option>
@@ -737,7 +739,7 @@ function NewJobContent() {
                   jobType,
                   startDate,
                   setShowNewJobCard,
-                  setPhases
+                  setPhases,
                 )
               }
               disabled={isCreateJobDisabled}
@@ -846,7 +848,7 @@ function NewJobContent() {
                       updatedPhase,
                       setPhases,
                       extend,
-                      extendFuturePhases
+                      extendFuturePhases,
                     )
                   }
                   onAddPhaseAfter={(phaseId) => {

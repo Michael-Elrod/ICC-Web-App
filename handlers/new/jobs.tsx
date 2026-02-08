@@ -1,11 +1,18 @@
+// jobs.tsx
+
 import { FormPhase, FormTask, FormMaterial } from "@/app/types/database";
-import { createLocalDate, formatToDateString, getCurrentBusinessDate, addBusinessDays } from "@/app/utils";
+import {
+  createLocalDate,
+  formatToDateString,
+  getCurrentBusinessDate,
+  addBusinessDays,
+} from "@/app/utils";
 
 declare const require: {
   context: (
     directory: string,
     useSubdirectories: boolean,
-    regExp: RegExp
+    regExp: RegExp,
   ) => {
     keys(): string[];
     (id: string): any;
@@ -23,17 +30,17 @@ export const getJobTypes = (): string[] => {
 const calculatePhaseStartDate = (
   phase: FormPhase | Partial<FormPhase>,
   isPreplanningPhase = false,
-  currentBusinessDate = '',
-  jobStartDate = ''
+  currentBusinessDate = "",
+  jobStartDate = "",
 ): string => {
   const allDates = [
-    ...(phase.tasks?.map(task => task.startDate) || []),
-    ...(phase.materials?.map(material => material.dueDate) || [])
+    ...(phase.tasks?.map((task) => task.startDate) || []),
+    ...(phase.materials?.map((material) => material.dueDate) || []),
   ];
 
   return allDates.length > 0
-    ? allDates.reduce((earliest, current) => 
-        current < earliest ? current : earliest
+    ? allDates.reduce((earliest, current) =>
+        current < earliest ? current : earliest,
       )
     : isPreplanningPhase
       ? currentBusinessDate
@@ -44,16 +51,16 @@ export const handleConfirmDelete = (
   onDelete: () => void,
   setShowDeleteConfirm: React.Dispatch<React.SetStateAction<boolean>>,
   phase: FormPhase,
-  onPhaseUpdate: (phase: FormPhase) => void
+  onPhaseUpdate: (phase: FormPhase) => void,
 ) => {
   onDelete();
-  
+
   const updatedPhase = {
     ...phase,
     tasks: [...phase.tasks],
     materials: [...phase.materials],
   };
-  
+
   setShowDeleteConfirm(false);
   onPhaseUpdate(updatedPhase);
 };
@@ -62,7 +69,7 @@ export const handleCreateJob = async (
   jobType: string,
   startDate: string,
   setShowNewJobCard: (show: boolean) => void,
-  setPhases: (phases: FormPhase[]) => void
+  setPhases: (phases: FormPhase[]) => void,
 ) => {
   try {
     const template = await import(`../../data/${jobType}.tsx`);
@@ -79,7 +86,7 @@ export const handleCreateJob = async (
     const processedPhases: FormPhase[] = phases.map(
       (phase: FormPhase, phaseIndex: number) => {
         const isPreplanningPhase = phaseIndex === 0;
-        
+
         const tasks = phase.tasks.map((task: FormTask, taskIndex: number) => {
           let baseDate = isPreplanningPhase
             ? task.offset === 0
@@ -105,7 +112,7 @@ export const handleCreateJob = async (
           (material: FormMaterial, materialIndex: number) => {
             let baseDate = isPreplanningPhase
               ? material.offset === 0
-                ? localCurrentBusinessDate  
+                ? localCurrentBusinessDate
                 : createLocalDate(startDate)
               : createLocalDate(startDate);
 
@@ -121,24 +128,29 @@ export const handleCreateJob = async (
               isExpanded: false,
               selectedContacts: material.selectedContacts || [],
             };
-          }
+          },
         );
 
         const phaseWithItems = {
           ...phase,
           tasks,
-          materials
+          materials,
         };
 
         return {
           ...phaseWithItems,
           tempId: `phase-${tempId}-${phase.title.toLowerCase().replace(/\s+/g, "-")}`,
-          startDate: calculatePhaseStartDate(phaseWithItems, isPreplanningPhase, formatToDateString(localCurrentBusinessDate), startDate),
+          startDate: calculatePhaseStartDate(
+            phaseWithItems,
+            isPreplanningPhase,
+            formatToDateString(localCurrentBusinessDate),
+            startDate,
+          ),
           notes: [],
         };
-      }
+      },
     );
-    
+
     setPhases(processedPhases);
     setShowNewJobCard(true);
   } catch (error) {
@@ -150,56 +162,63 @@ export const handlePhaseUpdate = (
   updatedPhase: FormPhase,
   setPhases: (fn: (prevPhases: FormPhase[]) => FormPhase[]) => void,
   extend?: number,
-  extendFuturePhases?: boolean
+  extendFuturePhases?: boolean,
 ) => {
   setPhases((prevPhases) => {
-    const phaseIndex = prevPhases.findIndex(p => p.tempId === updatedPhase.tempId);
+    const phaseIndex = prevPhases.findIndex(
+      (p) => p.tempId === updatedPhase.tempId,
+    );
     let newPhases = [...prevPhases];
-    
+
     // Calculate new phase start date
-    const newStartDate = calculatePhaseStartDate(updatedPhase, false, '', updatedPhase.startDate);
-    
+    const newStartDate = calculatePhaseStartDate(
+      updatedPhase,
+      false,
+      "",
+      updatedPhase.startDate,
+    );
+
     // Update the current phase with new start date
     newPhases[phaseIndex] = {
       ...updatedPhase,
-      startDate: newStartDate
+      startDate: newStartDate,
     };
-    
+
     // Handle pushing future phases forward
     if (extend && extendFuturePhases) {
       for (let i = phaseIndex + 1; i < newPhases.length; i++) {
         const phase = newPhases[i];
-        
+
         // Push the phase start date forward
         const pushedStartDate = formatToDateString(
-          addBusinessDays(createLocalDate(phase.startDate), extend)
+          addBusinessDays(createLocalDate(phase.startDate), extend),
         );
-        
+
         // Push all tasks forward without extending their duration
-        const pushedTasks = phase.tasks.map(task => ({
+        const pushedTasks = phase.tasks.map((task) => ({
           ...task,
           startDate: formatToDateString(
-            addBusinessDays(createLocalDate(task.startDate), extend)
-          )
+            addBusinessDays(createLocalDate(task.startDate), extend),
+          ),
         }));
-        
+
         // Push all materials forward
-        const pushedMaterials = phase.materials.map(material => ({
+        const pushedMaterials = phase.materials.map((material) => ({
           ...material,
           dueDate: formatToDateString(
-            addBusinessDays(createLocalDate(material.dueDate), extend)
-          )
+            addBusinessDays(createLocalDate(material.dueDate), extend),
+          ),
         }));
-        
+
         newPhases[i] = {
           ...phase,
           startDate: pushedStartDate,
           tasks: pushedTasks,
-          materials: pushedMaterials
+          materials: pushedMaterials,
         };
       }
     }
-    
+
     return newPhases;
   });
 };

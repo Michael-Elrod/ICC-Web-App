@@ -1,15 +1,16 @@
-// components/ContactCard.tsx
-import React from 'react';
-import CardFrame from './CardFrame';
-import UserInfoRow from './UserInfoRow';
-import { ContactCardProps } from '@/app/types/props';
+// ContactCard.tsx
+
+import React from "react";
+import CardFrame from "./CardFrame";
+import UserInfoRow from "./UserInfoRow";
+import { ContactCardProps } from "@/app/types/props";
 
 const ContactCard: React.FC<ContactCardProps> = ({
   user_first_name,
   user_last_name,
   user_email,
   user_phone,
-  showCheckbox = false
+  showCheckbox = false,
 }) => {
   return (
     <CardFrame noMargin>

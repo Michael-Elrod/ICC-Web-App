@@ -1,5 +1,6 @@
-// components/PasswordModal.tsx
-import React, { useState } from 'react';
+// PasswordModal.tsx
+
+import React, { useState } from "react";
 
 interface PasswordChangeModalProps {
   isOpen: boolean;
@@ -7,10 +8,14 @@ interface PasswordChangeModalProps {
   onSubmit: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
-const PasswordChangeModal: React.FC<PasswordChangeModalProps> = ({ isOpen, onClose, onSubmit }) => {
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+const PasswordChangeModal: React.FC<PasswordChangeModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+}) => {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,11 +38,11 @@ const PasswordChangeModal: React.FC<PasswordChangeModalProps> = ({ isOpen, onClo
       await onSubmit(currentPassword, newPassword);
       onClose();
       // Reset form
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred');
+      setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -51,10 +56,8 @@ const PasswordChangeModal: React.FC<PasswordChangeModalProps> = ({ isOpen, onClo
         <h3 className="text-xl font-bold mb-4 text-zinc-700 dark:text-white">
           Change Password
         </h3>
-        
-        {error && (
-          <div className="mb-4 text-red-500 text-sm">{error}</div>
-        )}
+
+        {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -109,7 +112,7 @@ const PasswordChangeModal: React.FC<PasswordChangeModalProps> = ({ isOpen, onClo
               disabled={isLoading}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:opacity-50"
             >
-              {isLoading ? 'Updating...' : 'Update Password'}
+              {isLoading ? "Updating..." : "Update Password"}
             </button>
           </div>
         </form>

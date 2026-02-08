@@ -1,16 +1,16 @@
-// handlers/new/phase.ts
+// phases.tsx
+
 import { FormPhase, FormNote } from "@/app/types/database";
 
-
 export const handleInputChange = (
-  field: 'title' | 'startDate' | 'description',
+  field: "title" | "startDate" | "description",
   value: string,
   phase: FormPhase,
-  onUpdate: (phase: FormPhase) => void
+  onUpdate: (phase: FormPhase) => void,
 ) => {
   const updatedPhase = {
     ...phase,
-    [field]: value
+    [field]: value,
   };
   onUpdate(updatedPhase);
 };
@@ -19,7 +19,7 @@ export const deleteTask = (
   taskId: string,
   phase: FormPhase,
   onUpdate: (phase: FormPhase) => void,
-  setIsAddingTask: React.Dispatch<React.SetStateAction<boolean>>
+  setIsAddingTask: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   if (taskId) {
     const updatedTasks = phase.tasks.filter((task) => task.id !== taskId);
@@ -28,16 +28,15 @@ export const deleteTask = (
   setIsAddingTask(false);
 };
 
-
 export const deleteMaterial = (
   materialId: string,
   phase: FormPhase,
   onUpdate: (phase: FormPhase) => void,
-  setIsAddingMaterial: React.Dispatch<React.SetStateAction<boolean>>
+  setIsAddingMaterial: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   if (materialId) {
     const updatedMaterials = phase.materials.filter(
-      (material) => material.id !== materialId
+      (material) => material.id !== materialId,
     );
     onUpdate({ ...phase, materials: updatedMaterials });
   }
@@ -47,11 +46,14 @@ export const deleteMaterial = (
 export const updateNote = (
   updatedNote: FormNote,
   phase: FormPhase,
-  onUpdate: (phase: FormPhase) => void
+  onUpdate: (phase: FormPhase) => void,
 ) => {
-  const updatedNotes = phase.notes?.map((note) =>
-    note.id === updatedNote.id ? { ...updatedNote, isExpanded: note.isExpanded } : note
-  ) || [];
+  const updatedNotes =
+    phase.notes?.map((note) =>
+      note.id === updatedNote.id
+        ? { ...updatedNote, isExpanded: note.isExpanded }
+        : note,
+    ) || [];
   onUpdate({ ...phase, notes: updatedNotes });
 };
 
@@ -59,10 +61,11 @@ export const deleteNote = (
   noteId: string,
   phase: FormPhase,
   onUpdate: (phase: FormPhase) => void,
-  setIsAddingNote: React.Dispatch<React.SetStateAction<boolean>>
+  setIsAddingNote: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   if (noteId) {
-    const updatedNotes = phase.notes?.filter((note) => note.id !== noteId) || [];
+    const updatedNotes =
+      phase.notes?.filter((note) => note.id !== noteId) || [];
     onUpdate({ ...phase, notes: updatedNotes });
   }
   setIsAddingNote(false);

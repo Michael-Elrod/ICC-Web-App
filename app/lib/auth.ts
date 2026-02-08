@@ -1,3 +1,5 @@
+// auth.ts
+
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
@@ -16,26 +18,26 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Please enter both email and password");
         }
-      
+
         try {
           const [rows] = await pool.execute(
             "SELECT * FROM app_user WHERE user_email = ?",
-            [credentials.email]
+            [credentials.email],
           );
-      
+
           const user = (rows as any[])[0];
           if (!user) {
             throw new Error("No account found with this email");
           }
           const passwordMatch = await compare(
             credentials.password,
-            user.password
+            user.password,
           );
-      
+
           if (!passwordMatch) {
             throw new Error("Incorrect password");
           }
-          
+
           return {
             id: user.user_id.toString(),
             type: user.user_type,
@@ -46,9 +48,11 @@ export const authOptions: NextAuthOptions = {
             notification_pref: user.notification_pref,
           };
         } catch (error: any) {
-          if (error.message === "No account found with this email" ||
-              error.message === "Incorrect password" ||
-              error.message === "Please enter both email and password") {
+          if (
+            error.message === "No account found with this email" ||
+            error.message === "Incorrect password" ||
+            error.message === "Please enter both email and password"
+          ) {
             throw error;
           }
           throw new Error("An error occurred during authentication");
@@ -57,8 +61,8 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   pages: {
-    signIn: '/',
-    error: '/auth/error',
+    signIn: "/",
+    error: "/auth/error",
   },
   callbacks: {
     async jwt({ token, user, trigger, session }) {
@@ -72,7 +76,7 @@ export const authOptions: NextAuthOptions = {
         token.email = user.user_email;
         token.notificationPref = user.notification_pref;
       }
-  
+
       // Handle updates
       if (trigger === "update" && session) {
         token.firstName = session.user.firstName;
@@ -81,7 +85,7 @@ export const authOptions: NextAuthOptions = {
         token.email = session.user.email;
         token.notificationPref = session.user.notificationPref;
       }
-  
+
       return token;
     },
     async session({ session, token }) {
@@ -95,7 +99,7 @@ export const authOptions: NextAuthOptions = {
         session.user.notificationPref = token.notificationPref;
       }
       return session;
-    }
+    },
   },
   session: {
     strategy: "jwt",

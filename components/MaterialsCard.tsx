@@ -1,4 +1,5 @@
-// components/MaterialsCard.tsx
+// MaterialsCard.tsx
+
 import { useSession } from "next-auth/react";
 import React, { useState, useEffect, useRef } from "react";
 import SmallCardFrame from "./SmallCardFrame";
@@ -15,7 +16,7 @@ interface MaterialsCardProps {
   onStatusUpdate: (
     id: number,
     type: "task" | "material",
-    newStatus: string
+    newStatus: string,
   ) => void;
   onDelete: (id: number) => Promise<void>;
   userType?: string;
@@ -33,7 +34,7 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
   renderAddingForm,
 }) => {
   const [expandedMaterialId, setExpandedMaterialId] = useState<number | null>(
-    null
+    null,
   );
   const [localMaterials, setLocalMaterials] = useState(materials);
   const [activeModal, setActiveModal] = useState<number | null>(null);
@@ -47,7 +48,7 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
   const sortedMaterials = [...materials].sort(
     (a, b) =>
       createLocalDate(a.material_duedate).getTime() -
-      createLocalDate(b.material_duedate).getTime()
+      createLocalDate(b.material_duedate).getTime(),
   );
   const canEditMaterial = (material: MaterialView) => {
     if (hasAdminAccess) return true;
@@ -74,7 +75,7 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
   useEffect(() => {
     if (activeModal !== null) {
       const material = localMaterials.find(
-        (m) => m.material_id === activeModal
+        (m) => m.material_id === activeModal,
       );
       if (material) {
         setSelectedUsers(new Set(material.users.map((u) => u.user_id)));
@@ -104,8 +105,8 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
       prevMaterials.map((material) =>
         material.material_id === materialId
           ? { ...material, material_status: newStatus }
-          : material
-      )
+          : material,
+      ),
     );
     onStatusUpdate(materialId, "material", newStatus);
   };
@@ -113,7 +114,7 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
   const handleCardClick = (e: React.MouseEvent, materialId: number) => {
     if (!(e.target as HTMLElement).closest(".status-button")) {
       setExpandedMaterialId(
-        expandedMaterialId === materialId ? null : materialId
+        expandedMaterialId === materialId ? null : materialId,
       );
     }
   };
@@ -133,13 +134,13 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
     let hasChanges = false;
 
     const titleInput = document.getElementById(
-      `material-title-${materialId}`
+      `material-title-${materialId}`,
     ) as HTMLInputElement;
     const descriptionInput = document.getElementById(
-      `material-description-${materialId}`
+      `material-description-${materialId}`,
     ) as HTMLTextAreaElement;
     const extensionInput = document.getElementById(
-      `material-extension-${materialId}`
+      `material-extension-${materialId}`,
     ) as HTMLInputElement;
 
     if (titleInput && titleInput.value !== material.material_title) {
@@ -178,7 +179,7 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
               "Content-Type": "application/json",
             },
             body: JSON.stringify(changes),
-          }
+          },
         );
 
         if (!response.ok) {
@@ -213,7 +214,7 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
                       </span>
                       <span className="text-sm text-gray-600 sm:hidden mt-1">
                         {createLocalDate(
-                          material.material_duedate
+                          material.material_duedate,
                         ).toLocaleDateString("en-US", {
                           month: "numeric",
                           day: "numeric",
@@ -223,7 +224,7 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
                   </div>
                   <span className="hidden sm:block text-sm text-center col-span-1">
                     {createLocalDate(
-                      material.material_duedate
+                      material.material_duedate,
                     ).toLocaleDateString("en-US", {
                       month: "numeric",
                       day: "numeric",
@@ -388,13 +389,13 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
                                     (`${user.first_name} ${user.last_name}`
                                       .toLowerCase()
                                       .includes(
-                                        userSearchQuery.toLowerCase()
+                                        userSearchQuery.toLowerCase(),
                                       ) ||
                                       user.user_email
                                         .toLowerCase()
                                         .includes(
-                                          userSearchQuery.toLowerCase()
-                                        ))
+                                          userSearchQuery.toLowerCase(),
+                                        )),
                                 )
                                 .map((user) => (
                                   <div
@@ -414,7 +415,7 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
                           <div className="flex flex-wrap gap-2 mt-4">
                             {Array.from(selectedUsers).map((userId) => {
                               const user = contacts.find(
-                                (u) => u.user_id === userId
+                                (u) => u.user_id === userId,
                               );
                               if (!user) return null;
 

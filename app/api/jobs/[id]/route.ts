@@ -1,9 +1,9 @@
-// app/api/jobs/[id]/route.ts
+// route.ts
+
 import { NextResponse } from "next/server";
 import { RowDataPacket } from "mysql2";
 import { JobUpdatePayload } from "@/app/types/database";
 import { withDb, withAuth, withTransaction } from "@/app/lib/api-utils";
-
 
 interface JobDetails extends RowDataPacket {
   job_id: number;
@@ -86,7 +86,7 @@ export const GET = withDb(async (connection, request, params) => {
     FROM job j
     LEFT JOIN app_user c ON j.client_id = c.user_id
     WHERE j.job_id = ?`,
-    [params.id]
+    [params.id],
   );
 
   if (!jobRows.length) {
@@ -102,7 +102,7 @@ export const GET = withDb(async (connection, request, params) => {
     FROM job_floorplan
     WHERE job_id = ?
     ORDER BY floorplan_id`,
-    [params.id]
+    [params.id],
   );
 
   const [phases] = await connection.query<Phase[]>(
@@ -125,19 +125,15 @@ export const GET = withDb(async (connection, request, params) => {
     WHERE p.job_id = ?
     ORDER BY p.phase_startdate
   `,
-    [params.id]
+    [params.id],
   );
 
   const phaseIds = phases.map((p) => p.id);
 
-  const [
-    [statusCounts],
-    [allTasks],
-    [allMaterials],
-    allNotesResult,
-  ] = await Promise.all([
-    connection.query<StatusCounts[]>(
-      `
+  const [[statusCounts], [allTasks], [allMaterials], allNotesResult] =
+    await Promise.all([
+      connection.query<StatusCounts[]>(
+        `
       WITH RECURSIVE business_days AS (
         SELECT CURDATE() as date
         UNION ALL
@@ -218,10 +214,10 @@ export const GET = withDb(async (connection, request, params) => {
           (task_beyond_seven + material_beyond_seven) as sevenDaysPlus
       FROM task_counts, material_counts
     `,
-      [job.job_id, job.job_id]
-    ),
-    connection.query<Task[]>(
-      `
+        [job.job_id, job.job_id],
+      ),
+      connection.query<Task[]>(
+        `
       SELECT
         t.task_id,
         t.phase_id,
@@ -245,10 +241,10 @@ export const GET = withDb(async (connection, request, params) => {
       JOIN phase p ON t.phase_id = p.phase_id
       WHERE p.job_id = ?
       GROUP BY t.task_id`,
-      [params.id]
-    ),
-    connection.query<Material[]>(
-      `
+        [params.id],
+      ),
+      connection.query<Material[]>(
+        `
       SELECT
         m.material_id,
         m.phase_id,
@@ -271,11 +267,11 @@ export const GET = withDb(async (connection, request, params) => {
       JOIN phase p ON m.phase_id = p.phase_id
       WHERE p.job_id = ?
       GROUP BY m.material_id`,
-      [params.id]
-    ),
-    phaseIds.length > 0
-      ? connection.query<RowDataPacket[]>(
-          `SELECT
+        [params.id],
+      ),
+      phaseIds.length > 0
+        ? connection.query<RowDataPacket[]>(
+            `SELECT
             n.phase_id,
             n.note_details,
             n.created_at,
@@ -291,10 +287,10 @@ export const GET = withDb(async (connection, request, params) => {
           FROM note n
           JOIN app_user u ON n.created_by = u.user_id
           WHERE n.phase_id IN (?)`,
-          [phaseIds]
-        )
-      : [[] as RowDataPacket[]],
-  ]);
+            [phaseIds],
+          )
+        : [[] as RowDataPacket[]],
+    ]);
 
   const allNotes = allNotesResult[0] as RowDataPacket[];
 
@@ -373,7 +369,7 @@ export const GET = withDb(async (connection, request, params) => {
 
     return {
       ...phase,
-      endDate: latestEndDate.toISOString().split('T')[0],
+      endDate: latestEndDate.toISOString().split("T")[0],
       tasks: phaseTasks,
       materials: phaseMaterials,
       notes: phaseNotes,
@@ -381,7 +377,7 @@ export const GET = withDb(async (connection, request, params) => {
   });
 
   let jobEndDate = new Date(job.job_startdate);
-  enhancedPhases.forEach(phase => {
+  enhancedPhases.forEach((phase) => {
     const phaseEnd = new Date(phase.endDate);
     if (phaseEnd > jobEndDate) {
       jobEndDate = phaseEnd;
@@ -390,24 +386,26 @@ export const GET = withDb(async (connection, request, params) => {
 
   const jobDetails = {
     ...job,
-    client: job.client_id ? {
-      first_name: job.client_first_name,
-      last_name: job.client_last_name,
-      email: job.client_email,
-      phone: job.client_phone,
-    } : null,
+    client: job.client_id
+      ? {
+          first_name: job.client_first_name,
+          last_name: job.client_last_name,
+          email: job.client_email,
+          phone: job.client_phone,
+        }
+      : null,
     phases: enhancedPhases,
     tasks: transformedTasks,
     materials: transformedMaterials,
     floorplans: floorplans,
-    date_range: `${new Date(job.job_startdate).toLocaleDateString('en-US', {
-      month: 'numeric',
-      day: 'numeric',
-      year: '2-digit'
-    })} - ${jobEndDate.toLocaleDateString('en-US', {
-      month: 'numeric',
-      day: 'numeric',
-      year: '2-digit'
+    date_range: `${new Date(job.job_startdate).toLocaleDateString("en-US", {
+      month: "numeric",
+      day: "numeric",
+      year: "2-digit",
+    })} - ${jobEndDate.toLocaleDateString("en-US", {
+      month: "numeric",
+      day: "numeric",
+      year: "2-digit",
     })}`,
     ...statusCounts[0],
   };
@@ -421,13 +419,13 @@ export const POST = withAuth(async (connection, session, request, params) => {
 
   const [phaseCheck] = await connection.query<RowDataPacket[]>(
     "SELECT phase_id FROM phase WHERE phase_id = ? AND job_id = ?",
-    [body.phase_id, params.id]
+    [body.phase_id, params.id],
   );
 
   if (!phaseCheck.length) {
     return NextResponse.json(
       { error: "Invalid phase ID or phase does not belong to this job" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -437,7 +435,7 @@ export const POST = withAuth(async (connection, session, request, params) => {
       note_details,
       created_by
     ) VALUES (?, ?, ?)`,
-    [body.phase_id, body.note_details, userId]
+    [body.phase_id, body.note_details, userId],
   );
 
   const [newNote] = await connection.query<RowDataPacket[]>(
@@ -456,7 +454,7 @@ export const POST = withAuth(async (connection, session, request, params) => {
     FROM note n
     JOIN app_user u ON n.created_by = u.user_id
     WHERE n.note_id = ?`,
-    [(result as any).insertId]
+    [(result as any).insertId],
   );
 
   return NextResponse.json({ note: newNote[0] });
@@ -469,7 +467,7 @@ export const PUT = withDb(async (connection, request, params) => {
   if (type !== "task" && type !== "material") {
     return NextResponse.json(
       { error: "Invalid type specified" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -479,7 +477,7 @@ export const PUT = withDb(async (connection, request, params) => {
 
   await connection.query(
     `UPDATE ${table} SET ${statusField} = ? WHERE ${idField} = ?`,
-    [newStatus, id]
+    [newStatus, id],
   );
 
   return NextResponse.json({ success: true });
@@ -500,7 +498,7 @@ export const PATCH = withDb(async (connection, request, params) => {
     if (body.job_startdate) {
       const [currentJob] = await connection.query<RowDataPacket[]>(
         "SELECT DATE(job_startdate) as job_startdate FROM job WHERE job_id = ?",
-        [jobId]
+        [jobId],
       );
 
       const currentStartDate = new Date(currentJob[0].job_startdate);
@@ -511,13 +509,13 @@ export const PATCH = withDb(async (connection, request, params) => {
 
       const daysDifference = Math.floor(
         (newStartDate.getTime() - currentStartDate.getTime()) /
-          (1000 * 60 * 60 * 24)
+          (1000 * 60 * 60 * 24),
       );
 
       if (daysDifference !== 0) {
         await connection.query(
           "UPDATE job SET job_startdate = DATE(?) WHERE job_id = ?",
-          [body.job_startdate, jobId]
+          [body.job_startdate, jobId],
         );
 
         await connection.query(
@@ -539,7 +537,15 @@ export const PATCH = withDb(async (connection, request, params) => {
            WHERE p.job_id = ? AND p.phase_id != (
              SELECT MIN(phase_id) FROM phase WHERE job_id = ?
            )`,
-          [daysDifference, daysDifference, daysDifference, daysDifference, daysDifference, jobId, jobId]
+          [
+            daysDifference,
+            daysDifference,
+            daysDifference,
+            daysDifference,
+            daysDifference,
+            jobId,
+            jobId,
+          ],
         );
 
         await connection.query(
@@ -561,7 +567,15 @@ export const PATCH = withDb(async (connection, request, params) => {
            WHERE p.job_id = ? AND p.phase_id != (
              SELECT MIN(phase_id) FROM phase WHERE job_id = ?
            )`,
-          [daysDifference, daysDifference, daysDifference, daysDifference, daysDifference, jobId, jobId]
+          [
+            daysDifference,
+            daysDifference,
+            daysDifference,
+            daysDifference,
+            daysDifference,
+            jobId,
+            jobId,
+          ],
         );
 
         await connection.query(
@@ -587,7 +601,7 @@ export const PATCH = withDb(async (connection, request, params) => {
                WHERE job_id = ?
              ) as min_phase
            )`,
-          [jobId, jobId]
+          [jobId, jobId],
         );
       }
     }
@@ -601,49 +615,46 @@ export const DELETE = withDb(async (connection, request, params) => {
     // Get all phase IDs for this job
     const [phases] = await connection.query<RowDataPacket[]>(
       "SELECT phase_id FROM phase WHERE job_id = ?",
-      [params.id]
+      [params.id],
     );
 
-    const phaseIds = phases.map(phase => phase.phase_id);
+    const phaseIds = phases.map((phase) => phase.phase_id);
 
     if (phaseIds.length > 0) {
-      await connection.query(`
+      await connection.query(
+        `
         DELETE ut FROM user_task ut
         INNER JOIN task t ON ut.task_id = t.task_id
         WHERE t.phase_id IN (?)
-      `, [phaseIds]);
+      `,
+        [phaseIds],
+      );
 
-      await connection.query(`
+      await connection.query(
+        `
         DELETE um FROM user_material um
         INNER JOIN material m ON um.material_id = m.material_id
         WHERE m.phase_id IN (?)
-      `, [phaseIds]);
-
-      await connection.query(
-        "DELETE FROM task WHERE phase_id IN (?)",
-        [phaseIds]
+      `,
+        [phaseIds],
       );
 
-      await connection.query(
-        "DELETE FROM material WHERE phase_id IN (?)",
-        [phaseIds]
-      );
+      await connection.query("DELETE FROM task WHERE phase_id IN (?)", [
+        phaseIds,
+      ]);
 
-      await connection.query(
-        "DELETE FROM note WHERE phase_id IN (?)",
-        [phaseIds]
-      );
+      await connection.query("DELETE FROM material WHERE phase_id IN (?)", [
+        phaseIds,
+      ]);
 
-      await connection.query(
-        "DELETE FROM phase WHERE job_id = ?",
-        [params.id]
-      );
+      await connection.query("DELETE FROM note WHERE phase_id IN (?)", [
+        phaseIds,
+      ]);
+
+      await connection.query("DELETE FROM phase WHERE job_id = ?", [params.id]);
     }
 
-    await connection.query(
-      "DELETE FROM job WHERE job_id = ?",
-      [params.id]
-    );
+    await connection.query("DELETE FROM job WHERE job_id = ?", [params.id]);
 
     return NextResponse.json({ success: true });
   });

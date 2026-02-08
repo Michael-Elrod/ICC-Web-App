@@ -1,3 +1,5 @@
+// JobList.tsx
+
 "use client";
 
 import React, { useEffect, useState, Suspense } from "react";
@@ -21,7 +23,7 @@ export default function JobList({ status }: JobListProps) {
 function JobListContent({ status }: JobListProps) {
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(
-    searchParams?.get("search") || ""
+    searchParams?.get("search") || "",
   );
   const [jobs, setJobs] = useState<JobDetailView[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +31,9 @@ function JobListContent({ status }: JobListProps) {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await fetch(`/api/jobs?view=detailed&status=${status}`);
+        const response = await fetch(
+          `/api/jobs?view=detailed&status=${status}`,
+        );
         const data = await response.json();
 
         const transformedJobs = data.jobs.map((job: any): JobDetailView => {
@@ -87,10 +91,10 @@ function JobListContent({ status }: JobListProps) {
               endDate: phase.endDate,
               color: phase.color,
               tasks: transformedTasks.filter(
-                (task: TaskView) => task.phase_id === phase.id
+                (task: TaskView) => task.phase_id === phase.id,
               ),
               materials: transformedMaterials.filter(
-                (material: MaterialView) => material.phase_id === phase.id
+                (material: MaterialView) => material.phase_id === phase.id,
               ),
               notes: phase.notes || [],
             })),
@@ -102,7 +106,7 @@ function JobListContent({ status }: JobListProps) {
               first_name: w.user_first_name,
               last_name: w.user_last_name,
               user_email: w.user_email,
-              user_phone: w.user_phone || '',
+              user_phone: w.user_phone || "",
             })),
           };
         });
@@ -126,7 +130,7 @@ function JobListContent({ status }: JobListProps) {
     .filter(
       (job) =>
         searchTerms.length === 0 ||
-        searchTerms.some((term) => job.jobName.toLowerCase().includes(term))
+        searchTerms.some((term) => job.jobName.toLowerCase().includes(term)),
     )
     .sort((a, b) => {
       const dateA = new Date(a.job_startdate).getTime();
@@ -138,7 +142,7 @@ function JobListContent({ status }: JobListProps) {
     jobId: number,
     itemId: number,
     type: "task" | "material",
-    newStatus: "Complete" | "Incomplete" | "In Progress"
+    newStatus: "Complete" | "Incomplete" | "In Progress",
   ): void => {
     setJobs((prevJobs) =>
       prevJobs.map((job) => {
@@ -149,7 +153,7 @@ function JobListContent({ status }: JobListProps) {
             ? job.tasks.map((task) =>
                 task.task_id === itemId
                   ? { ...task, task_status: newStatus }
-                  : task
+                  : task,
               )
             : job.tasks;
 
@@ -158,7 +162,7 @@ function JobListContent({ status }: JobListProps) {
             ? job.materials.map((material) =>
                 material.material_id === itemId
                   ? { ...material, material_status: newStatus }
-                  : material
+                  : material,
               )
             : job.materials;
 
@@ -169,7 +173,7 @@ function JobListContent({ status }: JobListProps) {
               ? phase.tasks.map((task) =>
                   task.task_id === itemId
                     ? { ...task, task_status: newStatus }
-                    : task
+                    : task,
                 )
               : phase.tasks,
           materials:
@@ -177,7 +181,7 @@ function JobListContent({ status }: JobListProps) {
               ? phase.materials.map((material) =>
                   material.material_id === itemId
                     ? { ...material, material_status: newStatus }
-                    : material
+                    : material,
                 )
               : phase.materials,
         }));
@@ -188,7 +192,7 @@ function JobListContent({ status }: JobListProps) {
           materials: updatedMaterials,
           phases: updatedPhases,
         };
-      })
+      }),
     );
   };
 

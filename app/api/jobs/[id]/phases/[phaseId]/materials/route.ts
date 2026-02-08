@@ -1,4 +1,5 @@
-// app/api/jobs/[id]/phases/[phaseId]/materials/route.ts
+// route.ts
+
 import { NextResponse } from "next/server";
 import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import { withAuth, withTransaction } from "@/app/lib/api-utils";
@@ -18,7 +19,7 @@ export const POST = withAuth(async (connection, session, request, params) => {
         data.details || null,
         "Incomplete",
         userId,
-      ]
+      ],
     );
 
     const materialId = materialResult.insertId;
@@ -28,9 +29,9 @@ export const POST = withAuth(async (connection, session, request, params) => {
         data.selectedContacts.map((contactId: number) =>
           connection.execute(
             "INSERT INTO user_material (user_id, material_id, assigned_by) VALUES (?, ?, ?)",
-            [contactId, materialId, userId]
-          )
-        )
+            [contactId, materialId, userId],
+          ),
+        ),
       );
     }
 
@@ -48,7 +49,7 @@ export const POST = withAuth(async (connection, session, request, params) => {
       LEFT JOIN app_user u ON um.user_id = u.user_id
       WHERE m.material_id = ?
       GROUP BY m.material_id`,
-      [materialId]
+      [materialId],
     );
 
     const material = materialData[0];
@@ -56,10 +57,10 @@ export const POST = withAuth(async (connection, session, request, params) => {
     return NextResponse.json({
       material_id: material.material_id,
       material_title: material.material_title,
-      material_duedate: material.material_duedate.toISOString().split('T')[0],
+      material_duedate: material.material_duedate.toISOString().split("T")[0],
       material_status: material.material_status,
       material_description: material.material_description,
-      users: []
+      users: [],
     });
   });
 }, "Failed to create material");

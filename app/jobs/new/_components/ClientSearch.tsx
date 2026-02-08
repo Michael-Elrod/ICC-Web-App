@@ -1,4 +1,5 @@
-// components/new/ClientSearch.tsx
+// ClientSearch.tsx
+
 import React, { useState, useEffect } from "react";
 import { User } from "@/app/types/database";
 
@@ -47,7 +48,7 @@ export default function ClientSearchSelect({
   useEffect(() => {
     if (selectedClient) {
       setSearch(
-        `${selectedClient.user_first_name} ${selectedClient.user_last_name}`
+        `${selectedClient.user_first_name} ${selectedClient.user_last_name}`,
       );
     }
   }, [selectedClient]);
@@ -56,7 +57,7 @@ export default function ClientSearchSelect({
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
       const searchContainer = document.getElementById(
-        "client-search-container"
+        "client-search-container",
       );
       if (searchContainer && !searchContainer.contains(target)) {
         setIsOpen(false);
@@ -143,7 +144,7 @@ export default function ClientSearchSelect({
                   onClick={() => {
                     onClientSelect(client);
                     setSearch(
-                      `${client.user_first_name} ${client.user_last_name}`
+                      `${client.user_first_name} ${client.user_last_name}`,
                     );
                     setIsOpen(false);
                   }}

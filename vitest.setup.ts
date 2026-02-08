@@ -1,14 +1,16 @@
-import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
-import { afterEach, vi } from 'vitest'
+// vitest.setup.ts
+
+import "@testing-library/jest-dom/vitest";
+import { cleanup } from "@testing-library/react";
+import { afterEach, vi } from "vitest";
 
 // Cleanup after each test
 afterEach(() => {
-  cleanup()
-})
+  cleanup();
+});
 
 // Mock Next.js router
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),
@@ -17,30 +19,35 @@ vi.mock('next/navigation', () => ({
     forward: vi.fn(),
     refresh: vi.fn(),
   }),
-  usePathname: () => '/',
+  usePathname: () => "/",
   useSearchParams: () => new URLSearchParams(),
-}))
+}));
 
 // Mock next-auth
-vi.mock('next-auth/react', () => ({
+vi.mock("next-auth/react", () => ({
   useSession: vi.fn(() => ({
     data: {
-      user: { id: '1', name: 'Test User', email: 'test@example.com', role: 'Admin' },
-      expires: '2099-01-01',
+      user: {
+        id: "1",
+        name: "Test User",
+        email: "test@example.com",
+        role: "Admin",
+      },
+      expires: "2099-01-01",
     },
-    status: 'authenticated',
+    status: "authenticated",
   })),
   signIn: vi.fn(),
   signOut: vi.fn(),
   SessionProvider: ({ children }: { children: React.ReactNode }) => children,
-}))
+}));
 
 // Mock next-themes
-vi.mock('next-themes', () => ({
+vi.mock("next-themes", () => ({
   useTheme: () => ({
-    theme: 'light',
+    theme: "light",
     setTheme: vi.fn(),
-    resolvedTheme: 'light',
+    resolvedTheme: "light",
   }),
   ThemeProvider: ({ children }: { children: React.ReactNode }) => children,
-}))
+}));

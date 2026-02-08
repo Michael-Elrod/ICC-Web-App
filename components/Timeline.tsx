@@ -1,3 +1,5 @@
+// Timeline.tsx
+
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -6,7 +8,6 @@ import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { UserView, PhaseView } from "@/app/types/views";
 import { TimelineProps } from "@/app/types/props";
 import { formatPhoneNumber } from "@/app/utils";
-
 
 const TIMELINE_CONFIG = {
   phaseHeight: 28,
@@ -114,8 +115,8 @@ const PhaseItemsPopup = ({
                       task.task_status === "Complete"
                         ? "bg-green-500"
                         : task.task_status === "In Progress"
-                        ? "bg-yellow-500"
-                        : "bg-red-500"
+                          ? "bg-yellow-500"
+                          : "bg-red-500"
                     }`}
                   />
                 </div>
@@ -154,8 +155,8 @@ const PhaseItemsPopup = ({
                       material.material_status === "Complete"
                         ? "bg-green-500"
                         : material.material_status === "In Progress"
-                        ? "bg-yellow-500"
-                        : "bg-red-500"
+                          ? "bg-yellow-500"
+                          : "bg-red-500"
                     }`}
                   />
                 </div>
@@ -181,7 +182,7 @@ const ItemDetailPopup = ({
   onStatusUpdate: (
     itemId: number,
     type: "task" | "material",
-    newStatus: StatusType
+    newStatus: StatusType,
   ) => void;
   hasAdminAccess?: boolean;
 }) => {
@@ -194,7 +195,7 @@ const ItemDetailPopup = ({
 
   const currentUserId = session?.user?.id ? parseInt(session.user.id) : null;
   const isUserAssigned = item.users.some(
-    (user) => user.user_id === currentUserId
+    (user) => user.user_id === currentUserId,
   );
   const canEdit = hasAdminAccess || isUserAssigned;
 
@@ -220,8 +221,18 @@ const ItemDetailPopup = ({
               onClick={onBack}
               className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </button>
             <h2 className="text-xl font-bold">{item.title}</h2>
@@ -328,10 +339,16 @@ const ItemDetailPopup = ({
               <select
                 className="appearance-none border border-zinc-200 dark:border-zinc-600 rounded-lg pl-4 pr-10 py-2 bg-white dark:bg-zinc-700 dark:text-white bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.23%207.21a.75.75%200%20011.06.02L10%2011.168l3.71-3.938a.75.75%200%20111.08%201.04l-4.25%204.5a.75.75%200%2001-1.08%200l-4.25-4.5a.75.75%200%2001.02-1.06z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value as StatusType)}
+                onChange={(e) =>
+                  setSelectedStatus(e.target.value as StatusType)
+                }
               >
                 {allStatuses.map((status) => (
-                  <option key={status} value={status} className="bg-white dark:bg-zinc-700 dark:text-white">
+                  <option
+                    key={status}
+                    value={status}
+                    className="bg-white dark:bg-zinc-700 dark:text-white"
+                  >
                     {status}
                   </option>
                 ))}
@@ -441,7 +458,7 @@ const Timeline: React.FC<TimelineProps> = ({
   const handleStatusUpdate = async (
     itemId: number,
     type: "task" | "material",
-    newStatus: StatusType
+    newStatus: StatusType,
   ): Promise<void> => {
     try {
       const response = await fetch(`/api/calendar?type=${type}&id=${itemId}`, {
@@ -462,15 +479,15 @@ const Timeline: React.FC<TimelineProps> = ({
               tasks: prevPhase.tasks.map((task) =>
                 task.task_id === itemId && type === "task"
                   ? { ...task, task_status: newStatus }
-                  : task
+                  : task,
               ),
               materials: prevPhase.materials.map((material) =>
                 material.material_id === itemId && type === "material"
                   ? { ...material, material_status: newStatus }
-                  : material
+                  : material,
               ),
             }
-          : null
+          : null,
       );
 
       onStatusUpdate(itemId, type, newStatus);
@@ -493,13 +510,22 @@ const Timeline: React.FC<TimelineProps> = ({
                 i === dateLabels.length - 1
                   ? "text-right"
                   : i === 0
-                  ? "text-left"
-                  : "text-center"
+                    ? "text-left"
+                    : "text-center"
               }
               style={{
-                position: i === 0 || i === dateLabels.length - 1 ? "relative" : "absolute",
-                left: i === 0 || i === dateLabels.length - 1 ? undefined : `${label.position}%`,
-                transform: i === 0 || i === dateLabels.length - 1 ? undefined : "translateX(-50%)",
+                position:
+                  i === 0 || i === dateLabels.length - 1
+                    ? "relative"
+                    : "absolute",
+                left:
+                  i === 0 || i === dateLabels.length - 1
+                    ? undefined
+                    : `${label.position}%`,
+                transform:
+                  i === 0 || i === dateLabels.length - 1
+                    ? undefined
+                    : "translateX(-50%)",
               }}
             >
               {formatShortDate(label.date)}

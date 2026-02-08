@@ -1,4 +1,5 @@
-// components/reset/ResetPasswordForm.tsx
+// ResetPasswordForm.tsx
+
 "use client";
 
 import { useState, Suspense } from "react";
@@ -151,7 +152,10 @@ function ResetPasswordFormContent() {
           </div>
         </div>
         <div className="mb-6">
-          <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1">
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium mb-1"
+          >
             Confirm Password
           </label>
           <div className="relative">

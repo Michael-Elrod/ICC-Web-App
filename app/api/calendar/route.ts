@@ -1,4 +1,5 @@
-// app/api/calendar/route.ts
+// route.ts
+
 import { NextResponse } from "next/server";
 import { Job, Phase, Task, Material } from "../../types/database";
 import { RowDataPacket } from "mysql2";
@@ -16,7 +17,7 @@ export const GET = withDb(async (connection, request) => {
   if (jobId) {
     const [jobs] = await connection.query<JobRow[]>(
       `SELECT * FROM job WHERE job_id = ?`,
-      [jobId]
+      [jobId],
     );
 
     if (!jobs.length) {
@@ -25,26 +26,26 @@ export const GET = withDb(async (connection, request) => {
 
     const [phases] = await connection.query<PhaseRow[]>(
       `SELECT * FROM phase WHERE job_id = ? ORDER BY phase_startdate`,
-      [jobId]
+      [jobId],
     );
 
     const [tasks] = await connection.query<TaskRow[]>(
       `SELECT * FROM task WHERE phase_id IN (?) ORDER BY task_startdate`,
-      [phases.map(p => p.phase_id)]
+      [phases.map((p) => p.phase_id)],
     );
 
     const [materials] = await connection.query<MaterialRow[]>(
       `SELECT * FROM material WHERE phase_id IN (?) ORDER BY material_duedate`,
-      [phases.map(p => p.phase_id)]
+      [phases.map((p) => p.phase_id)],
     );
 
     const transformedData = {
       ...jobs[0],
-      phases: phases.map(phase => ({
+      phases: phases.map((phase) => ({
         ...phase,
-        tasks: tasks.filter(t => t.phase_id === phase.phase_id),
-        materials: materials.filter(m => m.phase_id === phase.phase_id)
-      }))
+        tasks: tasks.filter((t) => t.phase_id === phase.phase_id),
+        materials: materials.filter((m) => m.phase_id === phase.phase_id),
+      })),
     };
 
     return NextResponse.json(transformedData);
@@ -68,21 +69,21 @@ export const PUT = withDb(async (connection, request) => {
   if (!type || !id) {
     return NextResponse.json(
       { error: "Missing type or id parameter" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   const { status } = await request.json();
 
   if (type === "task") {
-    await connection.query("UPDATE task SET task_status = ? WHERE task_id = ?", [
-      status,
-      id,
-    ]);
+    await connection.query(
+      "UPDATE task SET task_status = ? WHERE task_id = ?",
+      [status, id],
+    );
   } else if (type === "material") {
     await connection.query(
       "UPDATE material SET material_status = ? WHERE material_id = ?",
-      [status, id]
+      [status, id],
     );
   }
 

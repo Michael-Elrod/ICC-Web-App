@@ -1,6 +1,12 @@
+// FloorplanViewer.tsx
+
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { isPdf, downloadFile, downloadAllFloorplans } from "@/app/lib/floorplan-utils";
+import {
+  isPdf,
+  downloadFile,
+  downloadAllFloorplans,
+} from "@/app/lib/floorplan-utils";
 
 export interface FloorplanItem {
   id?: number;
@@ -29,7 +35,8 @@ const FloorplanViewer: React.FC<FloorplanViewerProps> = ({
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const showAdminControls = hasAdminAccess && (onRemoveCurrent || onRemoveAll || onUpload);
+  const showAdminControls =
+    hasAdminAccess && (onRemoveCurrent || onRemoveAll || onUpload);
 
   useEffect(() => {
     if (mode === "modal") {
@@ -37,11 +44,11 @@ const FloorplanViewer: React.FC<FloorplanViewerProps> = ({
         if (e.key === "Escape" && onClose) onClose();
         if (e.key === "ArrowLeft")
           setSelectedIndex((prev) =>
-            prev > 0 ? prev - 1 : floorplans.length - 1
+            prev > 0 ? prev - 1 : floorplans.length - 1,
           );
         if (e.key === "ArrowRight")
           setSelectedIndex((prev) =>
-            prev < floorplans.length - 1 ? prev + 1 : 0
+            prev < floorplans.length - 1 ? prev + 1 : 0,
           );
       };
       window.addEventListener("keydown", handleKeyDown);
@@ -56,10 +63,7 @@ const FloorplanViewer: React.FC<FloorplanViewerProps> = ({
 
   const currentPlan = floorplans[selectedIndex];
 
-  const renderMedia = (
-    plan: FloorplanItem,
-    isMainView: boolean = false
-  ) => {
+  const renderMedia = (plan: FloorplanItem, isMainView: boolean = false) => {
     if (!plan?.url) {
       console.error("Missing URL for plan:", plan);
       return null;
@@ -74,10 +78,20 @@ const FloorplanViewer: React.FC<FloorplanViewerProps> = ({
             className="w-full h-full"
           >
             <div className="flex flex-col items-center justify-center h-full bg-gray-100 dark:bg-zinc-700 rounded-lg">
-              <svg className="w-16 h-16 text-red-500 mb-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+              <svg
+                className="w-16 h-16 text-red-500 mb-4"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                  clipRule="evenodd"
+                />
               </svg>
-              <p className="text-lg font-medium mb-2">{plan.name || "PDF Document"}</p>
+              <p className="text-lg font-medium mb-2">
+                {plan.name || "PDF Document"}
+              </p>
               <a
                 href={plan.url}
                 target="_blank"
@@ -92,10 +106,20 @@ const FloorplanViewer: React.FC<FloorplanViewerProps> = ({
       } else {
         return (
           <div className="flex flex-col items-center justify-center h-full bg-gray-100 dark:bg-zinc-700">
-            <svg className="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+            <svg
+              className="w-8 h-8 text-red-500"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                clipRule="evenodd"
+              />
             </svg>
-            <span className="text-xs mt-1 text-gray-600 dark:text-gray-300">PDF</span>
+            <span className="text-xs mt-1 text-gray-600 dark:text-gray-300">
+              PDF
+            </span>
           </div>
         );
       }
@@ -119,10 +143,10 @@ const FloorplanViewer: React.FC<FloorplanViewerProps> = ({
 
   const handleDownloadCurrent = () => {
     if (currentPlan?.url) {
-      const extension = isPdf(currentPlan.url) ? '.pdf' : '.jpg';
+      const extension = isPdf(currentPlan.url) ? ".pdf" : ".jpg";
       downloadFile(
         currentPlan.url,
-        currentPlan.name || `floorplan-${selectedIndex + 1}${extension}`
+        currentPlan.name || `floorplan-${selectedIndex + 1}${extension}`,
       );
     }
   };
@@ -132,27 +156,47 @@ const FloorplanViewer: React.FC<FloorplanViewerProps> = ({
       <button
         onClick={() =>
           setSelectedIndex((prev) =>
-            prev > 0 ? prev - 1 : floorplans.length - 1
+            prev > 0 ? prev - 1 : floorplans.length - 1,
           )
         }
         className="absolute left-4 sm:left-6 z-10 p-2 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors"
         aria-label="Previous image"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 19l-7-7 7-7"
+          />
         </svg>
       </button>
       <button
         onClick={() =>
           setSelectedIndex((prev) =>
-            prev < floorplans.length - 1 ? prev + 1 : 0
+            prev < floorplans.length - 1 ? prev + 1 : 0,
           )
         }
         className="absolute right-4 sm:right-6 z-10 p-2 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors"
         aria-label="Next image"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 5l7 7-7 7"
+          />
         </svg>
       </button>
     </>
@@ -194,7 +238,9 @@ const FloorplanViewer: React.FC<FloorplanViewerProps> = ({
             )}
 
             {/* Download buttons - mobile */}
-            <div className={`flex flex-col gap-2 ${!showAdminControls ? "col-span-2" : ""}`}>
+            <div
+              className={`flex flex-col gap-2 ${!showAdminControls ? "col-span-2" : ""}`}
+            >
               {currentPlan?.url && (
                 <button
                   onClick={handleDownloadCurrent}
@@ -249,7 +295,9 @@ const FloorplanViewer: React.FC<FloorplanViewerProps> = ({
           )}
 
           {/* Desktop Layout - Download buttons */}
-          <div className={`hidden sm:flex sm:flex-row gap-2 ${!showAdminControls ? "w-full justify-center" : ""}`}>
+          <div
+            className={`hidden sm:flex sm:flex-row gap-2 ${!showAdminControls ? "w-full justify-center" : ""}`}
+          >
             {currentPlan?.url && (
               <button
                 onClick={handleDownloadCurrent}

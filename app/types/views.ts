@@ -1,4 +1,4 @@
-// types/views.ts
+// views.ts
 
 export interface FloorPlan {
   url: string;

@@ -1,7 +1,8 @@
-// components/NoteCard.tsx
-import React from 'react';
-import { NoteView } from '@/app/types/views';
-import { formatCardDate } from '@/app/utils';
+// NoteCard.tsx
+
+import React from "react";
+import { NoteView } from "@/app/types/views";
+import { formatCardDate } from "@/app/utils";
 
 interface NoteProps extends NoteView {
   onClick: () => void;
@@ -15,7 +16,6 @@ export default function Note({
   onClick,
   isExpanded,
 }: NoteProps) {
-
   return (
     <div onClick={onClick} className="cursor-pointer">
       <div className="grid grid-cols-3 items-center">

@@ -1,3 +1,5 @@
+// NewClientModal.tsx
+
 import { useState } from "react";
 import { User, UserType } from "@/app/types/database";
 import { formatPhoneNumberInput } from "@/app/utils";
@@ -8,7 +10,11 @@ interface NewClientModalProps {
   onClientCreated: (client: User) => void;
 }
 
-export default function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientModalProps) {
+export default function NewClientModal({
+  isOpen,
+  onClose,
+  onClientCreated,
+}: NewClientModalProps) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
@@ -70,7 +76,8 @@ export default function NewClientModal({ isOpen, onClose, onClientCreated }: New
         handleClose();
       } catch (error) {
         setErrors({
-          submit: error instanceof Error ? error.message : "Failed to create client",
+          submit:
+            error instanceof Error ? error.message : "Failed to create client",
         });
       } finally {
         setIsLoading(false);
@@ -123,9 +130,7 @@ export default function NewClientModal({ isOpen, onClose, onClientCreated }: New
                 required
               />
               {attempted && errors.firstName && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.firstName}
-                </p>
+                <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
               )}
             </div>
             <div>
@@ -145,9 +150,7 @@ export default function NewClientModal({ isOpen, onClose, onClientCreated }: New
                 required
               />
               {attempted && errors.lastName && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.lastName}
-                </p>
+                <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
               )}
             </div>
           </div>
@@ -168,9 +171,7 @@ export default function NewClientModal({ isOpen, onClose, onClientCreated }: New
               required
             />
             {attempted && errors.clientEmail && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.clientEmail}
-              </p>
+              <p className="text-red-500 text-xs mt-1">{errors.clientEmail}</p>
             )}
           </div>
           <div>

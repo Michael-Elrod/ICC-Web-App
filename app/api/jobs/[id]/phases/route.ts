@@ -1,3 +1,5 @@
+// route.ts
+
 import { NextResponse } from "next/server";
 import { ResultSetHeader } from "mysql2/promise";
 import { withAuth, withTransaction } from "@/app/lib/api-utils";
@@ -6,18 +8,12 @@ export const POST = withAuth(async (connection, session, request, params) => {
   const userId = parseInt(session.user.id);
   const jobId = parseInt(params.id);
   const formData = await request.formData();
-  const phase = JSON.parse(formData.get('phase') as string);
+  const phase = JSON.parse(formData.get("phase") as string);
 
   return await withTransaction(connection, async () => {
     const [phaseResult] = await connection.execute<ResultSetHeader>(
       "INSERT INTO phase (job_id, phase_title, phase_startdate, phase_description, created_by) VALUES (?, ?, ?, ?, ?)",
-      [
-        jobId,
-        phase.title,
-        phase.startDate,
-        phase.description || null,
-        userId,
-      ]
+      [jobId, phase.title, phase.startDate, phase.description || null, userId],
     );
     const phaseId = phaseResult.insertId;
 
@@ -32,7 +28,7 @@ export const POST = withAuth(async (connection, session, request, params) => {
           task.details || null,
           "Incomplete",
           userId,
-        ]
+        ],
       );
       if (task.assignedUsers?.length) {
         const taskId = taskResult.insertId;
@@ -40,9 +36,9 @@ export const POST = withAuth(async (connection, session, request, params) => {
           task.assignedUsers.map((assignedUserId: number) =>
             connection.execute(
               "INSERT INTO user_task (user_id, task_id, assigned_by) VALUES (?, ?, ?)",
-              [assignedUserId, taskId, userId]
-            )
-          )
+              [assignedUserId, taskId, userId],
+            ),
+          ),
         );
       }
     }
@@ -57,7 +53,7 @@ export const POST = withAuth(async (connection, session, request, params) => {
           material.details || null,
           "Incomplete",
           userId,
-        ]
+        ],
       );
 
       if (material.assignedUsers?.length) {
@@ -66,9 +62,9 @@ export const POST = withAuth(async (connection, session, request, params) => {
           material.assignedUsers.map((assignedUserId: number) =>
             connection.execute(
               "INSERT INTO user_material (user_id, material_id, assigned_by) VALUES (?, ?, ?)",
-              [assignedUserId, materialId, userId]
-            )
-          )
+              [assignedUserId, materialId, userId],
+            ),
+          ),
         );
       }
     }
@@ -76,7 +72,7 @@ export const POST = withAuth(async (connection, session, request, params) => {
     for (const note of phase.notes) {
       await connection.execute(
         "INSERT INTO note (phase_id, note_details, created_by) VALUES (?, ?, ?)",
-        [phaseId, note.content, userId]
+        [phaseId, note.content, userId],
       );
     }
 

@@ -1,4 +1,5 @@
-// components/job/CopyJobModal.tsx
+// CopyJobModal.tsx
+
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -149,7 +150,8 @@ export default function CopyJobModal({
                     htmlFor="workerAssignments"
                     className="ml-2 text-sm font-medium"
                   >
-                    Worker Assignments (All users assigned to tasks and materials)
+                    Worker Assignments (All users assigned to tasks and
+                    materials)
                   </label>
                 </div>
 

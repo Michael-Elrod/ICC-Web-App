@@ -1,5 +1,6 @@
-// components/SmallCardFrame.tsx
-import React from 'react';
+// SmallCardFrame.tsx
+
+import React from "react";
 
 interface SmallCardFrameProps {
   children: React.ReactNode;

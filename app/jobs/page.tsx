@@ -1,3 +1,5 @@
+// page.tsx
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -31,17 +33,19 @@ export default function JobsPage() {
 
   const filteredJobs = jobs
     .filter((job) =>
-      job.job_title.toLowerCase().includes(localSearchQuery.toLowerCase())
+      job.job_title.toLowerCase().includes(localSearchQuery.toLowerCase()),
     )
-    .sort((a, b) =>
-      new Date(a.job_startdate).getTime() - new Date(b.job_startdate).getTime()
+    .sort(
+      (a, b) =>
+        new Date(a.job_startdate).getTime() -
+        new Date(b.job_startdate).getTime(),
     );
 
   const handleJobSelect = (jobId: string) => {
     setSelectedJobs((prev) =>
       prev.includes(jobId)
         ? prev.filter((id) => id !== jobId)
-        : [...prev, jobId]
+        : [...prev, jobId],
     );
   };
 
@@ -49,11 +53,11 @@ export default function JobsPage() {
     if (selectedJobs.length > 0) {
       const selectedJobNames = selectedJobs
         .map(
-          (id) => jobs.find((job) => job.job_id.toString() === id)?.job_title
+          (id) => jobs.find((job) => job.job_id.toString() === id)?.job_title,
         )
         .filter(Boolean);
       router.push(
-        `/jobs/active?search=${encodeURIComponent(selectedJobNames.join(", "))}`
+        `/jobs/active?search=${encodeURIComponent(selectedJobNames.join(", "))}`,
       );
     }
   };

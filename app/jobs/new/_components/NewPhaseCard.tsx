@@ -1,4 +1,4 @@
-// components/PhaseCard.tsx
+// NewPhaseCard.tsx
 
 import React, { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
@@ -67,7 +67,7 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
           return {
             ...material,
             dueDate: formatToDateString(
-              addBusinessDays(materialDate, updates.extend)
+              addBusinessDays(materialDate, updates.extend),
             ),
           };
         });
@@ -82,7 +82,7 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
               materials: updatedMaterials,
             },
             updates.extend,
-            true
+            true,
           );
           return;
         }
@@ -90,7 +90,7 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
         updatedTasks = phase.tasks.map((task) => ({
           ...task,
           startDate: formatToDateString(
-            addBusinessDays(createLocalDate(task.startDate), updates.daysDiff!)
+            addBusinessDays(createLocalDate(task.startDate), updates.daysDiff!),
           ),
         }));
 
@@ -99,8 +99,8 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
           dueDate: formatToDateString(
             addBusinessDays(
               createLocalDate(material.dueDate),
-              updates.daysDiff!
-            )
+              updates.daysDiff!,
+            ),
           ),
         }));
       }
@@ -115,7 +115,7 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
         materials: updatedMaterials,
       },
       updates.extend,
-      false
+      false,
     );
   };
 
@@ -243,7 +243,7 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
                       "description",
                       e.target.value,
                       phase,
-                      onUpdate
+                      onUpdate,
                     )
                   }
                   className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded dark:bg-zinc-800 dark:text-white"
@@ -252,271 +252,271 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
               </div>
 
               <div className="space-y-4 mt-4">
-              {/* Tasks Section */}
-              <CollapsibleSection
-                title="Tasks"
-                itemCount={phase.tasks.length}
-                isExpanded={isTasksExpanded}
-                onToggle={() => setIsTasksExpanded(!isTasksExpanded)}
-              >
-                <div className="space-y-2">
-                  {phase.tasks
-                    .sort(
-                      (a, b) =>
-                        new Date(a.startDate).getTime() -
-                        new Date(b.startDate).getTime()
-                    )
-                    .map((task) => (
-                      <TaskCard
-                        key={task.id}
-                        task={task}
-                        onUpdate={(updatedTask) => {
-                          const updatedTasks = phase.tasks
-                            .map((t) =>
-                              t.id === updatedTask.id ? updatedTask : t
+                {/* Tasks Section */}
+                <CollapsibleSection
+                  title="Tasks"
+                  itemCount={phase.tasks.length}
+                  isExpanded={isTasksExpanded}
+                  onToggle={() => setIsTasksExpanded(!isTasksExpanded)}
+                >
+                  <div className="space-y-2">
+                    {phase.tasks
+                      .sort(
+                        (a, b) =>
+                          new Date(a.startDate).getTime() -
+                          new Date(b.startDate).getTime(),
+                      )
+                      .map((task) => (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          onUpdate={(updatedTask) => {
+                            const updatedTasks = phase.tasks
+                              .map((t) =>
+                                t.id === updatedTask.id ? updatedTask : t,
+                              )
+                              .sort(
+                                (a, b) =>
+                                  new Date(a.startDate).getTime() -
+                                  new Date(b.startDate).getTime(),
+                              );
+                            onUpdate({
+                              ...phase,
+                              tasks: updatedTasks,
+                            });
+                          }}
+                          onDelete={() =>
+                            deleteTask(
+                              task.id,
+                              phase,
+                              onUpdate,
+                              setIsAddingTask,
                             )
-                            .sort(
-                              (a, b) =>
-                                new Date(a.startDate).getTime() -
-                                new Date(b.startDate).getTime()
-                            );
+                          }
+                          phaseStartDate={phase.startDate}
+                          contacts={contacts}
+                          phase={phase}
+                          onPhaseUpdate={onUpdate}
+                        />
+                      ))}
+
+                    {/* Add new task button */}
+                    <div className="flex justify-center mt-4">
+                      <button
+                        className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
+                        onClick={() => {
+                          const newTask: FormTask = {
+                            id: `task-${Date.now()}`,
+                            title: "",
+                            startDate: phase.startDate,
+                            duration: "1",
+                            details: "",
+                            selectedContacts: [],
+                            isExpanded: true,
+                            offset: 0,
+                          };
+                          const updatedTasks = [...phase.tasks, newTask].sort(
+                            (a, b) =>
+                              new Date(a.startDate).getTime() -
+                              new Date(b.startDate).getTime(),
+                          );
                           onUpdate({
                             ...phase,
                             tasks: updatedTasks,
                           });
-                        }}
-                        onDelete={() =>
-                          deleteTask(
-                            task.id,
-                            phase,
-                            onUpdate,
-                            setIsAddingTask
-                          )
-                        }
-                        phaseStartDate={phase.startDate}
-                        contacts={contacts}
-                        phase={phase}
-                        onPhaseUpdate={onUpdate}
-                      />
-                    ))}
-
-                  {/* Add new task button */}
-                  <div className="flex justify-center mt-4">
-                    <button
-                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
-                      onClick={() => {
-                        const newTask: FormTask = {
-                          id: `task-${Date.now()}`,
-                          title: "",
-                          startDate: phase.startDate,
-                          duration: "1",
-                          details: "",
-                          selectedContacts: [],
-                          isExpanded: true,
-                          offset: 0,
-                        };
-                        const updatedTasks = [...phase.tasks, newTask].sort(
-                          (a, b) =>
-                            new Date(a.startDate).getTime() -
-                            new Date(b.startDate).getTime()
-                        );
-                        onUpdate({
-                          ...phase,
-                          tasks: updatedTasks,
-                        });
-                        setTimeout(() => {
-                          const element = document.getElementById(
-                            `task-${newTask.id}`
-                          );
-                          if (element) {
-                            element.scrollIntoView({
-                              behavior: "smooth",
-                              block: "center",
-                            });
-                          }
-                        }, 100);
-                      }}
-                    >
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4v16m8-8H4"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </CollapsibleSection>
-
-              {/* Materials Section */}
-              <CollapsibleSection
-                title="Materials"
-                itemCount={phase.materials.length}
-                isExpanded={isMaterialsExpanded}
-                onToggle={() => setIsMaterialsExpanded(!isMaterialsExpanded)}
-              >
-                <div className="space-y-2">
-                  {phase.materials
-                    .sort(
-                      (a, b) =>
-                        new Date(a.dueDate).getTime() -
-                        new Date(b.dueDate).getTime()
-                    )
-                    .map((material) => (
-                      <MaterialCard
-                        key={material.id}
-                        material={material}
-                        onUpdate={(updatedMaterial) => {
-                          const updatedMaterials = phase.materials
-                            .map((m) =>
-                              m.id === updatedMaterial.id
-                                ? updatedMaterial
-                                : m
-                            )
-                            .sort(
-                              (a, b) =>
-                                new Date(a.dueDate).getTime() -
-                                new Date(b.dueDate).getTime()
+                          setTimeout(() => {
+                            const element = document.getElementById(
+                              `task-${newTask.id}`,
                             );
+                            if (element) {
+                              element.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center",
+                              });
+                            }
+                          }, 100);
+                        }}
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </CollapsibleSection>
+
+                {/* Materials Section */}
+                <CollapsibleSection
+                  title="Materials"
+                  itemCount={phase.materials.length}
+                  isExpanded={isMaterialsExpanded}
+                  onToggle={() => setIsMaterialsExpanded(!isMaterialsExpanded)}
+                >
+                  <div className="space-y-2">
+                    {phase.materials
+                      .sort(
+                        (a, b) =>
+                          new Date(a.dueDate).getTime() -
+                          new Date(b.dueDate).getTime(),
+                      )
+                      .map((material) => (
+                        <MaterialCard
+                          key={material.id}
+                          material={material}
+                          onUpdate={(updatedMaterial) => {
+                            const updatedMaterials = phase.materials
+                              .map((m) =>
+                                m.id === updatedMaterial.id
+                                  ? updatedMaterial
+                                  : m,
+                              )
+                              .sort(
+                                (a, b) =>
+                                  new Date(a.dueDate).getTime() -
+                                  new Date(b.dueDate).getTime(),
+                              );
+                            onUpdate({
+                              ...phase,
+                              materials: updatedMaterials,
+                            });
+                          }}
+                          onDelete={() =>
+                            deleteMaterial(
+                              material.id,
+                              phase,
+                              onUpdate,
+                              setIsAddingMaterial,
+                            )
+                          }
+                          phaseStartDate={phase.startDate}
+                          contacts={contacts}
+                          phase={phase}
+                          onPhaseUpdate={onUpdate}
+                        />
+                      ))}
+
+                    {/* Add new material button */}
+                    <div className="flex justify-center mt-4">
+                      <button
+                        className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
+                        onClick={() => {
+                          const newMaterial: FormMaterial = {
+                            id: `material-${Date.now()}`,
+                            title: "",
+                            dueDate: phase.startDate,
+                            offset: 0,
+                            details: "",
+                            selectedContacts: [],
+                            isExpanded: true,
+                          };
+                          const updatedMaterials = [
+                            ...phase.materials,
+                            newMaterial,
+                          ].sort(
+                            (a, b) =>
+                              new Date(a.dueDate).getTime() -
+                              new Date(b.dueDate).getTime(),
+                          );
                           onUpdate({
                             ...phase,
                             materials: updatedMaterials,
                           });
+                          setTimeout(() => {
+                            const element = document.getElementById(
+                              `material-${newMaterial.id}`,
+                            );
+                            if (element) {
+                              element.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center",
+                              });
+                            }
+                          }, 100);
                         }}
-                        onDelete={() =>
-                          deleteMaterial(
-                            material.id,
-                            phase,
-                            onUpdate,
-                            setIsAddingMaterial
-                          )
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </CollapsibleSection>
+
+                {/* Notes Section */}
+                <CollapsibleSection
+                  title="Notes"
+                  itemCount={phase.notes.length}
+                  isExpanded={isNotesExpanded}
+                  onToggle={() => setIsNotesExpanded(!isNotesExpanded)}
+                >
+                  <div className="space-y-2">
+                    {phase.notes.map((note) => (
+                      <NoteCard
+                        key={note.id}
+                        note={note}
+                        onUpdate={(updatedNote) =>
+                          updateNote(updatedNote, phase, onUpdate)
                         }
-                        phaseStartDate={phase.startDate}
-                        contacts={contacts}
-                        phase={phase}
-                        onPhaseUpdate={onUpdate}
+                        onDelete={() =>
+                          deleteNote(note.id, phase, onUpdate, setIsAddingNote)
+                        }
                       />
                     ))}
 
-                  {/* Add new material button */}
-                  <div className="flex justify-center mt-4">
-                    <button
-                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
-                      onClick={() => {
-                        const newMaterial: FormMaterial = {
-                          id: `material-${Date.now()}`,
-                          title: "",
-                          dueDate: phase.startDate,
-                          offset: 0,
-                          details: "",
-                          selectedContacts: [],
-                          isExpanded: true,
-                        };
-                        const updatedMaterials = [
-                          ...phase.materials,
-                          newMaterial,
-                        ].sort(
-                          (a, b) =>
-                            new Date(a.dueDate).getTime() -
-                            new Date(b.dueDate).getTime()
-                        );
-                        onUpdate({
-                          ...phase,
-                          materials: updatedMaterials,
-                        });
-                        setTimeout(() => {
-                          const element = document.getElementById(
-                            `material-${newMaterial.id}`
-                          );
-                          if (element) {
-                            element.scrollIntoView({
-                              behavior: "smooth",
-                              block: "center",
-                            });
-                          }
-                        }, 100);
-                      }}
-                    >
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    {/* Add new note button */}
+                    <div className="flex justify-center mt-4">
+                      <button
+                        className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
+                        onClick={() => {
+                          const newNote: FormNote = {
+                            id: `note-${Date.now()}`,
+                            content: "",
+                            isExpanded: true,
+                          };
+                          const updatedNotes = [...phase.notes, newNote];
+                          onUpdate({
+                            ...phase,
+                            notes: updatedNotes,
+                          });
+                        }}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4v16m8-8H4"
-                        />
-                      </svg>
-                    </button>
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </CollapsibleSection>
-
-              {/* Notes Section */}
-              <CollapsibleSection
-                title="Notes"
-                itemCount={phase.notes.length}
-                isExpanded={isNotesExpanded}
-                onToggle={() => setIsNotesExpanded(!isNotesExpanded)}
-              >
-                <div className="space-y-2">
-                  {phase.notes.map((note) => (
-                    <NoteCard
-                      key={note.id}
-                      note={note}
-                      onUpdate={(updatedNote) =>
-                        updateNote(updatedNote, phase, onUpdate)
-                      }
-                      onDelete={() =>
-                        deleteNote(note.id, phase, onUpdate, setIsAddingNote)
-                      }
-                    />
-                  ))}
-
-                  {/* Add new note button */}
-                  <div className="flex justify-center mt-4">
-                    <button
-                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
-                      onClick={() => {
-                        const newNote: FormNote = {
-                          id: `note-${Date.now()}`,
-                          content: "",
-                          isExpanded: true,
-                        };
-                        const updatedNotes = [...phase.notes, newNote];
-                        onUpdate({
-                          ...phase,
-                          notes: updatedNotes,
-                        });
-                      }}
-                    >
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4v16m8-8H4"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </CollapsibleSection>
+                </CollapsibleSection>
               </div>
             </>
           )}

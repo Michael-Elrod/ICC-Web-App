@@ -1,3 +1,5 @@
+// page.tsx
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -53,14 +55,14 @@ export default function JobDetailPage() {
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [showRemoveAllModal, setShowRemoveAllModal] = useState(false);
   const [selectedFloorplanId, setSelectedFloorplanId] = useState<number | null>(
-    null
+    null,
   );
   const [activeModal, setActiveModal] = useState<"edit" | "floorplan" | null>(
-    null
+    null,
   );
   const [contacts, setContacts] = useState<UserView[]>([]);
   const [collapsedPhases, setCollapsedPhases] = useState<Set<number>>(
-    new Set()
+    new Set(),
   );
   const hasAdminAccess =
     session?.user?.type === "Owner" || session?.user?.type === "Admin";
@@ -239,7 +241,7 @@ export default function JobDetailPage() {
         `/api/jobs/${id}/floorplan?floorplanId=${selectedFloorplanId}`,
         {
           method: "DELETE",
-        }
+        },
       );
 
       if (!response.ok) {
@@ -277,10 +279,10 @@ export default function JobDetailPage() {
       workerAssignments: boolean;
       notes: boolean;
       floorplans: boolean;
-    }
+    },
   ) => {
     if (!job) return;
-  
+
     const jobDataForCopy = {
       originalJobId: job.id,
       jobDetails: {
@@ -292,7 +294,7 @@ export default function JobDetailPage() {
       copyOptions: copyOptions,
       floorplans: copyOptions.floorplans ? job.floorplans : [],
     };
-    
+
     console.log("Saving job data with floorplans:", jobDataForCopy);
     localStorage.setItem("jobToCopy", JSON.stringify(jobDataForCopy));
     router.push("/jobs/new?copy=true");
@@ -306,7 +308,7 @@ export default function JobDetailPage() {
       extend: number;
       extendFuturePhases: boolean;
       daysDiff?: number;
-    }
+    },
   ) => {
     try {
       let updatedPhase: PhaseView | null = null;
@@ -314,7 +316,7 @@ export default function JobDetailPage() {
 
       const getLatestDate = (
         tasks: TaskView[],
-        materials: MaterialView[]
+        materials: MaterialView[],
       ): string => {
         let latestDate = new Date(-8640000000000000);
 
@@ -338,7 +340,7 @@ export default function JobDetailPage() {
 
       const getEarliestDate = (
         tasks: TaskView[],
-        materials: MaterialView[]
+        materials: MaterialView[],
       ): string => {
         let earliestDate = new Date(8640000000000000);
 
@@ -382,8 +384,8 @@ export default function JobDetailPage() {
             const newDate = formatToDateString(
               addBusinessDays(
                 createLocalDate(task.task_startdate),
-                updates.daysDiff!
-              )
+                updates.daysDiff!,
+              ),
             );
 
             return {
@@ -396,8 +398,8 @@ export default function JobDetailPage() {
             const newDate = formatToDateString(
               addBusinessDays(
                 createLocalDate(material.material_duedate),
-                updates.daysDiff!
-              )
+                updates.daysDiff!,
+              ),
             );
 
             return {
@@ -420,8 +422,8 @@ export default function JobDetailPage() {
             const newDate = formatToDateString(
               addBusinessDays(
                 createLocalDate(material.material_duedate),
-                updates.extend
-              )
+                updates.extend,
+              ),
             );
 
             return {
@@ -433,7 +435,7 @@ export default function JobDetailPage() {
 
         const { startDate, endDate } = calculatePhaseDates(
           currentPhase.tasks,
-          currentPhase.materials
+          currentPhase.materials,
         );
         currentPhase.startDate = startDate;
         currentPhase.endDate = endDate;
@@ -452,8 +454,8 @@ export default function JobDetailPage() {
               const newDate = formatToDateString(
                 addBusinessDays(
                   createLocalDate(task.task_startdate),
-                  updates.extend
-                )
+                  updates.extend,
+                ),
               );
 
               return {
@@ -466,8 +468,8 @@ export default function JobDetailPage() {
               const newDate = formatToDateString(
                 addBusinessDays(
                   createLocalDate(material.material_duedate),
-                  updates.extend
-                )
+                  updates.extend,
+                ),
               );
 
               return {
@@ -532,7 +534,7 @@ export default function JobDetailPage() {
         if (!prevJob) return null;
 
         const phaseWithTask = prevJob.phases.find((phase) =>
-          phase.tasks.some((task) => task.task_id === taskId)
+          phase.tasks.some((task) => task.task_id === taskId),
         );
 
         if (!phaseWithTask) {
@@ -543,15 +545,15 @@ export default function JobDetailPage() {
         const updatedPhases = prevJob.phases.map((phase) => {
           if (phase.id === phaseWithTask.id) {
             const updatedTasks = phase.tasks.filter(
-              (task) => task.task_id !== taskId
+              (task) => task.task_id !== taskId,
             );
 
             let phaseStart =
               phase.tasks.length > 0
                 ? createLocalDate(phase.tasks[0].task_startdate)
                 : phase.materials.length > 0
-                ? createLocalDate(phase.materials[0].material_duedate)
-                : new Date();
+                  ? createLocalDate(phase.materials[0].material_duedate)
+                  : new Date();
 
             let phaseEnd = new Date(phaseStart);
 
@@ -628,8 +630,8 @@ export default function JobDetailPage() {
 
         const phaseWithMaterial = prevJob.phases.find((phase) =>
           phase.materials.some(
-            (material) => material.material_id === materialId
-          )
+            (material) => material.material_id === materialId,
+          ),
         );
 
         if (!phaseWithMaterial) {
@@ -640,15 +642,15 @@ export default function JobDetailPage() {
         const updatedPhases = prevJob.phases.map((phase) => {
           if (phase.id === phaseWithMaterial.id) {
             const updatedMaterials = phase.materials.filter(
-              (material) => material.material_id !== materialId
+              (material) => material.material_id !== materialId,
             );
 
             let phaseStart =
               phase.tasks.length > 0
                 ? createLocalDate(phase.tasks[0].task_startdate)
                 : updatedMaterials.length > 0
-                ? createLocalDate(updatedMaterials[0].material_duedate)
-                : new Date();
+                  ? createLocalDate(updatedMaterials[0].material_duedate)
+                  : new Date();
 
             let phaseEnd = new Date(phaseStart);
 
@@ -756,7 +758,7 @@ export default function JobDetailPage() {
   const handleStatusUpdate = async (
     id: number,
     type: "task" | "material",
-    newStatus: string
+    newStatus: string,
   ) => {
     try {
       // Make API call
@@ -784,7 +786,7 @@ export default function JobDetailPage() {
               ? phase.tasks.map((task) =>
                   task.task_id === id
                     ? { ...task, task_status: newStatus }
-                    : task
+                    : task,
                 )
               : phase.tasks,
           materials:
@@ -792,7 +794,7 @@ export default function JobDetailPage() {
               ? phase.materials.map((material) =>
                   material.material_id === id
                     ? { ...material, material_status: newStatus }
-                    : material
+                    : material,
                 )
               : phase.materials,
         }));
@@ -801,7 +803,9 @@ export default function JobDetailPage() {
         const updatedTasks =
           type === "task"
             ? prevJob.tasks.map((task) =>
-                task.task_id === id ? { ...task, task_status: newStatus } : task
+                task.task_id === id
+                  ? { ...task, task_status: newStatus }
+                  : task,
               )
             : prevJob.tasks;
 
@@ -810,7 +814,7 @@ export default function JobDetailPage() {
             ? prevJob.materials.map((material) =>
                 material.material_id === id
                   ? { ...material, material_status: newStatus }
-                  : material
+                  : material,
               )
             : prevJob.materials;
 
@@ -853,7 +857,7 @@ export default function JobDetailPage() {
             return {
               ...phase,
               notes: phase.notes.filter(
-                (note) => note.created_at !== noteTimestamp
+                (note) => note.created_at !== noteTimestamp,
               ),
             };
           }
@@ -896,7 +900,7 @@ export default function JobDetailPage() {
             const updatedTasks = [...phase.tasks, createdTask].sort(
               (a, b) =>
                 new Date(a.task_startdate).getTime() -
-                new Date(b.task_startdate).getTime()
+                new Date(b.task_startdate).getTime(),
             );
 
             // Calculate new phase end date
@@ -958,7 +962,7 @@ export default function JobDetailPage() {
 
   const handleMaterialCreate = async (
     phaseId: number,
-    newMaterial: FormMaterial
+    newMaterial: FormMaterial,
   ) => {
     try {
       const response = await fetch(
@@ -969,7 +973,7 @@ export default function JobDetailPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(newMaterial),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -987,7 +991,7 @@ export default function JobDetailPage() {
             const updatedMaterials = [...phase.materials, createdMaterial].sort(
               (a, b) =>
                 new Date(a.material_duedate).getTime() -
-                new Date(b.material_duedate).getTime()
+                new Date(b.material_duedate).getTime(),
             );
 
             // Calculate new phase end date
@@ -1155,7 +1159,7 @@ export default function JobDetailPage() {
               user_email: user.user_email,
               user_phone: user.user_phone || "",
             })),
-          })
+          }),
         );
 
         const transformedMaterials = data.job.materials.map(
@@ -1175,7 +1179,7 @@ export default function JobDetailPage() {
               user_email: user.user_email,
               user_phone: user.user_phone || "",
             })),
-          })
+          }),
         );
 
         const transformedFloorplans =
@@ -1183,7 +1187,7 @@ export default function JobDetailPage() {
             (floorplan: any): FloorPlan => ({
               url: floorplan.floorplan_url,
               name: `Floor Plan ${floorplan.floorplan_id}`,
-            })
+            }),
           ) || [];
 
         const transformedJob: JobDetailView = {
@@ -1203,13 +1207,13 @@ export default function JobDetailPage() {
               color: phase.color,
               description: phase.description,
               tasks: transformedTasks.filter(
-                (task: TaskView) => task.phase_id === phase.id
+                (task: TaskView) => task.phase_id === phase.id,
               ),
               materials: transformedMaterials.filter(
-                (material: MaterialView) => material.phase_id === phase.id
+                (material: MaterialView) => material.phase_id === phase.id,
               ),
               notes: phase.notes || [],
-            })
+            }),
           ),
           overdue: data.job.overdue,
           nextSevenDays: data.job.nextSevenDays,
@@ -1223,7 +1227,7 @@ export default function JobDetailPage() {
 
         setJob(transformedJob);
         setCollapsedPhases(
-          new Set(transformedJob.phases.map((phase) => phase.id))
+          new Set(transformedJob.phases.map((phase) => phase.id)),
         );
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
@@ -1250,12 +1254,12 @@ export default function JobDetailPage() {
 
     const filteredPhases = job.phases.map((phase) => {
       const filteredTasks = phase.tasks.filter((task) =>
-        task.users.some((user) => user.user_id === parseInt(session.user.id))
+        task.users.some((user) => user.user_id === parseInt(session.user.id)),
       );
       const filteredMaterials = phase.materials.filter((material) =>
         material.users.some(
-          (user) => user.user_id === parseInt(session.user.id)
-        )
+          (user) => user.user_id === parseInt(session.user.id),
+        ),
       );
 
       return {
@@ -1267,7 +1271,7 @@ export default function JobDetailPage() {
     });
 
     return filteredPhases.filter(
-      (phase) => phase.tasks.length > 0 || phase.materials.length > 0
+      (phase) => phase.tasks.length > 0 || phase.materials.length > 0,
     );
   };
 
@@ -1476,7 +1480,7 @@ export default function JobDetailPage() {
           .toLowerCase()
           .includes(searchQuery.toLowerCase()) ||
         user.user_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.user_phone.includes(searchQuery)
+        user.user_phone.includes(searchQuery),
     );
 
     return (
@@ -1646,8 +1650,8 @@ export default function JobDetailPage() {
             {activeTab === "Contacts"
               ? renderContacts()
               : activeTab === "Floor Plan"
-              ? renderFloorPlan()
-              : renderPhaseCards()}
+                ? renderFloorPlan()
+                : renderPhaseCards()}
           </div>
         )}
       </section>

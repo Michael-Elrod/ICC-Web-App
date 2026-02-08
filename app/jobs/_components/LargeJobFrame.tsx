@@ -1,3 +1,5 @@
+// LargeJobFrame.tsx
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -24,7 +26,7 @@ interface LargeJobFrameProps {
   onStatusUpdate: (
     itemId: number,
     type: "task" | "material",
-    newStatus: "Complete" | "Incomplete" | "In Progress"
+    newStatus: "Complete" | "Incomplete" | "In Progress",
   ) => void;
 }
 
@@ -64,7 +66,7 @@ const LargeJobFrame: React.FC<LargeJobFrameProps> = ({
   const handleStatusUpdate = (
     itemId: number,
     type: "task" | "material",
-    newStatus: "Complete" | "Incomplete" | "In Progress"
+    newStatus: "Complete" | "Incomplete" | "In Progress",
   ): void => {
     onStatusUpdate(itemId, type, newStatus);
   };

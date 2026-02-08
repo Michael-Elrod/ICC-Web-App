@@ -1,7 +1,8 @@
-// components/ContentTabs.tsx
+// ContentTabs.tsx
+
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 interface ContentTab {
   name: string;
@@ -13,8 +14,14 @@ interface ContentTabsProps {
   setActiveTab: (tabName: string) => void;
 }
 
-const ContentTabs: React.FC<ContentTabsProps> = ({ tabs, activeTab, setActiveTab }) => {
-  const [activeTabElement, setActiveTabElement] = useState<HTMLElement | null>(null);
+const ContentTabs: React.FC<ContentTabsProps> = ({
+  tabs,
+  activeTab,
+  setActiveTab,
+}) => {
+  const [activeTabElement, setActiveTabElement] = useState<HTMLElement | null>(
+    null,
+  );
 
   useEffect(() => {
     const element = document.getElementById(`tab-${activeTab}`);
@@ -29,9 +36,9 @@ const ContentTabs: React.FC<ContentTabsProps> = ({ tabs, activeTab, setActiveTab
             key={tab.name}
             id={`tab-${tab.name}`}
             className={`w-1/3 sm:w-auto px-3 sm:px-6 py-2 text-center ${
-              activeTab === tab.name 
-                ? 'text-current font-medium border-b-2 sm:border-b-0 border-current' 
-                : 'text-opacity-60 hover:text-opacity-80'
+              activeTab === tab.name
+                ? "text-current font-medium border-b-2 sm:border-b-0 border-current"
+                : "text-opacity-60 hover:text-opacity-80"
             }`}
             onClick={() => setActiveTab(tab.name)}
           >

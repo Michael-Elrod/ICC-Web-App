@@ -1,9 +1,11 @@
+// NavTabs.tsx
+
 // components/NavTabs.tsx - For navigation between pages
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { NavTab } from '@/app/types/views';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { NavTab } from "@/app/types/views";
 
 interface NavTabsProps {
   tabs: NavTab[];
@@ -12,7 +14,9 @@ interface NavTabsProps {
 }
 
 const NavTabs: React.FC<NavTabsProps> = ({ tabs, activeTab, setActiveTab }) => {
-  const [activeTabElement, setActiveTabElement] = useState<HTMLElement | null>(null);
+  const [activeTabElement, setActiveTabElement] = useState<HTMLElement | null>(
+    null,
+  );
   const router = useRouter();
 
   useEffect(() => {
@@ -33,7 +37,9 @@ const NavTabs: React.FC<NavTabsProps> = ({ tabs, activeTab, setActiveTab }) => {
             key={tab.name}
             id={`tab-${tab.name}`}
             className={`px-6 py-2 ${
-              activeTab === tab.name ? 'text-current font-medium' : 'text-opacity-60 hover:text-opacity-80'
+              activeTab === tab.name
+                ? "text-current font-medium"
+                : "text-opacity-60 hover:text-opacity-80"
             }`}
             onClick={() => handleTabClick(tab)}
           >

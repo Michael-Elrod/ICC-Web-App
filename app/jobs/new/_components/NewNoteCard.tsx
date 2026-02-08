@@ -1,8 +1,8 @@
-// components/NoteCard.tsx
+// NewNoteCard.tsx
 
-import React, { useState, useEffect } from 'react';
-import { FaEdit, FaTrash } from 'react-icons/fa';
-import { FormNote } from '@/app/types/database';
+import React, { useState, useEffect } from "react";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import { FormNote } from "@/app/types/database";
 
 interface NoteCardProps {
   note: FormNote;
@@ -10,17 +10,21 @@ interface NoteCardProps {
   onDelete: () => void;
 }
 
-export default function NewNoteCard({ note, onUpdate, onDelete }: NoteCardProps) {
+export default function NewNoteCard({
+  note,
+  onUpdate,
+  onDelete,
+}: NoteCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [localNote, setLocalNote] = useState<FormNote>({
     ...note,
-    isExpanded: note.isExpanded || false
+    isExpanded: note.isExpanded || false,
   });
 
   const handleDone = () => {
     const updatedNote = {
       ...localNote,
-      isExpanded: false
+      isExpanded: false,
     };
     setLocalNote(updatedNote);
     onUpdate(updatedNote);
@@ -36,7 +40,10 @@ export default function NewNoteCard({ note, onUpdate, onDelete }: NoteCardProps)
   };
 
   return (
-    <div id={`task-${note.id}`} className="mb-4 p-4 border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-zinc-800">
+    <div
+      id={`task-${note.id}`}
+      className="mb-4 p-4 border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-zinc-800"
+    >
       {localNote.isExpanded ? (
         <div>
           <div className="mb-2">
@@ -45,7 +52,7 @@ export default function NewNoteCard({ note, onUpdate, onDelete }: NoteCardProps)
               onChange={(e) => {
                 const updatedNote = {
                   ...localNote,
-                  content: e.target.value
+                  content: e.target.value,
                 };
                 setLocalNote(updatedNote);
               }}
@@ -76,7 +83,7 @@ export default function NewNoteCard({ note, onUpdate, onDelete }: NoteCardProps)
             if (!(e.target as HTMLElement).closest("button")) {
               const updatedNote = {
                 ...localNote,
-                isExpanded: true
+                isExpanded: true,
               };
               setLocalNote(updatedNote);
               onUpdate(updatedNote);
@@ -91,7 +98,7 @@ export default function NewNoteCard({ note, onUpdate, onDelete }: NoteCardProps)
               onClick={() => {
                 const updatedNote = {
                   ...localNote,
-                  isExpanded: true
+                  isExpanded: true,
                 };
                 setLocalNote(updatedNote);
                 onUpdate(updatedNote);

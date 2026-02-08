@@ -1,3 +1,5 @@
+// tailwind.config.ts
+
 import type { Config } from "tailwindcss";
 
 const config: Config = {
@@ -6,11 +8,11 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  darkMode: 'class',
+  darkMode: "class",
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-work-sans)'],
+        sans: ["var(--font-work-sans)"],
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

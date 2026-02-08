@@ -1,4 +1,5 @@
-// components/CollapsibleSection.tsx
+// CollapsibleSection.tsx
+
 import React, { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
@@ -22,8 +23,10 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
 
   // Support both controlled and uncontrolled modes
-  const isExpanded = controlledExpanded !== undefined ? controlledExpanded : internalExpanded;
-  const handleToggle = onToggle || (() => setInternalExpanded(!internalExpanded));
+  const isExpanded =
+    controlledExpanded !== undefined ? controlledExpanded : internalExpanded;
+  const handleToggle =
+    onToggle || (() => setInternalExpanded(!internalExpanded));
 
   const handleHeaderClick = (e: React.MouseEvent) => {
     if (!(e.target as HTMLElement).closest("button")) {
@@ -50,11 +53,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
           onClick={handleToggle}
           className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
         >
-          {isExpanded ? (
-            <FaChevronUp size={16} />
-          ) : (
-            <FaChevronDown size={16} />
-          )}
+          {isExpanded ? <FaChevronUp size={16} /> : <FaChevronDown size={16} />}
         </button>
       </div>
 

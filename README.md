@@ -4,11 +4,11 @@ A construction project management platform built with Next.js 14 for managing jo
 
 ## Tech Stack
 
-| Layer          | Technology                                           |
-| -------------- | ---------------------------------------------------- |
-| Framework      | Next.js 14 (App Router), React 18, TypeScript 5      |
-| Styling        | Tailwind CSS 3 (class-based dark mode)               |
-| Authentication | NextAuth 4 (Credentials provider, JWT sessions)      |
+| Layer          | Technology                                            |
+| -------------- | ----------------------------------------------------- |
+| Framework      | Next.js 14 (App Router), React 18, TypeScript 5       |
+| Styling        | Tailwind CSS 3 (class-based dark mode)                |
+| Authentication | NextAuth 4 (Credentials provider, JWT sessions)       |
 | Database       | MySQL 8+ via mysql2/promise (connection pooling, TLS) |
 | File Storage   | AWS S3                                                |
 | Email          | AWS SES                                               |
@@ -190,52 +190,52 @@ User (Client) ──── (*) Job
 
 ## API Routes
 
-| Method | Endpoint                                          | Description              |
-| ------ | ------------------------------------------------- | ------------------------ |
-| POST   | `/api/auth/[...nextauth]`                         | NextAuth authentication  |
-| POST   | `/api/register`                                   | Register with invite code|
-| POST   | `/api/reset-password`                             | Request password reset   |
-| POST   | `/api/invite`                                     | Send invitation email    |
-| POST   | `/api/unsubscribe`                                | Email opt-out            |
-| GET    | `/api/users`                                      | List all users           |
-| PUT    | `/api/users/:userId`                              | Update user              |
-| GET    | `/api/users/clients`                              | List clients             |
-| GET    | `/api/users/non-clients`                          | List non-clients         |
-| PUT    | `/api/settings/password`                          | Change password          |
-| GET    | `/api/jobs`                                       | List jobs (overview/detail) |
-| POST   | `/api/jobs/new`                                   | Create job + floorplans  |
-| GET    | `/api/jobs/:id`                                   | Job detail               |
-| PUT    | `/api/jobs/:id`                                   | Update job               |
-| DELETE | `/api/jobs/:id`                                   | Delete job               |
-| POST   | `/api/jobs/:id/close`                             | Archive job              |
-| POST   | `/api/jobs/:id/floorplan`                         | Upload floorplans        |
-| POST   | `/api/jobs/:id/copy-floorplans`                   | Copy floorplans          |
-| CRUD   | `/api/jobs/:id/phases`                            | Phase management         |
-| CRUD   | `/api/jobs/:id/phases/:phaseId/tasks`             | Task management          |
-| CRUD   | `/api/jobs/:id/phases/:phaseId/materials`         | Material management      |
-| CRUD   | `/api/jobs/:id/phases/:phaseId/notes`             | Note management          |
-| POST   | `/api/calendar`                                   | Calendar event data      |
+| Method | Endpoint                                  | Description                 |
+| ------ | ----------------------------------------- | --------------------------- |
+| POST   | `/api/auth/[...nextauth]`                 | NextAuth authentication     |
+| POST   | `/api/register`                           | Register with invite code   |
+| POST   | `/api/reset-password`                     | Request password reset      |
+| POST   | `/api/invite`                             | Send invitation email       |
+| POST   | `/api/unsubscribe`                        | Email opt-out               |
+| GET    | `/api/users`                              | List all users              |
+| PUT    | `/api/users/:userId`                      | Update user                 |
+| GET    | `/api/users/clients`                      | List clients                |
+| GET    | `/api/users/non-clients`                  | List non-clients            |
+| PUT    | `/api/settings/password`                  | Change password             |
+| GET    | `/api/jobs`                               | List jobs (overview/detail) |
+| POST   | `/api/jobs/new`                           | Create job + floorplans     |
+| GET    | `/api/jobs/:id`                           | Job detail                  |
+| PUT    | `/api/jobs/:id`                           | Update job                  |
+| DELETE | `/api/jobs/:id`                           | Delete job                  |
+| POST   | `/api/jobs/:id/close`                     | Archive job                 |
+| POST   | `/api/jobs/:id/floorplan`                 | Upload floorplans           |
+| POST   | `/api/jobs/:id/copy-floorplans`           | Copy floorplans             |
+| CRUD   | `/api/jobs/:id/phases`                    | Phase management            |
+| CRUD   | `/api/jobs/:id/phases/:phaseId/tasks`     | Task management             |
+| CRUD   | `/api/jobs/:id/phases/:phaseId/materials` | Material management         |
+| CRUD   | `/api/jobs/:id/phases/:phaseId/notes`     | Note management             |
+| POST   | `/api/calendar`                           | Calendar event data         |
 
 ## Environment Variables
 
-| Variable                    | Purpose                          |
-| --------------------------- | -------------------------------- |
-| `NEXTAUTH_SECRET`           | JWT signing key                  |
-| `NEXTAUTH_URL`              | App base URL                     |
-| `DB_HOST`                   | MySQL host                       |
-| `DB_USER`                   | MySQL user                       |
-| `DB_PASSWORD`               | MySQL password                   |
-| `DB_NAME`                   | MySQL database name              |
-| `JWT_SECRET`                | Additional JWT secret            |
-| `AMPLIFY_REGION`            | AWS region                       |
-| `AMPLIFY_ACCESS_KEY_ID`     | AWS access key                   |
-| `AMPLIFY_SECRET_ACCESS_KEY` | AWS secret key                   |
-| `SES_FROM_EMAIL`            | Sender email for SES             |
-| `S3_ACCESS_KEY_ID`          | S3 access key                    |
-| `S3_SECRET_ACCESS_KEY`      | S3 secret key                    |
-| `S3_BUCKET_NAME`            | S3 bucket for floorplans         |
-| `S3_REGION`                 | S3 bucket region                 |
-| `NEXT_PUBLIC_APP_URL`       | Public-facing app URL            |
+| Variable                    | Purpose                  |
+| --------------------------- | ------------------------ |
+| `NEXTAUTH_SECRET`           | JWT signing key          |
+| `NEXTAUTH_URL`              | App base URL             |
+| `DB_HOST`                   | MySQL host               |
+| `DB_USER`                   | MySQL user               |
+| `DB_PASSWORD`               | MySQL password           |
+| `DB_NAME`                   | MySQL database name      |
+| `JWT_SECRET`                | Additional JWT secret    |
+| `AMPLIFY_REGION`            | AWS region               |
+| `AMPLIFY_ACCESS_KEY_ID`     | AWS access key           |
+| `AMPLIFY_SECRET_ACCESS_KEY` | AWS secret key           |
+| `SES_FROM_EMAIL`            | Sender email for SES     |
+| `S3_ACCESS_KEY_ID`          | S3 access key            |
+| `S3_SECRET_ACCESS_KEY`      | S3 secret key            |
+| `S3_BUCKET_NAME`            | S3 bucket for floorplans |
+| `S3_REGION`                 | S3 bucket region         |
+| `NEXT_PUBLIC_APP_URL`       | Public-facing app URL    |
 
 ## Getting Started
 

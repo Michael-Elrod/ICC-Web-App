@@ -1,4 +1,4 @@
-// components/MaterialCard.tsx
+// NewMaterialCard.tsx
 
 import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
@@ -32,9 +32,9 @@ const NewMaterialCard: React.FC<MaterialCardProps> = ({
     material.selectedContacts
       ?.map(
         (contact) =>
-          contacts.find((c) => c.user_id === parseInt(contact.id)) as UserView
+          contacts.find((c) => c.user_id === parseInt(contact.id)) as UserView,
       )
-      .filter(Boolean) || []
+      .filter(Boolean) || [],
   );
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -78,7 +78,7 @@ const NewMaterialCard: React.FC<MaterialCardProps> = ({
                     e.target.value,
                     phaseStartDate,
                     setLocalMaterial,
-                    setErrors
+                    setErrors,
                   )
                 }
                 className={`w-full p-2 border ${
@@ -107,7 +107,7 @@ const NewMaterialCard: React.FC<MaterialCardProps> = ({
                     date?.toISOString().split("T")[0] || "",
                     phaseStartDate,
                     setLocalMaterial,
-                    setErrors
+                    setErrors,
                   )
                 }
                 filterDate={(date: Date) => {
@@ -140,7 +140,7 @@ const NewMaterialCard: React.FC<MaterialCardProps> = ({
                   e.target.value,
                   phaseStartDate,
                   setLocalMaterial,
-                  setErrors
+                  setErrors,
                 )
               }
               className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded dark:bg-zinc-800 dark:text-white"
@@ -158,7 +158,7 @@ const NewMaterialCard: React.FC<MaterialCardProps> = ({
                 handleContactSelect(
                   contact,
                   selectedContacts,
-                  setSelectedContacts
+                  setSelectedContacts,
                 )
               }
             />
@@ -178,7 +178,7 @@ const NewMaterialCard: React.FC<MaterialCardProps> = ({
                       handleContactRemove(
                         contact.user_id.toString(),
                         selectedContacts,
-                        setSelectedContacts
+                        setSelectedContacts,
                       )
                     }
                     className="absolute top-0.5 right-2 text-zinc-400 hover:text-zinc-600"
@@ -198,7 +198,7 @@ const NewMaterialCard: React.FC<MaterialCardProps> = ({
                   setLocalMaterial,
                   setErrors,
                   onUpdate,
-                  phase.startDate
+                  phase.startDate,
                 )
               }
               className="mr-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded"
@@ -274,7 +274,7 @@ const NewMaterialCard: React.FC<MaterialCardProps> = ({
                   handleDeleteConfirm(
                     material.id,
                     onDelete,
-                    setShowDeleteConfirm
+                    setShowDeleteConfirm,
                   )
                 }
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"

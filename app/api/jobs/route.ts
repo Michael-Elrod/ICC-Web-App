@@ -1,7 +1,8 @@
-// app/api/jobs/route.ts
-import { NextResponse } from 'next/server';
-import { RowDataPacket } from 'mysql2';
-import { withDb } from '@/app/lib/api-utils';
+// route.ts
+
+import { NextResponse } from "next/server";
+import { RowDataPacket } from "mysql2";
+import { withDb } from "@/app/lib/api-utils";
 
 interface Task extends RowDataPacket {
   job_id: number;
@@ -90,23 +91,27 @@ interface MaterialUser extends RowDataPacket {
 
 export const GET = withDb(async (connection, request) => {
   const { searchParams } = new URL(request.url);
-  const view = searchParams.get('view') || 'overview';
-  const status = searchParams.get('status') || 'active';
+  const view = searchParams.get("view") || "overview";
+  const status = searchParams.get("status") || "active";
 
-  if (view === 'overview') {
-    const [baseJobs] = await connection.query<RowDataPacket[]>(`
+  if (view === "overview") {
+    const [baseJobs] = await connection.query<RowDataPacket[]>(
+      `
       SELECT j.job_id, j.job_title, j.job_startdate
       FROM job j
       WHERE j.job_status = ?
-    `, [status]);
+    `,
+      [status],
+    );
 
-    const jobIds = baseJobs.map(j => j.job_id);
+    const jobIds = baseJobs.map((j) => j.job_id);
     if (jobIds.length === 0) {
       return NextResponse.json({ jobs: [] });
     }
 
     const [[taskCounts], [materialCounts]] = await Promise.all([
-      connection.query<TaskCount[]>(`
+      connection.query<TaskCount[]>(
+        `
         SELECT
           p.job_id,
           COUNT(CASE WHEN t.task_status = 'Incomplete'
@@ -124,8 +129,11 @@ export const GET = withDb(async (connection, request) => {
         LEFT JOIN task t ON p.phase_id = t.phase_id
         WHERE p.job_id IN (?)
         GROUP BY p.job_id
-      `, [jobIds]),
-      connection.query<MaterialCount[]>(`
+      `,
+        [jobIds],
+      ),
+      connection.query<MaterialCount[]>(
+        `
         SELECT
           p.job_id,
           COUNT(CASE WHEN m.material_status = 'Incomplete' AND m.material_duedate < CURDATE() THEN 1 END) as overdue,
@@ -135,7 +143,9 @@ export const GET = withDb(async (connection, request) => {
         LEFT JOIN material m ON p.phase_id = m.phase_id
         WHERE p.job_id IN (?)
         GROUP BY p.job_id
-      `, [jobIds])
+      `,
+        [jobIds],
+      ),
     ]);
 
     const taskCountMap = new Map<number, TaskCount>();
@@ -144,23 +154,33 @@ export const GET = withDb(async (connection, request) => {
     const materialCountMap = new Map<number, MaterialCount>();
     for (const row of materialCounts) materialCountMap.set(row.job_id, row);
 
-    const jobs = baseJobs.map(job => {
-      const tc = taskCountMap.get(job.job_id) || { overdue: 0, next_seven_days: 0, beyond_seven_days: 0 };
-      const mc = materialCountMap.get(job.job_id) || { overdue: 0, next_seven_days: 0, beyond_seven_days: 0 };
+    const jobs = baseJobs.map((job) => {
+      const tc = taskCountMap.get(job.job_id) || {
+        overdue: 0,
+        next_seven_days: 0,
+        beyond_seven_days: 0,
+      };
+      const mc = materialCountMap.get(job.job_id) || {
+        overdue: 0,
+        next_seven_days: 0,
+        beyond_seven_days: 0,
+      };
       return {
         job_id: job.job_id,
         job_title: job.job_title,
         job_startdate: job.job_startdate,
         overdue_count: (tc.overdue || 0) + (mc.overdue || 0),
         next_week_count: (tc.next_seven_days || 0) + (mc.next_seven_days || 0),
-        later_weeks_count: (tc.beyond_seven_days || 0) + (mc.beyond_seven_days || 0),
+        later_weeks_count:
+          (tc.beyond_seven_days || 0) + (mc.beyond_seven_days || 0),
       };
     });
 
     return NextResponse.json({ jobs });
   }
 
-  const [jobs] = await connection.query<Job[]>(`
+  const [jobs] = await connection.query<Job[]>(
+    `
     SELECT
       j.job_id,
       j.job_title,
@@ -169,9 +189,11 @@ export const GET = withDb(async (connection, request) => {
       j.job_description
     FROM job j
     WHERE j.job_status = ?
-  `, [status]);
+  `,
+    [status],
+  );
 
-  const jobIds = jobs.map(j => j.job_id);
+  const jobIds = jobs.map((j) => j.job_id);
   if (jobIds.length === 0) {
     return NextResponse.json({ jobs: [] });
   }
@@ -185,9 +207,10 @@ export const GET = withDb(async (connection, request) => {
     [phasesRows],
     [floorplansRows],
     [taskUsersRows],
-    [materialUsersRows]
+    [materialUsersRows],
   ] = await Promise.all([
-    connection.query<TaskCount[]>(`
+    connection.query<TaskCount[]>(
+      `
       SELECT
         p.job_id,
         COUNT(CASE WHEN t.task_status = 'Incomplete'
@@ -205,9 +228,12 @@ export const GET = withDb(async (connection, request) => {
       LEFT JOIN task t ON p.phase_id = t.phase_id
       WHERE p.job_id IN (?)
       GROUP BY p.job_id
-    `, [jobIds]),
+    `,
+      [jobIds],
+    ),
 
-    connection.query<MaterialCount[]>(`
+    connection.query<MaterialCount[]>(
+      `
       SELECT
         p.job_id,
         COUNT(CASE WHEN m.material_status = 'Incomplete' AND m.material_duedate < CURDATE() THEN 1 END) as overdue,
@@ -217,9 +243,12 @@ export const GET = withDb(async (connection, request) => {
       LEFT JOIN material m ON p.phase_id = m.phase_id
       WHERE p.job_id IN (?)
       GROUP BY p.job_id
-    `, [jobIds]),
+    `,
+      [jobIds],
+    ),
 
-    connection.query<Task[]>(`
+    connection.query<Task[]>(
+      `
       SELECT
         p.job_id,
         t.task_id, t.phase_id, t.task_title, t.task_startdate,
@@ -228,9 +257,12 @@ export const GET = withDb(async (connection, request) => {
       JOIN phase p ON t.phase_id = p.phase_id
       WHERE p.job_id IN (?)
       ORDER BY t.task_title
-    `, [jobIds]),
+    `,
+      [jobIds],
+    ),
 
-    connection.query<Material[]>(`
+    connection.query<Material[]>(
+      `
       SELECT
         p.job_id,
         m.material_id, m.phase_id, m.material_title, m.material_duedate,
@@ -239,9 +271,12 @@ export const GET = withDb(async (connection, request) => {
       JOIN phase p ON m.phase_id = p.phase_id
       WHERE p.job_id IN (?)
       ORDER BY m.material_title
-    `, [jobIds]),
+    `,
+      [jobIds],
+    ),
 
-    connection.query<Worker[]>(`
+    connection.query<Worker[]>(
+      `
       SELECT DISTINCT p.job_id, u.user_id, u.user_first_name, u.user_last_name, u.user_email, u.user_phone
       FROM app_user u
       JOIN user_task ut ON u.user_id = ut.user_id
@@ -255,9 +290,12 @@ export const GET = withDb(async (connection, request) => {
       JOIN material m ON um.material_id = m.material_id
       JOIN phase p ON m.phase_id = p.phase_id
       WHERE p.job_id IN (?)
-    `, [jobIds, jobIds]),
+    `,
+      [jobIds, jobIds],
+    ),
 
-    connection.query<Phase[]>(`
+    connection.query<Phase[]>(
+      `
       SELECT
         p.job_id,
         p.phase_id as id,
@@ -280,32 +318,43 @@ export const GET = withDb(async (connection, request) => {
       FROM phase p
       WHERE p.job_id IN (?)
       ORDER BY p.phase_startdate
-    `, [jobIds]),
+    `,
+      [jobIds],
+    ),
 
-    connection.query<Floorplan[]>(`
+    connection.query<Floorplan[]>(
+      `
       SELECT job_id, floorplan_id, floorplan_url
       FROM job_floorplan
       WHERE job_id IN (?)
       ORDER BY floorplan_id
-    `, [jobIds]),
+    `,
+      [jobIds],
+    ),
 
-    connection.query<TaskUser[]>(`
+    connection.query<TaskUser[]>(
+      `
       SELECT t.task_id, u.user_id, u.user_first_name, u.user_last_name, u.user_email, u.user_phone
       FROM user_task ut
       JOIN app_user u ON ut.user_id = u.user_id
       JOIN task t ON ut.task_id = t.task_id
       JOIN phase p ON t.phase_id = p.phase_id
       WHERE p.job_id IN (?)
-    `, [jobIds]),
+    `,
+      [jobIds],
+    ),
 
-    connection.query<MaterialUser[]>(`
+    connection.query<MaterialUser[]>(
+      `
       SELECT m.material_id, u.user_id, u.user_first_name, u.user_last_name, u.user_email, u.user_phone
       FROM user_material um
       JOIN app_user u ON um.user_id = u.user_id
       JOIN material m ON um.material_id = m.material_id
       JOIN phase p ON m.phase_id = p.phase_id
       WHERE p.job_id IN (?)
-    `, [jobIds])
+    `,
+      [jobIds],
+    ),
   ]);
 
   const taskCountsByJob = new Map<number, TaskCount>();
@@ -375,16 +424,26 @@ export const GET = withDb(async (connection, request) => {
   }
 
   const enhancedJobs = jobs.map((job: Job) => {
-    const taskCounts = taskCountsByJob.get(job.job_id) || { overdue: 0, next_seven_days: 0, beyond_seven_days: 0 };
-    const materialCounts = materialCountsByJob.get(job.job_id) || { overdue: 0, next_seven_days: 0, beyond_seven_days: 0 };
+    const taskCounts = taskCountsByJob.get(job.job_id) || {
+      overdue: 0,
+      next_seven_days: 0,
+      beyond_seven_days: 0,
+    };
+    const materialCounts = materialCountsByJob.get(job.job_id) || {
+      overdue: 0,
+      next_seven_days: 0,
+      beyond_seven_days: 0,
+    };
     const tasks = tasksByJob.get(job.job_id) || [];
     const materials = materialsByJob.get(job.job_id) || [];
-    const workers = Array.from((workersByJob.get(job.job_id) || new Map()).values()).map(w => ({
+    const workers = Array.from(
+      (workersByJob.get(job.job_id) || new Map()).values(),
+    ).map((w) => ({
       user_id: w.user_id,
       user_first_name: w.user_first_name,
       user_last_name: w.user_last_name,
       user_email: w.user_email,
-      user_phone: w.user_phone || '',
+      user_phone: w.user_phone || "",
     }));
     const phases = phasesByJob.get(job.job_id) || [];
     const floorplans = floorplansByJob.get(job.job_id) || [];
@@ -400,8 +459,10 @@ export const GET = withDb(async (connection, request) => {
       return due > max ? due : max;
     }, jobStart);
     const endDate = maxTaskEnd > maxMaterialEnd ? maxTaskEnd : maxMaterialEnd;
-    const formatMMDD = (d: Date) => `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
-    const daysDiff = (a: Date, b: Date) => Math.round((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
+    const formatMMDD = (d: Date) =>
+      `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
+    const daysDiff = (a: Date, b: Date) =>
+      Math.round((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
     const date_range = `${formatMMDD(jobStart)} - ${formatMMDD(endDate)}`;
     const total_weeks = Math.ceil(daysDiff(endDate, jobStart) / 7) + 1;
     const current_week = Math.ceil(daysDiff(new Date(), jobStart) / 7) + 1;
@@ -419,13 +480,13 @@ export const GET = withDb(async (connection, request) => {
         task_duration: t.task_duration,
         task_status: t.task_status,
         task_description: t.task_description,
-        users: (usersByTask.get(t.task_id) || []).map(u => ({
+        users: (usersByTask.get(t.task_id) || []).map((u) => ({
           user_id: u.user_id,
           user_first_name: u.user_first_name,
           user_last_name: u.user_last_name,
           user_email: u.user_email,
-          user_phone: u.user_phone || '',
-        }))
+          user_phone: u.user_phone || "",
+        })),
       })),
       materials: materials.map((m: Material) => ({
         material_id: m.material_id,
@@ -434,29 +495,33 @@ export const GET = withDb(async (connection, request) => {
         material_duedate: m.material_duedate,
         material_status: m.material_status,
         material_description: m.material_description,
-        users: (usersByMaterial.get(m.material_id) || []).map(u => ({
+        users: (usersByMaterial.get(m.material_id) || []).map((u) => ({
           user_id: u.user_id,
           user_first_name: u.user_first_name,
           user_last_name: u.user_last_name,
           user_email: u.user_email,
-          user_phone: u.user_phone || '',
-        }))
+          user_phone: u.user_phone || "",
+        })),
       })),
       workers,
-      floorplans: floorplans.map(fp => ({
+      floorplans: floorplans.map((fp) => ({
         url: fp.floorplan_url,
-        name: `Floor Plan ${fp.floorplan_id}`
+        name: `Floor Plan ${fp.floorplan_id}`,
       })),
       overdue: (taskCounts.overdue || 0) + (materialCounts.overdue || 0),
-      nextSevenDays: (taskCounts.next_seven_days || 0) + (materialCounts.next_seven_days || 0),
-      sevenDaysPlus: (taskCounts.beyond_seven_days || 0) + (materialCounts.beyond_seven_days || 0),
+      nextSevenDays:
+        (taskCounts.next_seven_days || 0) +
+        (materialCounts.next_seven_days || 0),
+      sevenDaysPlus:
+        (taskCounts.beyond_seven_days || 0) +
+        (materialCounts.beyond_seven_days || 0),
       phases: phases.map((phase: Phase) => ({
         id: phase.id,
         name: phase.name,
         startDate: phase.startDate,
         endDate: phase.endDate,
-        color: phase.color
-      }))
+        color: phase.color,
+      })),
     };
   });
 

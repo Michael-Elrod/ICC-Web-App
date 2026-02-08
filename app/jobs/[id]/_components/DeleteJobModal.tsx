@@ -1,4 +1,5 @@
-// components/job/DeleteJobModal.tsx
+// DeleteJobModal.tsx
+
 import React from "react";
 
 interface DeleteJobModalProps {
@@ -19,7 +20,9 @@ export default function DeleteJobModal({
       <div className="bg-white dark:bg-zinc-800 rounded-lg max-w-md w-full p-6">
         <h3 className="text-lg font-semibold mb-4">Delete Job</h3>
         <p className="mb-6">
-          Are you sure you want to permanently delete this job? This action cannot be undone and will remove all associated tasks, materials, and phases.
+          Are you sure you want to permanently delete this job? This action
+          cannot be undone and will remove all associated tasks, materials, and
+          phases.
         </p>
         <div className="flex justify-end gap-3">
           <button

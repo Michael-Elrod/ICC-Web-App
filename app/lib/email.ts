@@ -1,4 +1,5 @@
-// app/lib/email.ts
+// email.ts
+
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 
 const ses = new SESClient({
@@ -11,7 +12,7 @@ const ses = new SESClient({
 
 export async function sendPasswordResetEmail(
   toEmail: string,
-  resetToken: string
+  resetToken: string,
 ) {
   const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}`;
 
@@ -47,15 +48,15 @@ export async function sendPasswordResetEmail(
 export async function sendInvitationEmail(
   toEmail: string,
   inviteCode: string,
-  senderName: string
+  senderName: string,
 ) {
   const registerLink = `${process.env.NEXT_PUBLIC_APP_URL}`;
-  
+
   // Format date for email clarity
-  const formattedDate = new Date().toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric', 
-    year: 'numeric'
+  const formattedDate = new Date().toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
   });
 
   const params = {

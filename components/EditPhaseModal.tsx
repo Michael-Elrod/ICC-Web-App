@@ -1,3 +1,5 @@
+// EditPhaseModal.tsx
+
 import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -47,20 +49,22 @@ export default function EditPhaseModal({
     setIsLoading(true);
     try {
       // Calculate days difference if start date changed
-      const daysDiff = startDate !== initialStartDate 
-        ? Math.floor(
-            (createLocalDate(startDate).getTime() - createLocalDate(initialStartDate).getTime()) 
-            / (1000 * 60 * 60 * 24)
-          )
-        : 0;
-  
+      const daysDiff =
+        startDate !== initialStartDate
+          ? Math.floor(
+              (createLocalDate(startDate).getTime() -
+                createLocalDate(initialStartDate).getTime()) /
+                (1000 * 60 * 60 * 24),
+            )
+          : 0;
+
       const updates = {
         title: title.trim() || initialTitle,
         startDate: startDate || initialStartDate,
         extend,
         extendFuturePhases,
         adjustItems: startDate !== initialStartDate || extend > 0,
-        daysDiff
+        daysDiff,
       };
       onUpdate(updates);
       handleClose();

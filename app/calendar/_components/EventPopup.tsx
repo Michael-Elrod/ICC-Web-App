@@ -1,4 +1,5 @@
-// components/EventPopup.tsx
+// EventPopup.tsx
+
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
 
@@ -49,7 +50,7 @@ interface EventPopupProps {
   onStatusUpdate: (
     itemId: number,
     type: "task" | "material",
-    newStatus: "Complete" | "Incomplete" | "In Progress"
+    newStatus: "Complete" | "Incomplete" | "In Progress",
   ) => void;
 }
 
@@ -63,19 +64,19 @@ export const EventPopup = ({
   >(null);
 
   const { data: sessionData } = useSession();
-  
+
   // Check if user has admin access
-  const hasAdminAccess = 
-    sessionData?.user?.type === "Owner" || 
-    sessionData?.user?.type === "Admin";
-    
+  const hasAdminAccess =
+    sessionData?.user?.type === "Owner" || sessionData?.user?.type === "Admin";
+
   // Check if current user is assigned to this item
-  const isUserAssigned = event.contacts?.some(contact =>
-    `${contact.firstName} ${contact.lastName}`.toLowerCase() === 
-    `${sessionData?.user?.name}`.toLowerCase() || 
-    contact.email === sessionData?.user?.email
+  const isUserAssigned = event.contacts?.some(
+    (contact) =>
+      `${contact.firstName} ${contact.lastName}`.toLowerCase() ===
+        `${sessionData?.user?.name}`.toLowerCase() ||
+      contact.email === sessionData?.user?.email,
   );
-  
+
   // Only allow editing if user is an admin or assigned to the item
   const canEdit = hasAdminAccess || isUserAssigned;
 
@@ -95,7 +96,7 @@ export const EventPopup = ({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ status: selectedStatus }),
-        }
+        },
       );
 
       if (response.ok) {
@@ -111,7 +112,7 @@ export const EventPopup = ({
 
   const getAvailableStatuses = () => {
     return ["Complete", "Incomplete", "In Progress"].filter(
-      (status) => status !== event.status
+      (status) => status !== event.status,
     );
   };
 
@@ -160,7 +161,7 @@ export const EventPopup = ({
                   ? (() => {
                       const dateRange = getWeekdayDateRange(
                         new Date(event.start),
-                        event.duration
+                        event.duration,
                       );
                       return `${dateRange.start.toLocaleDateString()} - ${dateRange.end.toLocaleDateString()}`;
                     })()
@@ -216,7 +217,7 @@ export const EventPopup = ({
                 value={selectedStatus || ""}
                 onChange={(e) =>
                   setSelectedStatus(
-                    e.target.value as "Complete" | "Incomplete" | "In Progress"
+                    e.target.value as "Complete" | "Incomplete" | "In Progress",
                   )
                 }
               >

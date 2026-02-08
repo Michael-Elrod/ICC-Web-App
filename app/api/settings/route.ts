@@ -1,4 +1,5 @@
-// app/api/settings/route.ts
+// route.ts
+
 import { NextResponse } from "next/server";
 import { withAuth, checkEmailExists } from "@/app/lib/api-utils";
 
@@ -7,7 +8,7 @@ interface UpdateUserRequest {
   lastName: string;
   phone: string | null;
   email: string;
-  notificationPref: 'email' | 'text' | 'both' | 'none';
+  notificationPref: "email" | "text" | "both" | "none";
 }
 
 export const PUT = withAuth(async (connection, session, request) => {
@@ -17,14 +18,14 @@ export const PUT = withAuth(async (connection, session, request) => {
   if (!firstName?.trim() || !lastName?.trim() || !email?.trim()) {
     return NextResponse.json(
       { error: "Missing required fields" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
-  if (!['email', 'text', 'both', 'none'].includes(notificationPref)) {
+  if (!["email", "text", "both", "none"].includes(notificationPref)) {
     return NextResponse.json(
       { error: "Invalid notification preference" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -32,14 +33,14 @@ export const PUT = withAuth(async (connection, session, request) => {
   if (!emailRegex.test(email)) {
     return NextResponse.json(
       { error: "Invalid email format" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (await checkEmailExists(connection, email, session.user.id)) {
     return NextResponse.json(
       { error: "Email already in use" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -51,7 +52,14 @@ export const PUT = withAuth(async (connection, session, request) => {
          user_email = ?,
          notification_pref = ?
      WHERE user_id = ?`,
-    [firstName, lastName, phone || null, email, notificationPref, session.user.id]
+    [
+      firstName,
+      lastName,
+      phone || null,
+      email,
+      notificationPref,
+      session.user.id,
+    ],
   );
 
   return NextResponse.json({

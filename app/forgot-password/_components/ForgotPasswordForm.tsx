@@ -1,4 +1,5 @@
-// components/ForgotPasswordForm.tsx
+// ForgotPasswordForm.tsx
+
 "use client";
 
 import { useState } from "react";
@@ -16,18 +17,18 @@ export default function ForgotPasswordForm() {
     setIsLoading(true);
     setError("");
     setEmailSent(false);
-  
+
     const email = form.email.value;
-  
+
     try {
       const res = await fetch("/api/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-  
+
       const data = await res.json();
-  
+
       if (!res.ok) {
         if (res.status === 400 && data.message === "Invalid email format") {
           setError(data.message);
@@ -37,7 +38,7 @@ export default function ForgotPasswordForm() {
         setIsLoading(false);
         return;
       }
-  
+
       form.reset();
       setEmailSent(true);
     } catch (error) {
@@ -58,7 +59,8 @@ export default function ForgotPasswordForm() {
       ) : emailSent ? (
         <div className="text-center">
           <div className="mb-4 text-green-500 text-sm">
-            If an account exists with this email address, you will receive password reset instructions shortly.
+            If an account exists with this email address, you will receive
+            password reset instructions shortly.
           </div>
           <button
             onClick={() => router.push("/")}
