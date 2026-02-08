@@ -28,8 +28,8 @@
       "prettier --write"
     ],
     "*.sql": [
-      "sqlfluff fix --dialect mysql",
-      "sqlfluff lint --dialect mysql"
+      "python -m sqlfluff fix --dialect mysql",
+      "python -m sqlfluff lint --dialect mysql"
     ]
   },
   "dependencies": {
