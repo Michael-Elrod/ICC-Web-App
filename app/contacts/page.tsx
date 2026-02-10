@@ -86,20 +86,20 @@ export default function ContactsPage() {
       <header className="sticky top-0 z-10 transition-all bg-white dark:bg-zinc-900">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold mb-3">Contacts</h1>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <input
               type="text"
               placeholder="Search contacts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md
+              className="w-full sm:w-auto sm:flex-1 px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md
                  focus:outline-none focus:ring-2 focus:ring-blue-500
                  bg-white dark:bg-zinc-800"
             />
             <select
               value={activeFilter}
               onChange={(e) => setActiveFilter(e.target.value as FilterType)}
-              className="px-4 py-2 rounded-md font-medium border border-zinc-300
+              className="flex-1 sm:flex-none px-4 py-2 rounded-md font-medium border border-zinc-300
                 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none
                 focus:ring-2 focus:ring-blue-500"
             >

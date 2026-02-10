@@ -28,10 +28,14 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex-1 flex flex-col items-center py-8">
-        <SettingsForm />
-      </main>
+    <div className="flex min-h-screen">
+      <div className="flex-1">
+        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="px-4 py-6 sm:px-0 flex flex-col items-center">
+            <SettingsForm />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
@@ -166,7 +170,7 @@ const SettingsForm: React.FC = () => {
 
   return (
     <>
-      <div className="bg-white dark:bg-zinc-800 p-8 rounded-lg shadow-lg w-96 mb-6">
+      <div className="bg-white dark:bg-zinc-800 p-8 rounded-lg shadow-lg w-full max-w-md mb-6">
         <h2 className="text-2xl font-bold mb-1 text-center text-zinc-700 dark:text-white">
           Settings
         </h2>
@@ -277,7 +281,7 @@ const SettingsForm: React.FC = () => {
         </form>
       </div>
 
-      <div className="w-96 space-y-3">
+      <div className="w-full max-w-md space-y-3">
         <button
           type="submit"
           form="settingsForm"

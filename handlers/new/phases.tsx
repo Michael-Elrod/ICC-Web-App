@@ -19,20 +19,17 @@ export const deleteTask = (
   taskId: string,
   phase: FormPhase,
   onUpdate: (phase: FormPhase) => void,
-  setIsAddingTask: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   if (taskId) {
     const updatedTasks = phase.tasks.filter((task) => task.id !== taskId);
     onUpdate({ ...phase, tasks: updatedTasks });
   }
-  setIsAddingTask(false);
 };
 
 export const deleteMaterial = (
   materialId: string,
   phase: FormPhase,
   onUpdate: (phase: FormPhase) => void,
-  setIsAddingMaterial: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   if (materialId) {
     const updatedMaterials = phase.materials.filter(
@@ -40,7 +37,6 @@ export const deleteMaterial = (
     );
     onUpdate({ ...phase, materials: updatedMaterials });
   }
-  setIsAddingMaterial(false);
 };
 
 export const updateNote = (
@@ -61,12 +57,10 @@ export const deleteNote = (
   noteId: string,
   phase: FormPhase,
   onUpdate: (phase: FormPhase) => void,
-  setIsAddingNote: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   if (noteId) {
     const updatedNotes =
       phase.notes?.filter((note) => note.id !== noteId) || [];
     onUpdate({ ...phase, notes: updatedNotes });
   }
-  setIsAddingNote(false);
 };

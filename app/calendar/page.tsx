@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -13,7 +13,7 @@ import {
   SelectedEventInfo,
   EventPopup,
 } from "./_components/EventPopup";
-import { Legend } from "./_components/Legend";
+import { Legend, LegendToggle } from "./_components/Legend";
 
 const phaseColors = [
   "#B8DEFF", // soft blue
@@ -48,6 +48,10 @@ export default function CalendarPage() {
   const [legendItems, setLegendItems] = useState<
     Array<{ label: string; color: string }>
   >([]);
+  const calendarRef = useRef<FullCalendar>(null);
+  const [currentTitle, setCurrentTitle] = useState(() =>
+    new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+  );
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -311,37 +315,50 @@ export default function CalendarPage() {
 
   return (
     <div className="flex-1">
-      <div className="px-6 py-4">
-        <h1 className="text-3xl font-bold mb-4">Calendar</h1>
-        <select
-          value={selectedJobId || ""}
-          onChange={(e) =>
-            setSelectedJobId(e.target.value ? Number(e.target.value) : null)
-          }
-          className="w-64 mb-4 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="">All Jobs</option>
-          {jobs.map((job) => (
-            <option key={job.job_id} value={job.job_id}>
-              {job.job_title}
-            </option>
-          ))}
-        </select>
+      <div className="px-4 sm:px-6 pt-8 pb-3 sm:py-4">
+        <div className="flex items-center gap-3 sm:block">
+          <h1 className="text-xl sm:text-3xl font-bold sm:mb-4">Calendar</h1>
+          <select
+            value={selectedJobId || ""}
+            onChange={(e) =>
+              setSelectedJobId(e.target.value ? Number(e.target.value) : null)
+            }
+            className="flex-1 sm:flex-none sm:w-64 sm:mb-4 px-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">All Jobs</option>
+            {jobs.map((job) => (
+              <option key={job.job_id} value={job.job_id}>
+                {job.job_title}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      <Legend items={legendItems} />
+      {/* Mobile: Legend toggle + month/year on one row */}
+      <div className="sm:hidden flex items-center justify-between px-4 mb-2">
+        <LegendToggle items={legendItems} />
+        <span className="text-base font-semibold">{currentTitle}</span>
+      </div>
+
+      {/* Desktop: full legend */}
+      <div className="hidden sm:block">
+        <Legend items={legendItems} />
+      </div>
 
       <div
-        style={{ height: "calc(100vh - 200px)", padding: "16px" }}
-        className="[&_.fc-toolbar]:flex [&_.fc-toolbar]:flex-col [&_.fc-toolbar]:md:flex-row [&_.fc-toolbar]:gap-4
-                [&_.fc-toolbar-title]:order-1 [&_.fc-toolbar-title]:w-full [&_.fc-toolbar-title]:text-center 
-                [&_.fc-toolbar-chunk]:order-2 [&_.fc-toolbar-chunk]:flex [&_.fc-toolbar-chunk]:justify-center 
-                [&_.fc-toolbar-chunk]:w-full [&_.fc-toolbar-chunk]:gap-2 
-                [&_.fc-toolbar]:md:order-none"
+        style={{ height: "calc(100vh - 200px)" }}
+        className="px-2 sm:px-4 pt-2 sm:pt-4
+                [&_.fc-toolbar]:flex [&_.fc-toolbar]:items-center [&_.fc-toolbar]:gap-2
+                [&_.fc-toolbar-chunk]:flex [&_.fc-toolbar-chunk]:items-center [&_.fc-toolbar-chunk]:gap-1
+                [&_.fc-toolbar-chunk:nth-child(2)]:hidden
+                sm:[&_.fc-toolbar-chunk:nth-child(2)]:flex"
       >
         <FullCalendar
+          ref={calendarRef}
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
+          datesSet={(dateInfo) => setCurrentTitle(dateInfo.view.title)}
           headerToolbar={{
             left: "prev,next today",
             center: "title",

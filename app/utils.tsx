@@ -161,6 +161,25 @@ export function getBusinessDaysBetween(startDate: Date, endDate: Date): number {
   return count;
 }
 
+export const computePreviewDate = (
+  previewStartDate: string | null,
+  offset: number,
+  phaseIndex: number,
+): string | null => {
+  if (!previewStartDate) return null;
+
+  if (phaseIndex === 0 && offset === 0) {
+    const today = getCurrentBusinessDate(new Date());
+    return today.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  const date = addBusinessDays(createLocalDate(previewStartDate), offset);
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
+
 export const calculatePhaseDates = (
   tasks: TaskView[],
   materials: MaterialView[],

@@ -34,11 +34,15 @@ export default function NewJobPage() {
 }
 
 function NewJobContent() {
-  type JobType = string;
   const router = useRouter();
   const searchParams = useSearchParams();
-  const jobTypes = getJobTypes();
+  const [jobTypes, setJobTypes] = useState<
+    { template_id: number; template_name: string }[]
+  >([]);
   const [jobType, setJobType] = useState<string>("");
+  const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(
+    null,
+  );
   const [phases, setPhases] = useState<FormPhase[]>([]);
   const [showNewJobCard, setShowNewJobCard] = useState(false);
   const [startDate, setStartDate] = useState("");
@@ -68,7 +72,6 @@ function NewJobContent() {
         try {
           const jobData = JSON.parse(jobDataString);
 
-          // Get copy options, defaulting to true if not provided (for backward compatibility)
           const copyOptions = jobData.copyOptions || {
             workerAssignments: true,
             notes: true,
@@ -87,7 +90,6 @@ function NewJobContent() {
           setWillCopyFloorplans(willCopyFloorplans);
           setFloorplansToCopyCount(floorplansToCopyCount);
 
-          // Set basic job info
           setJobType("copy");
           setStartDate(jobData.newStartDate);
           setOriginalJobName(jobData.originalJobName);
@@ -99,7 +101,6 @@ function NewJobContent() {
             jobData.floorplans &&
             jobData.floorplans.length > 0
           ) {
-            // We can't directly copy files, but we can store info about them to copy later
             localStorage.setItem(
               "floorplansToCopy",
               JSON.stringify({
@@ -111,7 +112,6 @@ function NewJobContent() {
           console.log("Job data from localStorage:", jobData);
           console.log("Will copy floorplans:", willCopyFloorplans);
           console.log("Floorplans count:", floorplansToCopyCount);
-          // Calculate offsets and new dates
           const originalStartDate = createLocalDate(
             jobData.jobDetails.originalStartDate,
           );
@@ -122,9 +122,7 @@ function NewJobContent() {
               const isPreplanningPhase = phaseIndex === 0;
 
               if (isPreplanningPhase) {
-                // First create tasks and materials for preplanning
                 const newTasks = phase.tasks.map((task: TaskView) => {
-                  // Handle worker assignments based on copy options
                   const mappedContacts = copyOptions.workerAssignments
                     ? task.users?.map((user) => ({
                         id: user.user_id.toString(),
@@ -164,7 +162,6 @@ function NewJobContent() {
 
                 const newMaterials = phase.materials.map(
                   (material: MaterialView) => {
-                    // Handle worker assignments based on copy options
                     const mappedContacts = copyOptions.workerAssignments
                       ? material.users?.map((user) => ({
                           id: user.user_id.toString(),
@@ -204,17 +201,18 @@ function NewJobContent() {
                   },
                 );
 
-                // Calculate phase start date based on earliest task or material
                 const allDates = [
                   ...newTasks.map((task) => task.startDate),
                   ...newMaterials.map((material) => material.dueDate),
                 ];
 
-                const phaseStartDate = allDates.reduce((earliest, current) =>
-                  current < earliest ? current : earliest,
-                );
+                const phaseStartDate =
+                  allDates.length > 0
+                    ? allDates.reduce((earliest, current) =>
+                        current < earliest ? current : earliest,
+                      )
+                    : formatToDateString(newStartDate);
 
-                // Only include notes if they should be copied
                 const phaseNotes = copyOptions.notes
                   ? (phase.notes || []).map((note) => ({
                       id: `note-${Date.now()}-${Math.random()}`,
@@ -233,7 +231,6 @@ function NewJobContent() {
                   notes: phaseNotes,
                 };
               } else {
-                // Create tasks and materials for regular phases
                 const newTasks = phase.tasks.map((task: TaskView) => {
                   const taskStartDate = createLocalDate(task.task_startdate);
                   const taskOffset = getBusinessDaysBetween(
@@ -245,7 +242,6 @@ function NewJobContent() {
                     taskOffset,
                   );
 
-                  // Handle worker assignments based on copy options
                   const mappedContacts = copyOptions.workerAssignments
                     ? task.users?.map((user) => ({
                         id: user.user_id.toString(),
@@ -277,7 +273,6 @@ function NewJobContent() {
                       materialOffset,
                     );
 
-                    // Handle worker assignments based on copy options
                     const mappedContacts = copyOptions.workerAssignments
                       ? material.users?.map((user) => ({
                           id: user.user_id.toString(),
@@ -295,17 +290,18 @@ function NewJobContent() {
                   },
                 );
 
-                // Calculate phase start date based on earliest task or material
                 const allDates = [
                   ...newTasks.map((task) => task.startDate),
                   ...newMaterials.map((material) => material.dueDate),
                 ];
 
-                const phaseStartDate = allDates.reduce((earliest, current) =>
-                  current < earliest ? current : earliest,
-                );
+                const phaseStartDate =
+                  allDates.length > 0
+                    ? allDates.reduce((earliest, current) =>
+                        current < earliest ? current : earliest,
+                      )
+                    : formatToDateString(newStartDate);
 
-                // Only include notes if they should be copied
                 const phaseNotes = copyOptions.notes
                   ? (phase.notes || []).map((note) => ({
                       id: `note-${Date.now()}-${Math.random()}`,
@@ -351,30 +347,18 @@ function NewJobContent() {
     fetchContacts();
   }, []);
 
-  const handleMovePhase = (
-    index: number,
-    direction: "up" | "down" | "future",
-  ) => {
-    const newPhases = [...phases];
-    if (direction === "up" && index > 0) {
-      [newPhases[index], newPhases[index - 1]] = [
-        newPhases[index - 1],
-        newPhases[index],
-      ];
-    } else if (direction === "down" && index < phases.length - 1) {
-      [newPhases[index], newPhases[index + 1]] = [
-        newPhases[index + 1],
-        newPhases[index],
-      ];
-    }
-    setPhases(newPhases);
-  };
+  useEffect(() => {
+    const fetchJobTypes = async () => {
+      const types = await getJobTypes();
+      setJobTypes(types);
+    };
+    fetchJobTypes();
+  }, []);
 
   const handleSubmitJob = async () => {
     try {
       setIsSubmitting(true);
 
-      // Check job title first
       if (!jobDetails.jobTitle?.trim()) {
         const jobDetailsElement = document.getElementById(
           "job-details-section",
@@ -664,7 +648,9 @@ function NewJobContent() {
     <div className="mx-auto space-y-4">
       {!showNewJobCard ? (
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-left mb-2">Create Template</h2>
+          <h2 className="text-2xl font-bold text-left mb-2">
+            Create a New Job
+          </h2>
           <CardFrame>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -678,20 +664,22 @@ function NewJobContent() {
                   id="jobType"
                   className="mt-1 w-full border rounded-md shadow-sm p-2 text-zinc-700 dark:text-white border-zinc-300 dark:border-zinc-600 h-[44px] bg-white dark:bg-zinc-800 appearance-none"
                   value={jobType}
-                  onChange={(e) => setJobType(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setJobType(val);
+                    const tid = parseInt(val);
+                    setSelectedTemplateId(isNaN(tid) ? null : tid);
+                  }}
                 >
                   <option value="" disabled>
                     Choose Job Type
                   </option>
-                  {jobTypes.map((type: JobType) => (
-                    <option key={type} value={type}>
-                      {type
-                        .split("-")
-                        .map(
-                          (word: string) =>
-                            word.charAt(0).toUpperCase() + word.slice(1),
-                        )
-                        .join(" ")}
+                  {jobTypes.map((type) => (
+                    <option
+                      key={type.template_id}
+                      value={type.template_id.toString()}
+                    >
+                      {type.template_name}
                     </option>
                   ))}
                 </select>
@@ -734,17 +722,19 @@ function NewJobContent() {
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-blue-500 hover:bg-blue-600"
               }`}
-              onClick={() =>
-                handleCreateJob(
-                  jobType,
-                  startDate,
-                  setShowNewJobCard,
-                  setPhases,
-                )
-              }
+              onClick={() => {
+                if (selectedTemplateId) {
+                  handleCreateJob(
+                    selectedTemplateId,
+                    startDate,
+                    setShowNewJobCard,
+                    setPhases,
+                  );
+                }
+              }}
               disabled={isCreateJobDisabled}
             >
-              Create Job
+              Create
             </button>
           </div>
         </div>
@@ -754,7 +744,7 @@ function NewJobContent() {
             <h2 className="text-2xl font-bold">
               {jobType === "copy"
                 ? `Copy of ${originalJobName}`
-                : `Job Type - ${jobType}`}
+                : `Job Type - ${jobTypes.find((t) => t.template_id === selectedTemplateId)?.template_name || jobType}`}
             </h2>
             <span className="text-lg text-zinc-600 dark:text-white/70">
               {startDate
@@ -833,11 +823,7 @@ function NewJobContent() {
               {phases.map((phase, index) => (
                 <PhaseCard
                   key={phase.tempId}
-                  phase={{
-                    ...phase,
-                    isFirst: index === 0,
-                    isLast: index === phases.length - 1,
-                  }}
+                  phase={phase}
                   onDelete={() => {
                     const newPhases = phases.filter((_, i) => i !== index);
                     setPhases(newPhases);
@@ -870,7 +856,6 @@ function NewJobContent() {
                     ];
                     setPhases(newPhases);
                   }}
-                  onMovePhase={(direction) => handleMovePhase(index, direction)}
                   contacts={contacts}
                 />
               ))}
@@ -929,7 +914,7 @@ function NewJobContent() {
                   Creating Job...
                 </span>
               ) : (
-                "Create Job"
+                "Create"
               )}
             </button>
           </div>

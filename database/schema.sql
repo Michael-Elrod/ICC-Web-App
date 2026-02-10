@@ -232,3 +232,84 @@ CREATE TABLE `user_task` (
         `assigned_by`
     ) REFERENCES `app_user` (`user_id`)
 );
+
+CREATE TABLE `job_template` (
+    `template_id` int NOT NULL AUTO_INCREMENT,
+    `template_name` varchar(100) NOT NULL,
+    `created_by` int NOT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`template_id`),
+    KEY `created_by` (`created_by`),
+    CONSTRAINT `job_template_ibfk_1` FOREIGN KEY (
+        `created_by`
+    ) REFERENCES `app_user` (`user_id`)
+);
+
+CREATE TABLE `template_phase` (
+    `template_phase_id` int NOT NULL AUTO_INCREMENT,
+    `template_id` int NOT NULL,
+    `phase_title` varchar(50) NOT NULL,
+    `phase_description` text,
+    `phase_order` int NOT NULL,
+    PRIMARY KEY (`template_phase_id`),
+    KEY `template_id` (`template_id`),
+    CONSTRAINT `template_phase_ibfk_1` FOREIGN KEY (
+        `template_id`
+    ) REFERENCES `job_template` (`template_id`) ON DELETE CASCADE
+);
+
+CREATE TABLE `template_task` (
+    `template_task_id` int NOT NULL AUTO_INCREMENT,
+    `template_phase_id` int NOT NULL,
+    `task_title` varchar(50) NOT NULL,
+    `task_duration` int NOT NULL,
+    `task_offset` int NOT NULL DEFAULT 0,
+    `task_description` text,
+    `task_order` int NOT NULL,
+    PRIMARY KEY (`template_task_id`),
+    KEY `template_phase_id` (`template_phase_id`),
+    CONSTRAINT `template_task_ibfk_1` FOREIGN KEY (
+        `template_phase_id`
+    ) REFERENCES `template_phase` (`template_phase_id`) ON DELETE CASCADE
+);
+
+CREATE TABLE `template_material` (
+    `template_material_id` int NOT NULL AUTO_INCREMENT,
+    `template_phase_id` int NOT NULL,
+    `material_title` varchar(50) NOT NULL,
+    `material_offset` int NOT NULL DEFAULT 0,
+    `material_description` text,
+    `material_order` int NOT NULL,
+    PRIMARY KEY (`template_material_id`),
+    KEY `template_phase_id` (`template_phase_id`),
+    CONSTRAINT `template_material_ibfk_1` FOREIGN KEY (
+        `template_phase_id`
+    ) REFERENCES `template_phase` (`template_phase_id`) ON DELETE CASCADE
+);
+
+CREATE TABLE `template_task_contact` (
+    `template_task_id` int NOT NULL,
+    `user_id` int NOT NULL,
+    PRIMARY KEY (`template_task_id`, `user_id`),
+    KEY `user_id` (`user_id`),
+    CONSTRAINT `template_task_contact_ibfk_1` FOREIGN KEY (
+        `template_task_id`
+    ) REFERENCES `template_task` (`template_task_id`) ON DELETE CASCADE,
+    CONSTRAINT `template_task_contact_ibfk_2` FOREIGN KEY (
+        `user_id`
+    ) REFERENCES `app_user` (`user_id`)
+);
+
+CREATE TABLE `template_material_contact` (
+    `template_material_id` int NOT NULL,
+    `user_id` int NOT NULL,
+    PRIMARY KEY (`template_material_id`, `user_id`),
+    KEY `user_id` (`user_id`),
+    CONSTRAINT `template_material_contact_ibfk_1` FOREIGN KEY (
+        `template_material_id`
+    ) REFERENCES `template_material` (`template_material_id`) ON DELETE CASCADE,
+    CONSTRAINT `template_material_contact_ibfk_2` FOREIGN KEY (
+        `user_id`
+    ) REFERENCES `app_user` (`user_id`)
+);

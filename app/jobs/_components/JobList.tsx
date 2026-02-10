@@ -209,7 +209,7 @@ function JobListContent({ status }: JobListProps) {
           className="w-full px-4 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
-      <div className="overflow-x-hidden sm:overflow-visible">
+      <div className="overflow-hidden sm:overflow-visible">
         {filteredJobs.map((job) => (
           <LargeJobFrame
             key={job.id}

@@ -111,7 +111,6 @@ export interface PhaseCardProps {
     extendFuturePhases?: boolean,
   ) => void;
   onAddPhaseAfter: (phaseId: string) => void;
-  onMovePhase: (direction: "up" | "down" | "future", amount?: number) => void;
   contacts: UserView[];
   onPhaseUpdate?: (
     phaseId: number,

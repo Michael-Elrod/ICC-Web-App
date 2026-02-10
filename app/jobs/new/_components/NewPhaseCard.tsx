@@ -1,7 +1,6 @@
 // NewPhaseCard.tsx
 
 import React, { useState } from "react";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import CardFrame from "@/components/CardFrame";
 import CollapsibleSection from "@/components/CollapsibleSection";
 import TaskCard from "@/components/NewTaskCard";
@@ -26,20 +25,15 @@ import {
 
 const NewPhaseCard: React.FC<PhaseCardProps> = ({
   phase,
-  onDelete,
   jobStartDate,
   onUpdate,
   onAddPhaseAfter,
-  onMovePhase,
   contacts,
 }) => {
   const [isPhaseCollapsed, setIsPhaseCollapsed] = useState(true);
   const [isTasksExpanded, setIsTasksExpanded] = useState(false);
   const [isMaterialsExpanded, setIsMaterialsExpanded] = useState(false);
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);
-  const [isAddingTask, setIsAddingTask] = useState(false);
-  const [isAddingMaterial, setIsAddingMaterial] = useState(false);
-  const [isAddingNote, setIsAddingNote] = useState(false);
   const [showAddButton, setShowAddButton] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -120,86 +114,46 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
   };
 
   return (
-    <div className="relative group">
-      {/* Movement controls */}
-      <div className="absolute left-[-40px] top-1/2 transform -translate-y-1/2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-        <button
-          className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-lg transition-colors
-            ${
-              phase.isFirst
-                ? "bg-gray-300 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-600"
-            }`}
-          onClick={() => !phase.isFirst && onMovePhase("up")}
-          disabled={phase.isFirst}
-          title={phase.isFirst ? "Can't move up" : "Move phase up"}
-        >
-          <svg
-            className="w-4 h-4 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 15l7-7 7 7"
-            />
-          </svg>
-        </button>
-        <button
-          className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-lg transition-colors
-            ${
-              phase.isLast
-                ? "bg-gray-300 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-600"
-            }`}
-          onClick={() => !phase.isLast && onMovePhase("down")}
-          disabled={phase.isLast}
-          title={phase.isLast ? "Can't move down" : "Move phase down"}
-        >
-          <svg
-            className="w-4 h-4 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </button>
-      </div>
-
+    <div className="relative">
       <div className="relative">
-        <CardFrame>
+        <CardFrame
+          className={
+            isPhaseCollapsed
+              ? "cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+              : ""
+          }
+          onClick={
+            isPhaseCollapsed ? () => setIsPhaseCollapsed(false) : undefined
+          }
+        >
           {/* Title and Description Section */}
-          <div className="flex justify-between items-center mb-4">
-            <div
-              className="grid grid-cols-3 items-center w-full cursor-pointer"
-              onClick={(e) => {
-                if (!(e.target as HTMLElement).closest("button")) {
-                  setIsPhaseCollapsed(!isPhaseCollapsed);
-                }
-              }}
-            >
+          <div
+            className={`flex justify-between items-center${!isPhaseCollapsed ? " mb-4 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700/50 -mx-4 px-4 -mt-5 pt-5 pb-2 sm:-mx-6 sm:px-6 sm:-mt-6 sm:pt-6 transition-colors" : ""}`}
+            onClick={
+              !isPhaseCollapsed
+                ? (e) => {
+                    if (!(e.target as HTMLElement).closest("button")) {
+                      setIsPhaseCollapsed(true);
+                    }
+                  }
+                : undefined
+            }
+          >
+            <div className="grid grid-cols-2 items-center w-full">
               <div className="flex-1 col-span-1 pr-2">
                 <h2 className="text-md sm:text-2xl font-bold truncate">
                   {phase.title}
                 </h2>
               </div>
-              <span className="text-md text-center col-span-1">
-                {(() => {
-                  return formatDate(phase.startDate);
-                })()}
-              </span>
               <div className="flex items-center justify-end gap-4 col-span-1">
+                <span className="text-md text-zinc-500 dark:text-zinc-400">
+                  {formatDate(phase.startDate)}
+                </span>
                 <button
-                  onClick={() => setIsEditModalOpen(true)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsEditModalOpen(true);
+                  }}
                   className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
                 >
                   <svg
@@ -215,16 +169,6 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
                       d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                     />
                   </svg>
-                </button>
-                <button
-                  onClick={() => setIsPhaseCollapsed(!isPhaseCollapsed)}
-                  className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-                >
-                  {isPhaseCollapsed ? (
-                    <FaChevronUp size={20} />
-                  ) : (
-                    <FaChevronDown size={20} />
-                  )}
                 </button>
               </div>
             </div>
@@ -285,14 +229,7 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
                               tasks: updatedTasks,
                             });
                           }}
-                          onDelete={() =>
-                            deleteTask(
-                              task.id,
-                              phase,
-                              onUpdate,
-                              setIsAddingTask,
-                            )
-                          }
+                          onDelete={() => deleteTask(task.id, phase, onUpdate)}
                           phaseStartDate={phase.startDate}
                           contacts={contacts}
                           phase={phase}
@@ -391,12 +328,7 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
                             });
                           }}
                           onDelete={() =>
-                            deleteMaterial(
-                              material.id,
-                              phase,
-                              onUpdate,
-                              setIsAddingMaterial,
-                            )
+                            deleteMaterial(material.id, phase, onUpdate)
                           }
                           phaseStartDate={phase.startDate}
                           contacts={contacts}
@@ -477,9 +409,7 @@ const NewPhaseCard: React.FC<PhaseCardProps> = ({
                         onUpdate={(updatedNote) =>
                           updateNote(updatedNote, phase, onUpdate)
                         }
-                        onDelete={() =>
-                          deleteNote(note.id, phase, onUpdate, setIsAddingNote)
-                        }
+                        onDelete={() => deleteNote(note.id, phase, onUpdate)}
                       />
                     ))}
 

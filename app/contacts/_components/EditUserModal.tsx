@@ -1,3 +1,5 @@
+// EditUserModal.tsx
+
 import { useState, useEffect } from "react";
 import { User, UserType } from "@/app/types/database";
 import { formatPhoneNumberInput } from "@/app/utils";
@@ -129,7 +131,7 @@ export default function EditUserModal({
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       onClick={(e) => e.target === e.currentTarget && handleClose()}
     >
-      <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 w-[500px] relative">
+      <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 w-full max-w-[500px] mx-4 relative">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Edit User</h2>
           {user?.user_id?.toString() !== currentUserId && (
@@ -281,7 +283,7 @@ export default function EditUserModal({
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div
-              className="bg-white dark:bg-zinc-800 rounded-lg p-6 w-[400px] shadow-lg"
+              className="bg-white dark:bg-zinc-800 rounded-lg p-6 w-full max-w-[400px] mx-4 shadow-lg"
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-lg font-bold mb-4">Confirm Delete</h3>

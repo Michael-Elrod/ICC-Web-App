@@ -6,7 +6,13 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaCirclePlus } from "react-icons/fa6";
-import { FaBriefcase, FaCalendar, FaAddressBook, FaCog } from "react-icons/fa";
+import {
+  FaBriefcase,
+  FaCalendar,
+  FaAddressBook,
+  FaCog,
+  FaClipboardList,
+} from "react-icons/fa";
 import { useSession } from "next-auth/react";
 
 const SideBar = () => {
@@ -82,7 +88,24 @@ const SideBar = () => {
                 <span
                   className={`whitespace-nowrap text-sm transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}
                 >
-                  Create Job
+                  Create
+                </span>
+              </Link>
+            </li>
+          )}
+          {canCreateJobs && (
+            <li>
+              <Link
+                href="/templates"
+                className="flex items-center text-zinc-300 hover:text-white"
+              >
+                <div className="w-12 flex justify-center shrink-0">
+                  <FaClipboardList size={28} />
+                </div>
+                <span
+                  className={`whitespace-nowrap text-sm transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}
+                >
+                  Templates
                 </span>
               </Link>
             </li>
@@ -106,10 +129,7 @@ const SideBar = () => {
       </nav>
 
       {/* Mobile Bottom Bar */}
-      <nav
-        className="md:hidden fixed bottom-0 left-0 w-full h-16 bg-zinc-800 flex items-center justify-around px-4 z-[9999]"
-        style={{ position: "fixed", width: "100vw" }}
-      >
+      <nav className="md:hidden fixed bottom-0 left-0 w-full h-16 bg-zinc-800 flex items-center justify-around px-4 z-[9999]">
         <Link href="/jobs" className="text-zinc-300 hover:text-white">
           <FaBriefcase size={24} />
         </Link>
@@ -122,6 +142,11 @@ const SideBar = () => {
         {canCreateJobs && (
           <Link href="/jobs/new" className="text-zinc-300 hover:text-white">
             <FaCirclePlus size={24} />
+          </Link>
+        )}
+        {canCreateJobs && (
+          <Link href="/templates" className="text-zinc-300 hover:text-white">
+            <FaClipboardList size={24} />
           </Link>
         )}
         <button

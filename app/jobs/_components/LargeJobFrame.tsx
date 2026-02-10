@@ -72,7 +72,7 @@ const LargeJobFrame: React.FC<LargeJobFrameProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-800 shadow-md overflow-x-hidden sm:overflow-visible sm:rounded-lg mb-4 p-4 sm:p-6">
+    <div className="bg-white dark:bg-zinc-800 shadow-md overflow-hidden sm:overflow-visible sm:rounded-lg mb-4 p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
         <div className="flex flex-col sm:flex-row sm:items-baseline gap-2">
           <h2 className="text-2xl font-bold">{jobName}</h2>

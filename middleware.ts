@@ -5,7 +5,6 @@ import { NextResponse } from "next/server";
 
 export default withAuth(
   function middleware(req) {
-    // If no token exists, redirect to login page
     const token = req.nextauth.token;
     if (!token) {
       return NextResponse.redirect(new URL("/", req.url));
@@ -15,7 +14,6 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ req, token }) => {
-        // Only allow public paths without a token
         if (
           req.nextUrl.pathname === "/" ||
           req.nextUrl.pathname.startsWith("/api/auth") ||
@@ -29,13 +27,13 @@ export default withAuth(
   },
 );
 
-// Add all protected routes to the matcher
 export const config = {
   matcher: [
     "/jobs/:path*",
     "/calendar/:path*",
     "/settings/:path*",
     "/contacts/:path*",
+    "/templates/:path*",
     "/api/((?!auth).)*$",
   ],
 };

@@ -1,4 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 .idea/
 .claude/
 .husky/_
@@ -53,3 +52,4 @@ amplifyconfiguration*
 # reports
 DRY_VIOLATIONS_REPORT.md
 SQL_OPTIMIZATION_REPORT.md
+CODE_REVIEW_REPORT.md

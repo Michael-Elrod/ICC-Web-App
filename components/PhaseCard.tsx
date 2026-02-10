@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useParams } from "next/navigation";
-import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 import CardFrame from "./CardFrame";
 import Note from "./NoteCard";
 import TasksCard from "./TasksCard";
@@ -139,17 +138,28 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
   };
 
   return (
-    <CardFrame>
-      <div className="mb-4 relative">
+    <CardFrame
+      className={
+        isCollapsed
+          ? "cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+          : ""
+      }
+      onClick={isCollapsed ? () => onToggleCollapse() : undefined}
+    >
+      <div
+        className={`relative${!isCollapsed ? " mb-4 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-700/50 -mx-4 px-4 -mt-5 pt-5 pb-2 sm:-mx-6 sm:px-6 sm:-mt-6 sm:pt-6 transition-colors" : ""}`}
+        onClick={
+          !isCollapsed
+            ? (e) => {
+                if (!(e.target as HTMLElement).closest("button")) {
+                  onToggleCollapse();
+                }
+              }
+            : undefined
+        }
+      >
         {/* Mobile Layout */}
-        <div
-          className="flex flex-col sm:hidden cursor-pointer"
-          onClick={(e) => {
-            if (!(e.target as HTMLElement).closest("button")) {
-              onToggleCollapse();
-            }
-          }}
-        >
+        <div className="flex flex-col sm:hidden">
           <div className="flex justify-between items-start">
             <div className="flex flex-col">
               <h3 className="text-lg font-semibold">
@@ -163,7 +173,10 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
             <div className="flex items-center gap-4">
               {hasAdminAccess && (
                 <button
-                  onClick={() => setIsEditModalOpen(true)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsEditModalOpen(true);
+                  }}
                   className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
                 >
                   <svg
@@ -181,29 +194,12 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
                   </svg>
                 </button>
               )}
-              <button
-                onClick={onToggleCollapse}
-                className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-              >
-                {isCollapsed ? (
-                  <FaChevronUp size={20} />
-                ) : (
-                  <FaChevronDown size={20} />
-                )}
-              </button>
             </div>
           </div>
         </div>
 
         {/* Desktop Layout */}
-        <div
-          className="hidden sm:grid sm:grid-cols-3 sm:items-center cursor-pointer"
-          onClick={(e) => {
-            if (!(e.target as HTMLElement).closest("button")) {
-              onToggleCollapse();
-            }
-          }}
-        >
+        <div className="hidden sm:grid sm:grid-cols-3 sm:items-center">
           <h3 className="text-lg font-semibold min-w-0 truncate pr-4">
             Phase {phaseNumber} - {phase.name}
           </h3>
@@ -215,7 +211,10 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
           <div className="flex items-center gap-4 justify-end">
             {hasAdminAccess && (
               <button
-                onClick={() => setIsEditModalOpen(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditModalOpen(true);
+                }}
                 className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
               >
                 <svg
@@ -233,16 +232,6 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
                 </svg>
               </button>
             )}
-            <button
-              onClick={onToggleCollapse}
-              className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-            >
-              {isCollapsed ? (
-                <FaChevronUp size={20} />
-              ) : (
-                <FaChevronDown size={20} />
-              )}
-            </button>
           </div>
         </div>
       </div>
