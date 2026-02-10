@@ -157,7 +157,7 @@ const NewTaskCard: React.FC<TaskCardProps> = ({
               value={localTask.details}
               onChange={(e) =>
                 handleInputChange(
-                  "title",
+                  "details",
                   e.target.value,
                   setLocalTask,
                   setErrors,
