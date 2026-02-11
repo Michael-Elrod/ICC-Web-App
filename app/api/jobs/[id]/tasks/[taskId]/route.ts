@@ -3,7 +3,11 @@
 import { NextResponse } from "next/server";
 import { TaskUpdatePayload } from "@/app/types/database";
 import { RowDataPacket } from "mysql2";
-import { addBusinessDays } from "@/app/utils";
+import {
+  addBusinessDays,
+  createLocalDate,
+  formatToDateString,
+} from "@/app/utils";
 import { withAuth, withDb, withTransaction } from "@/app/lib/api-utils";
 
 export const PATCH = withAuth(async (connection, session, request, params) => {
@@ -50,9 +54,11 @@ export const PATCH = withAuth(async (connection, session, request, params) => {
         );
 
         if (currentTask.length > 0) {
-          const currentDate = new Date(currentTask[0].task_startdate);
+          const currentDate = createLocalDate(
+            formatToDateString(currentTask[0].task_startdate),
+          );
           const newDate = addBusinessDays(currentDate, body.extension_days);
-          const formattedNewDate = newDate.toISOString().split("T")[0];
+          const formattedNewDate = formatToDateString(newDate);
 
           await connection.query(
             "UPDATE task SET task_startdate = ? WHERE task_id = ?",

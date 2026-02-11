@@ -43,10 +43,8 @@ const TasksCard: React.FC<TasksCardProps> = ({
   const { data: session } = useSession();
   const currentUserId = session?.user?.id ? parseInt(session.user.id) : null;
   const hasAdminAccess = userType === "Owner" || userType === "Admin";
-  const sortedTasks = [...tasks].sort(
-    (a, b) =>
-      new Date(a.task_startdate).getTime() -
-      new Date(b.task_startdate).getTime(),
+  const sortedTasks = [...tasks].sort((a, b) =>
+    a.task_startdate.localeCompare(b.task_startdate),
   );
   const canEditTask = (task: TaskView) => {
     if (hasAdminAccess) return true;

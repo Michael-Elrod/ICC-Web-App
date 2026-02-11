@@ -13,6 +13,7 @@ import {
   SelectedEventInfo,
   EventPopup,
 } from "./_components/EventPopup";
+import { createLocalDate, formatToDateString } from "@/app/utils";
 import { Legend, LegendToggle } from "./_components/Legend";
 
 const phaseColors = [
@@ -132,7 +133,9 @@ export default function CalendarPage() {
             const phaseColor = phaseColors[phaseIndex % phaseColors.length];
 
             phase.tasks?.forEach((task: any) => {
-              const startDate = new Date(task.task_startdate);
+              const startDate = createLocalDate(
+                String(task.task_startdate).split("T")[0],
+              );
               const endDate = new Date(startDate);
               let daysToAdd = task.task_duration;
               let currentDay = 0;
@@ -147,8 +150,8 @@ export default function CalendarPage() {
               calendarEvents.push({
                 id: `task-${task.task_id}`,
                 title: task.task_title,
-                start: task.task_startdate.split("T")[0],
-                end: endDate.toISOString().split("T")[0],
+                start: String(task.task_startdate).split("T")[0],
+                end: formatToDateString(endDate),
                 color: phaseColor,
                 order: 1,
                 allDay: true,
@@ -204,7 +207,9 @@ export default function CalendarPage() {
 
             jobData.phases?.forEach((phase: any) => {
               phase.tasks?.forEach((task: any) => {
-                const startDate = new Date(task.task_startdate);
+                const startDate = createLocalDate(
+                  String(task.task_startdate).split("T")[0],
+                );
                 const endDate = new Date(startDate);
                 let daysToAdd = task.task_duration;
                 let currentDay = 0;
@@ -219,8 +224,8 @@ export default function CalendarPage() {
                 allEvents.push({
                   id: `task-${task.task_id}`,
                   title: `${jobData.job_title}: ${task.task_title}`,
-                  start: task.task_startdate.split("T")[0],
-                  end: endDate.toISOString().split("T")[0],
+                  start: String(task.task_startdate).split("T")[0],
+                  end: formatToDateString(endDate),
                   color: jobColor,
                   order: 1,
                   display: "block",

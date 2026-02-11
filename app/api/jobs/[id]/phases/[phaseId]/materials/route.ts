@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import { withAuth, withTransaction } from "@/app/lib/api-utils";
+import { formatToDateString } from "@/app/utils";
 
 export const POST = withAuth(async (connection, session, request, params) => {
   const userId = parseInt(session.user.id);
@@ -57,7 +58,7 @@ export const POST = withAuth(async (connection, session, request, params) => {
     return NextResponse.json({
       material_id: material.material_id,
       material_title: material.material_title,
-      material_duedate: material.material_duedate.toISOString().split("T")[0],
+      material_duedate: formatToDateString(material.material_duedate),
       material_status: material.material_status,
       material_description: material.material_description,
       users: [],

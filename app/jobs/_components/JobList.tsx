@@ -133,9 +133,10 @@ function JobListContent({ status }: JobListProps) {
         searchTerms.some((term) => job.jobName.toLowerCase().includes(term)),
     )
     .sort((a, b) => {
-      const dateA = new Date(a.job_startdate).getTime();
-      const dateB = new Date(b.job_startdate).getTime();
-      return status === "closed" ? dateB - dateA : dateA - dateB;
+      const cmp = String(a.job_startdate).localeCompare(
+        String(b.job_startdate),
+      );
+      return status === "closed" ? -cmp : cmp;
     });
 
   const handleStatusUpdate = (

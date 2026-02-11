@@ -9,7 +9,7 @@ import ContactSearchSelect from "./ContactSearchSelect";
 import { FormTask } from "@/app/types/database";
 import { UserView } from "@/app/types/views";
 import { TaskCardProps } from "@/app/types/props";
-import { formatDate, createLocalDate } from "@/app/utils";
+import { formatDate, createLocalDate, toPickerDate } from "@/app/utils";
 import {
   handleDeleteConfirm,
   handleStartDateChange,
@@ -115,7 +115,7 @@ const NewTaskCard: React.FC<TaskCardProps> = ({
                   return day !== 0 && day !== 6;
                 }}
                 dateFormat="MM/dd/yyyy"
-                minDate={new Date(phaseStartDate)}
+                minDate={toPickerDate(phaseStartDate)}
                 className={`w-full p-2 border ${
                   errors.startDate
                     ? "border-red-500"

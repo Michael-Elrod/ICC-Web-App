@@ -4,6 +4,11 @@ import { NextResponse } from "next/server";
 import { RowDataPacket } from "mysql2";
 import { JobUpdatePayload } from "@/app/types/database";
 import { withDb, withAuth, withTransaction } from "@/app/lib/api-utils";
+import {
+  createLocalDate,
+  formatToDateString,
+  addBusinessDays,
+} from "@/app/utils";
 
 interface JobDetails extends RowDataPacket {
   job_id: number;
@@ -340,20 +345,13 @@ export const GET = withDb(async (connection, request, params) => {
     const phaseMaterials = materialsByPhase.get(phase.id) || [];
     const phaseNotes = notesByPhase.get(phase.id) || [];
 
-    let latestEndDate = new Date(phase.startDate);
+    let latestEndDate = createLocalDate(formatToDateString(phase.startDate));
 
     phaseTasks.forEach((task) => {
-      const taskStart = new Date(task.task_startdate);
-      const taskDuration = task.task_duration;
-      let taskEnd = new Date(taskStart);
-      let daysToAdd = taskDuration;
-
-      while (daysToAdd > 1) {
-        taskEnd.setDate(taskEnd.getDate() + 1);
-        if (taskEnd.getDay() !== 0 && taskEnd.getDay() !== 6) {
-          daysToAdd--;
-        }
-      }
+      const taskStart = createLocalDate(
+        formatToDateString(task.task_startdate),
+      );
+      const taskEnd = addBusinessDays(taskStart, task.task_duration - 1);
 
       if (taskEnd > latestEndDate) {
         latestEndDate = taskEnd;
@@ -361,7 +359,9 @@ export const GET = withDb(async (connection, request, params) => {
     });
 
     phaseMaterials.forEach((material) => {
-      const materialDate = new Date(material.material_duedate);
+      const materialDate = createLocalDate(
+        formatToDateString(material.material_duedate),
+      );
       if (materialDate > latestEndDate) {
         latestEndDate = materialDate;
       }
@@ -369,21 +369,26 @@ export const GET = withDb(async (connection, request, params) => {
 
     return {
       ...phase,
-      endDate: latestEndDate.toISOString().split("T")[0],
+      endDate: formatToDateString(latestEndDate),
       tasks: phaseTasks,
       materials: phaseMaterials,
       notes: phaseNotes,
     };
   });
 
-  let jobEndDate = new Date(job.job_startdate);
+  let jobEndDate = createLocalDate(formatToDateString(job.job_startdate));
   enhancedPhases.forEach((phase) => {
-    const phaseEnd = new Date(phase.endDate);
+    const phaseEnd = createLocalDate(phase.endDate);
     if (phaseEnd > jobEndDate) {
       jobEndDate = phaseEnd;
     }
   });
 
+  const fmt: Intl.DateTimeFormatOptions = {
+    month: "numeric",
+    day: "numeric",
+    year: "2-digit",
+  };
   const jobDetails = {
     ...job,
     client: job.client_id
@@ -398,15 +403,7 @@ export const GET = withDb(async (connection, request, params) => {
     tasks: transformedTasks,
     materials: transformedMaterials,
     floorplans: floorplans,
-    date_range: `${new Date(job.job_startdate).toLocaleDateString("en-US", {
-      month: "numeric",
-      day: "numeric",
-      year: "2-digit",
-    })} - ${jobEndDate.toLocaleDateString("en-US", {
-      month: "numeric",
-      day: "numeric",
-      year: "2-digit",
-    })}`,
+    date_range: `${createLocalDate(formatToDateString(job.job_startdate)).toLocaleDateString("en-US", fmt)} - ${jobEndDate.toLocaleDateString("en-US", fmt)}`,
     ...statusCounts[0],
   };
 

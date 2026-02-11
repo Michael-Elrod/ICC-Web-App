@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
+import { createLocalDate } from "@/app/utils";
 
 export interface CalendarEvent {
   id: string;
@@ -116,9 +117,9 @@ export const EventPopup = ({
     );
   };
 
-  const getWeekdayDateRange = (start: Date, durationDays: number) => {
+  const getWeekdayDateRange = (start: string, durationDays: number) => {
     const dates = [];
-    let currentDate = new Date(start);
+    let currentDate = createLocalDate(start);
     let remainingDays = durationDays;
 
     while (remainingDays > 0) {
@@ -160,13 +161,13 @@ export const EventPopup = ({
                 ? event.start && event.duration
                   ? (() => {
                       const dateRange = getWeekdayDateRange(
-                        new Date(event.start),
+                        event.start,
                         event.duration,
                       );
                       return `${dateRange.start.toLocaleDateString()} - ${dateRange.end.toLocaleDateString()}`;
                     })()
                   : "Date range not available"
-                : `Due: ${new Date(event.start).toLocaleDateString()}`}
+                : `Due: ${createLocalDate(event.start).toLocaleDateString()}`}
             </p>
           </div>
 

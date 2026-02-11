@@ -91,17 +91,27 @@ describe("formatCardDate", () => {
 });
 
 describe("calculateEndDate", () => {
-  it("calculates end date by adding days", () => {
-    expect(calculateEndDate("2024-01-15", 5)).toBe("2024-01-20");
+  it("calculates end date using business days", () => {
+    // Jan 15 2024 is Monday; 5 business days = Mon-Fri → Jan 19
+    expect(calculateEndDate("2024-01-15", 5)).toBe("2024-01-19");
     expect(calculateEndDate("2024-01-15", 0)).toBe("2024-01-15");
+    // 1-day task ends on the same day it starts
+    expect(calculateEndDate("2024-01-15", 1)).toBe("2024-01-15");
+  });
+
+  it("skips weekends", () => {
+    // Jan 19 2024 is Friday; 2 business days = Fri, Mon → Jan 22
+    expect(calculateEndDate("2024-01-19", 2)).toBe("2024-01-22");
   });
 
   it("handles month boundaries", () => {
-    expect(calculateEndDate("2024-01-30", 5)).toBe("2024-02-04");
+    // Jan 30 2024 is Tuesday; 5 business days = Tue-Mon (skip Sat/Sun) → Feb 5
+    expect(calculateEndDate("2024-01-30", 5)).toBe("2024-02-05");
   });
 
   it("handles year boundaries", () => {
-    expect(calculateEndDate("2024-12-30", 5)).toBe("2025-01-04");
+    // Dec 30 2024 is Monday; 5 business days = Mon-Fri → Jan 3
+    expect(calculateEndDate("2024-12-30", 5)).toBe("2025-01-03");
   });
 });
 

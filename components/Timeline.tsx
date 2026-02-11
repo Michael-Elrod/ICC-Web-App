@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { UserView, PhaseView } from "@/app/types/views";
 import { TimelineProps } from "@/app/types/props";
-import { formatPhoneNumber } from "@/app/utils";
+import { formatPhoneNumber, createLocalDate } from "@/app/utils";
 
 const TIMELINE_CONFIG = {
   phaseHeight: 28,
@@ -33,16 +33,13 @@ interface TimelineItem {
 type StatusType = "Complete" | "Incomplete" | "In Progress";
 
 const parseDate = (dateStr: string): Date => {
-  const date = new Date(dateStr);
-
   if (dateStr.includes("/") && !dateStr.includes("-")) {
     const [month, day] = dateStr.split("/").map(Number);
     const year = new Date().getFullYear();
     return new Date(year, month - 1, day);
   }
 
-  date.setHours(0, 0, 0, 0);
-  return date;
+  return createLocalDate(dateStr);
 };
 
 const getDaysBetween = (start: Date, end: Date): number => {

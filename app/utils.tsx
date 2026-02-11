@@ -35,7 +35,7 @@ export const formatPhoneNumberInput = (value: string): string => {
 };
 
 export const formatCardDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString("en-US", {
+  return createLocalDate(dateString).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -46,9 +46,9 @@ export const calculateEndDate = (
   start: string,
   durationDays: number,
 ): string => {
-  const date = new Date(start);
-  date.setDate(date.getDate() + durationDays);
-  return date.toISOString().split("T")[0];
+  const date = createLocalDate(start);
+  if (durationDays <= 0) return formatToDateString(date);
+  return formatToDateString(addBusinessDays(date, durationDays - 1));
 };
 
 export function formatDate(dateString: string): string {
@@ -91,7 +91,10 @@ export const createLocalDate = (dateString: string): Date => {
   return new Date(year, month - 1, day, 0, 0, 0, 0);
 };
 
-export const formatToDateString = (date: Date): string => {
+export const formatToDateString = (date: Date | string): string => {
+  if (typeof date === "string") {
+    return date.split("T")[0];
+  }
   return date.toLocaleDateString("en-CA");
 };
 
@@ -205,4 +208,12 @@ export const calculatePhaseDates = (
     startDate: formatToDateString(phaseStart),
     endDate: formatToDateString(phaseEnd),
   };
+};
+
+export const toPickerDate = (dateStr: string): Date => createLocalDate(dateStr);
+
+export const fromPickerDate = (date: Date): string => formatToDateString(date);
+
+export const compareDateStrings = (a: string, b: string): number => {
+  return a.localeCompare(b);
 };

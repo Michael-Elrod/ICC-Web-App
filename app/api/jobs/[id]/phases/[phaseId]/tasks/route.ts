@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import { withAuth, withTransaction } from "@/app/lib/api-utils";
+import { formatToDateString } from "@/app/utils";
 
 export const POST = withAuth(async (connection, session, request, params) => {
   const userId = parseInt(session.user.id);
@@ -58,7 +59,7 @@ export const POST = withAuth(async (connection, session, request, params) => {
     return NextResponse.json({
       task_id: task.task_id,
       task_title: task.task_title,
-      task_startdate: task.task_startdate.toISOString().split("T")[0],
+      task_startdate: formatToDateString(task.task_startdate),
       task_duration: task.task_duration,
       task_status: task.task_status,
       task_description: task.task_description,

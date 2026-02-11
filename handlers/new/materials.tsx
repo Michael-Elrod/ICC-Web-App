@@ -26,14 +26,7 @@ export const handleDueDateChange = (
   setErrors: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>,
 ) => {
   if (field === "dueDate") {
-    // Create Date objects for comparison, setting time to midnight
-    const selectedDate = value
-      ? new Date(new Date(value).setHours(0, 0, 0, 0))
-      : null;
-    const phaseStart = new Date(phaseStartDate);
-    phaseStart.setHours(0, 0, 0, 0);
-
-    if (selectedDate && selectedDate >= phaseStart) {
+    if (value && value >= phaseStartDate) {
       setLocalMaterial((prev) => ({
         ...prev,
         [field]: value,

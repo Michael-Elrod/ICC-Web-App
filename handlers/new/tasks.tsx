@@ -2,7 +2,7 @@
 
 import { FormTask } from "@/app/types/database";
 import { UserView } from "@/app/types/views";
-import { calculateEndDate, formatToDateString } from "@/app/utils";
+import { calculateEndDate, fromPickerDate } from "@/app/utils";
 
 export const handleStartDateChange = (
   date: Date | null,
@@ -10,12 +10,9 @@ export const handleStartDateChange = (
   setLocalTask: React.Dispatch<React.SetStateAction<FormTask>>,
   setErrors: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>,
 ) => {
-  const newStartDate = date ? formatToDateString(date) : "";
-  const selectedDate = date ? new Date(date.setHours(0, 0, 0, 0)) : null;
-  const phaseStart = new Date(phaseStartDate);
-  phaseStart.setHours(0, 0, 0, 0);
+  const newStartDate = date ? fromPickerDate(date) : "";
 
-  if (selectedDate && selectedDate >= phaseStart) {
+  if (newStartDate && newStartDate >= phaseStartDate) {
     setLocalTask((prev) => ({
       ...prev,
       startDate: newStartDate,

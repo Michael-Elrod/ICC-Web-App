@@ -35,10 +35,8 @@ export default function JobsPage() {
     .filter((job) =>
       job.job_title.toLowerCase().includes(localSearchQuery.toLowerCase()),
     )
-    .sort(
-      (a, b) =>
-        new Date(a.job_startdate).getTime() -
-        new Date(b.job_startdate).getTime(),
+    .sort((a, b) =>
+      String(a.job_startdate).localeCompare(String(b.job_startdate)),
     );
 
   const handleJobSelect = (jobId: string) => {

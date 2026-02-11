@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { RowDataPacket } from "mysql2";
 import { withDb } from "@/app/lib/api-utils";
+import { createLocalDate, formatToDateString } from "@/app/utils";
 
 interface Task extends RowDataPacket {
   job_id: number;
@@ -448,16 +449,16 @@ export const GET = withDb(async (connection, request) => {
     const phases = phasesByJob.get(job.job_id) || [];
     const floorplans = floorplansByJob.get(job.job_id) || [];
 
-    const jobStart = new Date(job.job_startdate);
+    const jobStart = createLocalDate(formatToDateString(job.job_startdate));
     const maxTaskEnd = tasks.reduce((max, t) => {
-      const end = new Date(t.task_startdate);
+      const end = createLocalDate(formatToDateString(t.task_startdate));
       end.setDate(end.getDate() + t.task_duration);
       return end > max ? end : max;
-    }, jobStart);
+    }, new Date(jobStart));
     const maxMaterialEnd = materials.reduce((max, m) => {
-      const due = new Date(m.material_duedate);
+      const due = createLocalDate(formatToDateString(m.material_duedate));
       return due > max ? due : max;
-    }, jobStart);
+    }, new Date(jobStart));
     const endDate = maxTaskEnd > maxMaterialEnd ? maxTaskEnd : maxMaterialEnd;
     const formatMMDD = (d: Date) =>
       `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
@@ -465,7 +466,9 @@ export const GET = withDb(async (connection, request) => {
       Math.round((a.getTime() - b.getTime()) / (1000 * 60 * 60 * 24));
     const date_range = `${formatMMDD(jobStart)} - ${formatMMDD(endDate)}`;
     const total_weeks = Math.ceil(daysDiff(endDate, jobStart) / 7) + 1;
-    const current_week = Math.ceil(daysDiff(new Date(), jobStart) / 7) + 1;
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const current_week = Math.ceil(daysDiff(today, jobStart) / 7) + 1;
 
     return {
       ...job,

@@ -1,7 +1,11 @@
 // route.ts
 
 import { NextResponse } from "next/server";
-import { addBusinessDays } from "@/app/utils";
+import {
+  addBusinessDays,
+  createLocalDate,
+  formatToDateString,
+} from "@/app/utils";
 import { RowDataPacket } from "mysql2/promise";
 import { withDb, withTransaction } from "@/app/lib/api-utils";
 
@@ -55,12 +59,12 @@ export const PATCH = withDb(async (connection, request, params) => {
 
       for (const material of currentMaterials) {
         const newDate = addBusinessDays(
-          new Date(material.material_duedate),
+          createLocalDate(formatToDateString(material.material_duedate)),
           body.extend,
         );
         await connection.query(
           "UPDATE material SET material_duedate = ? WHERE material_id = ?",
-          [newDate.toISOString().split("T")[0], material.material_id],
+          [formatToDateString(newDate), material.material_id],
         );
       }
     }
@@ -75,12 +79,12 @@ export const PATCH = withDb(async (connection, request, params) => {
 
       for (const task of futureTasks) {
         const newDate = addBusinessDays(
-          new Date(task.task_startdate),
+          createLocalDate(formatToDateString(task.task_startdate)),
           body.extend,
         );
         await connection.query(
           "UPDATE task SET task_startdate = ? WHERE task_id = ?",
-          [newDate.toISOString().split("T")[0], task.task_id],
+          [formatToDateString(newDate), task.task_id],
         );
       }
 
@@ -93,12 +97,12 @@ export const PATCH = withDb(async (connection, request, params) => {
 
       for (const material of futureMaterials) {
         const newDate = addBusinessDays(
-          new Date(material.material_duedate),
+          createLocalDate(formatToDateString(material.material_duedate)),
           body.extend,
         );
         await connection.query(
           "UPDATE material SET material_duedate = ? WHERE material_id = ?",
-          [newDate.toISOString().split("T")[0], material.material_id],
+          [formatToDateString(newDate), material.material_id],
         );
       }
 

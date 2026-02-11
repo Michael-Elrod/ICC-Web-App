@@ -3,12 +3,13 @@
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { fromPickerDate } from "@/app/utils";
 
 interface CopyJobModalProps {
   isOpen: boolean;
   onClose: () => void;
   jobName: string;
-  onCopyJob?: (startDate: Date, copyOptions: CopyOptions) => void;
+  onCopyJob?: (startDate: string, copyOptions: CopyOptions) => void;
 }
 
 interface CopyOptions {
@@ -35,7 +36,7 @@ export default function CopyJobModal({
 
   const handleCopyJob = () => {
     if (newJobStartDate && onCopyJob) {
-      onCopyJob(newJobStartDate, copyOptions);
+      onCopyJob(fromPickerDate(newJobStartDate), copyOptions);
     }
     onClose();
     setStep("confirm");

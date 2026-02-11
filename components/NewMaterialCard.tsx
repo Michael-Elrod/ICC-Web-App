@@ -9,7 +9,12 @@ import ContactSearchSelect from "./ContactSearchSelect";
 import { FormMaterial } from "@/app/types/database";
 import { UserView } from "@/app/types/views";
 import { MaterialCardProps } from "@/app/types/props";
-import { formatDate, createLocalDate } from "@/app/utils";
+import {
+  formatDate,
+  createLocalDate,
+  toPickerDate,
+  fromPickerDate,
+} from "@/app/utils";
 import {
   handleDeleteConfirm,
   handleDeleteClick,
@@ -104,7 +109,7 @@ const NewMaterialCard: React.FC<MaterialCardProps> = ({
                 onChange={(date: Date | null) =>
                   handleDueDateChange(
                     "dueDate",
-                    date?.toISOString().split("T")[0] || "",
+                    date ? fromPickerDate(date) : "",
                     phaseStartDate,
                     setLocalMaterial,
                     setErrors,
@@ -115,7 +120,7 @@ const NewMaterialCard: React.FC<MaterialCardProps> = ({
                   return day !== 0 && day !== 6;
                 }}
                 dateFormat="MM/dd/yyyy"
-                minDate={new Date(phaseStartDate)}
+                minDate={toPickerDate(phaseStartDate)}
                 className={`w-full p-2 border ${
                   errors.dueDate
                     ? "border-red-500"

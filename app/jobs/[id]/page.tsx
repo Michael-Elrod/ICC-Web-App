@@ -25,6 +25,7 @@ import {
   formatToDateString,
   addBusinessDays,
   calculatePhaseDates,
+  compareDateStrings,
 } from "@/app/utils";
 import {
   JobDetailView,
@@ -274,7 +275,7 @@ export default function JobDetailPage() {
   };
 
   const handleJobCopy = (
-    newStartDate: Date,
+    newStartDate: string,
     copyOptions: {
       workerAssignments: boolean;
       notes: boolean;
@@ -290,7 +291,7 @@ export default function JobDetailPage() {
       },
       originalJobName: job.jobName,
       phases: job.phases,
-      newStartDate: newStartDate.toISOString().split("T")[0],
+      newStartDate: newStartDate,
       copyOptions: copyOptions,
       floorplans: copyOptions.floorplans ? job.floorplans : [],
     };
@@ -715,15 +716,14 @@ export default function JobDetailPage() {
   const calculateDateRange = (phases: PhaseView[]): string => {
     if (!phases.length) return "";
 
-    let startDate = new Date();
-    let endDate = new Date();
+    let startDate = createLocalDate("9999-12-31");
+    let endDate = createLocalDate("0001-01-01");
     let isFirst = true;
 
     phases.forEach((phase) => {
-      // Check tasks
       phase.tasks.forEach((task) => {
-        const taskStart = new Date(task.task_startdate);
-        const taskEnd = new Date(task.task_startdate);
+        const taskStart = createLocalDate(task.task_startdate);
+        const taskEnd = createLocalDate(task.task_startdate);
         taskEnd.setDate(taskEnd.getDate() + task.task_duration);
 
         if (isFirst || taskStart < startDate) {
@@ -733,9 +733,8 @@ export default function JobDetailPage() {
         if (taskEnd > endDate) endDate = taskEnd;
       });
 
-      // Check materials
       phase.materials.forEach((material) => {
-        const materialDate = new Date(material.material_duedate);
+        const materialDate = createLocalDate(material.material_duedate);
         if (isFirst || materialDate < startDate) {
           startDate = materialDate;
           isFirst = false;
@@ -744,15 +743,12 @@ export default function JobDetailPage() {
       });
     });
 
-    return `${startDate.toLocaleDateString("en-US", {
+    const fmt: Intl.DateTimeFormatOptions = {
       month: "numeric",
       day: "numeric",
       year: "2-digit",
-    })} - ${endDate.toLocaleDateString("en-US", {
-      month: "numeric",
-      day: "numeric",
-      year: "2-digit",
-    })}`;
+    };
+    return `${startDate.toLocaleDateString("en-US", fmt)} - ${endDate.toLocaleDateString("en-US", fmt)}`;
   };
 
   const handleStatusUpdate = async (
@@ -896,38 +892,23 @@ export default function JobDetailPage() {
 
         const updatedPhases = prevJob.phases.map((phase) => {
           if (phase.id === phaseId) {
-            // Add new task and sort
-            const updatedTasks = [...phase.tasks, createdTask].sort(
-              (a, b) =>
-                new Date(a.task_startdate).getTime() -
-                new Date(b.task_startdate).getTime(),
+            const updatedTasks = [...phase.tasks, createdTask].sort((a, b) =>
+              compareDateStrings(a.task_startdate, b.task_startdate),
             );
 
-            // Calculate new phase end date
-            let latestEndDate = new Date(phase.startDate);
+            let latestEndDate = createLocalDate(phase.startDate);
 
-            // Check all tasks
             updatedTasks.forEach((task) => {
-              const taskStart = new Date(task.task_startdate);
-              let taskEnd = new Date(taskStart);
-              let daysToAdd = task.task_duration;
-
-              // Skip weekends when calculating task end date
-              while (daysToAdd > 0) {
-                taskEnd.setDate(taskEnd.getDate() + 1);
-                if (taskEnd.getDay() !== 0 && taskEnd.getDay() !== 6) {
-                  daysToAdd--;
-                }
-              }
+              const taskStart = createLocalDate(task.task_startdate);
+              const taskEnd = addBusinessDays(taskStart, task.task_duration);
 
               if (taskEnd > latestEndDate) {
                 latestEndDate = taskEnd;
               }
             });
 
-            // Check all materials
             phase.materials.forEach((material) => {
-              const materialDate = new Date(material.material_duedate);
+              const materialDate = createLocalDate(material.material_duedate);
               if (materialDate > latestEndDate) {
                 latestEndDate = materialDate;
               }
@@ -936,7 +917,7 @@ export default function JobDetailPage() {
             return {
               ...phase,
               tasks: updatedTasks,
-              endDate: latestEndDate.toISOString().split("T")[0],
+              endDate: formatToDateString(latestEndDate),
             };
           }
           return phase;
@@ -987,37 +968,24 @@ export default function JobDetailPage() {
 
         const updatedPhases = prevJob.phases.map((phase) => {
           if (phase.id === phaseId) {
-            // Add new material and sort
             const updatedMaterials = [...phase.materials, createdMaterial].sort(
               (a, b) =>
-                new Date(a.material_duedate).getTime() -
-                new Date(b.material_duedate).getTime(),
+                compareDateStrings(a.material_duedate, b.material_duedate),
             );
 
-            // Calculate new phase end date
-            let latestEndDate = new Date(phase.startDate);
+            let latestEndDate = createLocalDate(phase.startDate);
 
-            // Check all tasks
             phase.tasks.forEach((task) => {
-              const taskStart = new Date(task.task_startdate);
-              let taskEnd = new Date(taskStart);
-              let daysToAdd = task.task_duration;
-
-              while (daysToAdd > 0) {
-                taskEnd.setDate(taskEnd.getDate() + 1);
-                if (taskEnd.getDay() !== 0 && taskEnd.getDay() !== 6) {
-                  daysToAdd--;
-                }
-              }
+              const taskStart = createLocalDate(task.task_startdate);
+              const taskEnd = addBusinessDays(taskStart, task.task_duration);
 
               if (taskEnd > latestEndDate) {
                 latestEndDate = taskEnd;
               }
             });
 
-            // Check all materials
             updatedMaterials.forEach((material) => {
-              const materialDate = new Date(material.material_duedate);
+              const materialDate = createLocalDate(material.material_duedate);
               if (materialDate > latestEndDate) {
                 latestEndDate = materialDate;
               }
@@ -1026,7 +994,7 @@ export default function JobDetailPage() {
             return {
               ...phase,
               materials: updatedMaterials,
-              endDate: latestEndDate.toISOString().split("T")[0],
+              endDate: formatToDateString(latestEndDate),
             };
           }
           return phase;
@@ -1054,14 +1022,15 @@ export default function JobDetailPage() {
     let overdue = 0;
     let nextSevenDays = 0;
     let sevenDaysPlus = 0;
-    const today = new Date();
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const sevenDaysFromNow = new Date(today);
     sevenDaysFromNow.setDate(today.getDate() + 7);
 
     phases.forEach((phase) => {
       phase.tasks.forEach((task) => {
         if (task.task_status != "Complete") {
-          const dueDate = new Date(task.task_startdate);
+          const dueDate = createLocalDate(task.task_startdate);
           dueDate.setDate(dueDate.getDate() + task.task_duration);
 
           if (dueDate < today) overdue++;
@@ -1072,7 +1041,7 @@ export default function JobDetailPage() {
 
       phase.materials.forEach((material) => {
         if (material.material_status != "Complete") {
-          const dueDate = new Date(material.material_duedate);
+          const dueDate = createLocalDate(material.material_duedate);
 
           if (dueDate < today) overdue++;
           else if (dueDate <= sevenDaysFromNow) nextSevenDays++;
@@ -1087,7 +1056,7 @@ export default function JobDetailPage() {
   useEffect(() => {
     if (activeModal === "edit" && job) {
       setEditJobTitle(job.jobName);
-      setEditStartDate(new Date(job.job_startdate).toISOString().split("T")[0]);
+      setEditStartDate(job.job_startdate.split("T")[0]);
     }
   }, [activeModal, job]);
 
@@ -1146,9 +1115,7 @@ export default function JobDetailPage() {
             task_id: task.task_id,
             phase_id: task.phase_id,
             task_title: task.task_title,
-            task_startdate: new Date(task.task_startdate)
-              .toISOString()
-              .split("T")[0],
+            task_startdate: String(task.task_startdate).split("T")[0],
             task_duration: task.task_duration,
             task_status: task.task_status,
             task_description: task.task_description,
@@ -1167,9 +1134,7 @@ export default function JobDetailPage() {
             material_id: material.material_id,
             phase_id: material.phase_id,
             material_title: material.material_title,
-            material_duedate: new Date(material.material_duedate)
-              .toISOString()
-              .split("T")[0],
+            material_duedate: String(material.material_duedate).split("T")[0],
             material_status: material.material_status,
             material_description: material.material_description,
             users: material.users.map((user: any) => ({
@@ -1300,9 +1265,7 @@ export default function JobDetailPage() {
       hasChanges = true;
     }
 
-    const originalStartDate = new Date(job.phases[0].startDate)
-      .toISOString()
-      .split("T")[0];
+    const originalStartDate = job.phases[0].startDate.split("T")[0];
     if (editStartDate !== originalStartDate) {
       changes.job_startdate = editStartDate;
       hasChanges = true;

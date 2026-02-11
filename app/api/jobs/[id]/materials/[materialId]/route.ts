@@ -2,7 +2,11 @@
 
 import { NextResponse } from "next/server";
 import { MaterialUpdatePayload } from "@/app/types/database";
-import { addBusinessDays } from "@/app/utils";
+import {
+  addBusinessDays,
+  createLocalDate,
+  formatToDateString,
+} from "@/app/utils";
 import { RowDataPacket } from "mysql2";
 import { withAuth, withDb, withTransaction } from "@/app/lib/api-utils";
 
@@ -49,9 +53,11 @@ export const PATCH = withAuth(async (connection, session, request, params) => {
       );
 
       if (currentMaterial.length > 0) {
-        const currentDate = new Date(currentMaterial[0].material_duedate);
+        const currentDate = createLocalDate(
+          formatToDateString(currentMaterial[0].material_duedate),
+        );
         const newDate = addBusinessDays(currentDate, body.extension_days);
-        const formattedNewDate = newDate.toISOString().split("T")[0];
+        const formattedNewDate = formatToDateString(newDate);
 
         await connection.query(
           "UPDATE material SET material_duedate = ? WHERE material_id = ?",
