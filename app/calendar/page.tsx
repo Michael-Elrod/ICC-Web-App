@@ -3,6 +3,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useTheme } from "next-themes";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -38,7 +39,31 @@ const jobColors = [
   "#CCE5FF", // soft powder blue
 ];
 
+const phaseColorsDark = [
+  "#1A6FB5", // dark blue
+  "#4B4DA6", // dark periwinkle
+  "#B33B3B", // dark pink
+  "#6B3F8A", // dark purple
+  "#3A6BB5", // dark steel blue
+  "#2A8A7E", // dark turquoise
+  "#B36A2E", // dark orange
+  "#4A5A6B", // dark navy
+];
+
+const jobColorsDark = [
+  "#B33B3B", // dark salmon
+  "#2A7A73", // dark teal
+  "#2A7A9E", // dark sky blue
+  "#3A7A50", // dark sage
+  "#B39A2E", // dark cream
+  "#9E4A4A", // dark rose
+  "#6B4A8A", // dark lavender
+  "#3A6EB3", // dark powder blue
+];
+
 export default function CalendarPage() {
+  const [mounted, setMounted] = useState(false);
+  const { theme } = useTheme();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -53,6 +78,15 @@ export default function CalendarPage() {
   const [currentTitle, setCurrentTitle] = useState(() =>
     new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
   );
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const activePhaseColors =
+    mounted && theme === "dark" ? phaseColorsDark : phaseColors;
+  const activeJobColors =
+    mounted && theme === "dark" ? jobColorsDark : jobColors;
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -122,7 +156,7 @@ export default function CalendarPage() {
           const phaseLegendItems =
             data.phases?.map((phase: any, index: number) => ({
               label: phase.phase_title,
-              color: phaseColors[index % phaseColors.length],
+              color: activePhaseColors[index % activePhaseColors.length],
             })) || [];
 
           setLegendItems(phaseLegendItems);
@@ -130,7 +164,8 @@ export default function CalendarPage() {
           const calendarEvents: CalendarEvent[] = [];
 
           data.phases?.forEach((phase: any, phaseIndex: number) => {
-            const phaseColor = phaseColors[phaseIndex % phaseColors.length];
+            const phaseColor =
+              activePhaseColors[phaseIndex % activePhaseColors.length];
 
             phase.tasks?.forEach((task: any) => {
               const startDate = createLocalDate(
@@ -197,13 +232,13 @@ export default function CalendarPage() {
 
           const jobLegendItems = jobs.map((job, index) => ({
             label: job.job_title,
-            color: jobColors[index % jobColors.length],
+            color: activeJobColors[index % activeJobColors.length],
           }));
           setLegendItems(jobLegendItems);
 
           const allEvents: CalendarEvent[] = [];
           jobsData.forEach((jobData, jobIndex) => {
-            const jobColor = jobColors[jobIndex % jobColors.length];
+            const jobColor = activeJobColors[jobIndex % activeJobColors.length];
 
             jobData.phases?.forEach((phase: any) => {
               phase.tasks?.forEach((task: any) => {
@@ -269,7 +304,7 @@ export default function CalendarPage() {
     };
 
     fetchJobDetails();
-  }, [selectedJobId, jobs]);
+  }, [selectedJobId, jobs, activePhaseColors, activeJobColors]);
 
   const renderEventContent = (eventInfo: EventContentArg) => {
     const isComplete = eventInfo.event.extendedProps.status === "Complete";
