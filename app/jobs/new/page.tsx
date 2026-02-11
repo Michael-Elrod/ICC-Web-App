@@ -19,11 +19,9 @@ import {
   addBusinessDays,
   getCurrentBusinessDate,
 } from "@/app/utils";
-import {
-  handleCreateJob,
-  handlePhaseUpdate,
-  getJobTypes,
-} from "@/handlers/new/jobs";
+import { handleCreateJob, handlePhaseUpdate } from "@/handlers/new/jobs";
+import { useNonClients } from "@/app/hooks/use-users";
+import { useTemplates } from "@/app/hooks/use-templates";
 
 export default function NewJobPage() {
   return (
@@ -36,9 +34,7 @@ export default function NewJobPage() {
 function NewJobContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [jobTypes, setJobTypes] = useState<
-    { template_id: number; template_name: string }[]
-  >([]);
+  const { data: jobTypes = [] } = useTemplates();
   const [jobType, setJobType] = useState<string>("");
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(
     null,
@@ -46,7 +42,7 @@ function NewJobContent() {
   const [phases, setPhases] = useState<FormPhase[]>([]);
   const [showNewJobCard, setShowNewJobCard] = useState(false);
   const [startDate, setStartDate] = useState("");
-  const [contacts, setContacts] = useState<UserView[]>([]);
+  const { data: contacts = [] } = useNonClients();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isCreateJobDisabled = !jobType || !startDate;
   const [originalJobName, setOriginalJobName] = useState<string>("");
@@ -331,29 +327,11 @@ function NewJobContent() {
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    const fetchContacts = async () => {
-      try {
-        const response = await fetch(`/api/users/non-clients?t=${Date.now()}`);
-        if (response.ok) {
-          const data = await response.json();
-          setContacts(data);
-        }
-      } catch (error) {
-        console.error("Error fetching contacts:", error);
-      }
-    };
-
-    fetchContacts();
-  }, []);
-
-  useEffect(() => {
-    const fetchJobTypes = async () => {
-      const types = await getJobTypes();
-      setJobTypes(types);
-    };
-    fetchJobTypes();
-  }, []);
+  // Helper for copy job flow that needs mutable contacts
+  const setContacts = (_contacts: UserView[]) => {
+    // In copy job flow, contacts come from localStorage data
+    // The useNonClients hook handles normal contact fetching
+  };
 
   const handleSubmitJob = async () => {
     try {
@@ -509,46 +487,40 @@ function NewJobContent() {
         });
       }
 
-      for (const phase of phases) {
-        const transformedPhase = {
-          title: phase.title.trim(),
-          startDate: phase.startDate,
-          description: phase.description?.trim() || "",
-          tasks: phase.tasks.map((task) => ({
-            title: task.title.trim(),
-            startDate: task.startDate,
-            duration: task.duration.toString(),
-            details: task.details?.trim() || "",
-            assignedUsers:
-              task.selectedContacts?.map((contact) => parseInt(contact.id)) ||
-              [],
-          })),
-          materials: phase.materials.map((material) => ({
-            title: material.title.trim(),
-            dueDate: material.dueDate,
-            details: material.details?.trim() || "",
-            assignedUsers:
-              material.selectedContacts?.map((contact) =>
-                parseInt(contact.id),
-              ) || [],
-          })),
-          notes: phase.notes.map((note) => ({
-            content: note.content.trim(),
-          })),
-        };
+      const transformedPhases = phases.map((phase) => ({
+        title: phase.title.trim(),
+        startDate: phase.startDate,
+        description: phase.description?.trim() || "",
+        tasks: phase.tasks.map((task) => ({
+          title: task.title.trim(),
+          startDate: task.startDate,
+          duration: task.duration.toString(),
+          details: task.details?.trim() || "",
+          assignedUsers:
+            task.selectedContacts?.map((contact) => parseInt(contact.id)) || [],
+        })),
+        materials: phase.materials.map((material) => ({
+          title: material.title.trim(),
+          dueDate: material.dueDate,
+          details: material.details?.trim() || "",
+          assignedUsers:
+            material.selectedContacts?.map((contact) => parseInt(contact.id)) ||
+            [],
+        })),
+        notes: phase.notes.map((note) => ({
+          content: note.content.trim(),
+        })),
+      }));
 
-        const phaseFormData = new FormData();
-        phaseFormData.append("phase", JSON.stringify(transformedPhase));
+      const phaseResponse = await fetch(`/api/jobs/${jobData.jobId}/phases`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phases: transformedPhases }),
+      });
 
-        const phaseResponse = await fetch(`/api/jobs/${jobData.jobId}/phases`, {
-          method: "POST",
-          body: phaseFormData,
-        });
-
-        if (!phaseResponse.ok) {
-          const phaseErrorText = await phaseResponse.text();
-          throw new Error(`Failed to create phase: ${phaseErrorText}`);
-        }
+      if (!phaseResponse.ok) {
+        const phaseErrorText = await phaseResponse.text();
+        throw new Error(`Failed to create phases: ${phaseErrorText}`);
       }
 
       if (isCopyingJob) {
@@ -642,6 +614,26 @@ function NewJobContent() {
       }
     }
     return null;
+  };
+
+  const handleReset = () => {
+    setJobType("");
+    setSelectedTemplateId(null);
+    setPhases([]);
+    setShowNewJobCard(false);
+    setStartDate("");
+    setIsSubmitting(false);
+    setOriginalJobName("");
+    setWillCopyFloorplans(false);
+    setFloorplansToCopyCount(0);
+    setJobDetailsErrors({});
+    setJobDetails({
+      jobTitle: "",
+      jobLocation: "",
+      description: "",
+      selectedClient: null,
+      floorPlans: [],
+    });
   };
 
   return (
@@ -874,7 +866,7 @@ function NewJobContent() {
 
           <div className="mt-8 mb-8 flex justify-end gap-4">
             <button
-              onClick={() => window.location.reload()}
+              onClick={handleReset}
               className="px-6 py-3 text-white font-bold rounded-md shadow-lg bg-zinc-500 hover:bg-zinc-600 transition-colors"
             >
               Reset

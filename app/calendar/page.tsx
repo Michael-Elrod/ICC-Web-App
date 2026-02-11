@@ -8,7 +8,6 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { EventContentArg } from "@fullcalendar/core";
-import { Job } from "../types/database";
 import {
   CalendarEvent,
   SelectedEventInfo,
@@ -16,6 +15,11 @@ import {
 } from "./_components/EventPopup";
 import { createLocalDate, formatToDateString } from "@/app/utils";
 import { Legend, LegendToggle } from "./_components/Legend";
+import {
+  useCalendarJobs,
+  useCalendarJobDetail,
+} from "@/app/hooks/use-calendar";
+import { apiFetch } from "@/app/lib/api-fetch";
 
 const phaseColors = [
   "#B8DEFF", // soft blue
@@ -64,7 +68,6 @@ const jobColorsDark = [
 export default function CalendarPage() {
   const [mounted, setMounted] = useState(false);
   const { theme } = useTheme();
-  const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [showPopup, setShowPopup] = useState(false);
@@ -88,22 +91,8 @@ export default function CalendarPage() {
   const activeJobColors =
     mounted && theme === "dark" ? jobColorsDark : jobColors;
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const response = await fetch("/api/calendar");
-        const data = await response.json();
-        setJobs(Array.isArray(data) ? data : []);
-        if (data.length > 0) {
-          setSelectedJobId(null);
-        }
-      } catch (error) {
-        console.error("Failed to fetch jobs:", error);
-        setJobs([]);
-      }
-    };
-    fetchJobs();
-  }, []);
+  const { data: jobs = [] } = useCalendarJobs();
+  const { data: selectedJobData } = useCalendarJobDetail(selectedJobId);
 
   const updateEventStatus = (
     itemId: number,
@@ -134,7 +123,7 @@ export default function CalendarPage() {
       .fc-more-popover {
         background-color: white !important;
       }
-  
+
       .dark .fc-more-popover {
         background-color: rgb(17, 24, 39) !important;
       }
@@ -146,27 +135,106 @@ export default function CalendarPage() {
     };
   }, []);
 
+  // Handle single job selection
   useEffect(() => {
-    const fetchJobDetails = async () => {
+    if (selectedJobId && selectedJobData) {
+      const data = selectedJobData;
+
+      const phaseLegendItems =
+        data.phases?.map((phase: any, index: number) => ({
+          label: phase.phase_title,
+          color: activePhaseColors[index % activePhaseColors.length],
+        })) || [];
+
+      setLegendItems(phaseLegendItems);
+
+      const calendarEvents: CalendarEvent[] = [];
+
+      data.phases?.forEach((phase: any, phaseIndex: number) => {
+        const phaseColor =
+          activePhaseColors[phaseIndex % activePhaseColors.length];
+
+        phase.tasks?.forEach((task: any) => {
+          const startDate = createLocalDate(
+            String(task.task_startdate).split("T")[0],
+          );
+          const endDate = new Date(startDate);
+          let daysToAdd = task.task_duration;
+          let currentDay = 0;
+
+          while (currentDay < daysToAdd) {
+            endDate.setDate(endDate.getDate() + 1);
+            if (endDate.getDay() !== 0 && endDate.getDay() !== 6) {
+              currentDay++;
+            }
+          }
+
+          calendarEvents.push({
+            id: `task-${task.task_id}`,
+            title: task.task_title,
+            start: String(task.task_startdate).split("T")[0],
+            end: formatToDateString(endDate),
+            color: phaseColor,
+            order: 1,
+            allDay: true,
+            display: "block",
+            extendedProps: {
+              phaseId: phase.phase_id,
+              type: "task",
+              duration: task.task_duration,
+              status: task.task_status,
+              itemId: task.task_id,
+              description: task.task_description,
+              contacts: task.assigned_users,
+            },
+          });
+        });
+
+        phase.materials?.forEach((material: any) => {
+          calendarEvents.push({
+            id: `material-${material.material_id}`,
+            title: material.material_title,
+            start: material.material_duedate.toString().split("T")[0],
+            color: phaseColor,
+            order: 2,
+            allDay: true,
+            display: "list-item",
+            extendedProps: {
+              type: "material",
+              status: material.material_status,
+              itemId: material.material_id,
+              description: material.material_description,
+              contacts: material.assigned_users,
+            },
+          });
+        });
+      });
+
+      setEvents(calendarEvents);
+    }
+  }, [selectedJobId, selectedJobData, activePhaseColors]);
+
+  // Handle "all jobs" view - fetch all job details
+  useEffect(() => {
+    if (selectedJobId !== null || jobs.length === 0) return;
+
+    const fetchAllJobDetails = async () => {
       try {
-        if (selectedJobId) {
-          const response = await fetch(`/api/calendar?jobId=${selectedJobId}`);
-          const data = await response.json();
+        const jobsData = await Promise.all(
+          jobs.map((job) => apiFetch<any>(`/api/calendar?jobId=${job.job_id}`)),
+        );
 
-          const phaseLegendItems =
-            data.phases?.map((phase: any, index: number) => ({
-              label: phase.phase_title,
-              color: activePhaseColors[index % activePhaseColors.length],
-            })) || [];
+        const jobLegendItems = jobs.map((job, index) => ({
+          label: job.job_title,
+          color: activeJobColors[index % activeJobColors.length],
+        }));
+        setLegendItems(jobLegendItems);
 
-          setLegendItems(phaseLegendItems);
+        const allEvents: CalendarEvent[] = [];
+        jobsData.forEach((jobData, jobIndex) => {
+          const jobColor = activeJobColors[jobIndex % activeJobColors.length];
 
-          const calendarEvents: CalendarEvent[] = [];
-
-          data.phases?.forEach((phase: any, phaseIndex: number) => {
-            const phaseColor =
-              activePhaseColors[phaseIndex % activePhaseColors.length];
-
+          jobData.phases?.forEach((phase: any) => {
             phase.tasks?.forEach((task: any) => {
               const startDate = createLocalDate(
                 String(task.task_startdate).split("T")[0],
@@ -182,17 +250,15 @@ export default function CalendarPage() {
                 }
               }
 
-              calendarEvents.push({
+              allEvents.push({
                 id: `task-${task.task_id}`,
-                title: task.task_title,
+                title: `${jobData.job_title}: ${task.task_title}`,
                 start: String(task.task_startdate).split("T")[0],
                 end: formatToDateString(endDate),
-                color: phaseColor,
+                color: jobColor,
                 order: 1,
-                allDay: true,
                 display: "block",
                 extendedProps: {
-                  phaseId: phase.phase_id,
                   type: "task",
                   duration: task.task_duration,
                   status: task.task_status,
@@ -204,11 +270,11 @@ export default function CalendarPage() {
             });
 
             phase.materials?.forEach((material: any) => {
-              calendarEvents.push({
+              allEvents.push({
                 id: `material-${material.material_id}`,
-                title: material.material_title,
+                title: `${jobData.job_title}: ${material.material_title}`,
                 start: material.material_duedate.toString().split("T")[0],
-                color: phaseColor,
+                color: jobColor,
                 order: 2,
                 allDay: true,
                 display: "list-item",
@@ -222,88 +288,15 @@ export default function CalendarPage() {
               });
             });
           });
+        });
 
-          setEvents(calendarEvents);
-        } else {
-          const responses = await Promise.all(
-            jobs.map((job) => fetch(`/api/calendar?jobId=${job.job_id}`)),
-          );
-          const jobsData = await Promise.all(responses.map((r) => r.json()));
-
-          const jobLegendItems = jobs.map((job, index) => ({
-            label: job.job_title,
-            color: activeJobColors[index % activeJobColors.length],
-          }));
-          setLegendItems(jobLegendItems);
-
-          const allEvents: CalendarEvent[] = [];
-          jobsData.forEach((jobData, jobIndex) => {
-            const jobColor = activeJobColors[jobIndex % activeJobColors.length];
-
-            jobData.phases?.forEach((phase: any) => {
-              phase.tasks?.forEach((task: any) => {
-                const startDate = createLocalDate(
-                  String(task.task_startdate).split("T")[0],
-                );
-                const endDate = new Date(startDate);
-                let daysToAdd = task.task_duration;
-                let currentDay = 0;
-
-                while (currentDay < daysToAdd) {
-                  endDate.setDate(endDate.getDate() + 1);
-                  if (endDate.getDay() !== 0 && endDate.getDay() !== 6) {
-                    currentDay++;
-                  }
-                }
-
-                allEvents.push({
-                  id: `task-${task.task_id}`,
-                  title: `${jobData.job_title}: ${task.task_title}`,
-                  start: String(task.task_startdate).split("T")[0],
-                  end: formatToDateString(endDate),
-                  color: jobColor,
-                  order: 1,
-                  display: "block",
-                  extendedProps: {
-                    type: "task",
-                    duration: task.task_duration,
-                    status: task.task_status,
-                    itemId: task.task_id,
-                    description: task.task_description,
-                    contacts: task.assigned_users,
-                  },
-                });
-              });
-
-              phase.materials?.forEach((material: any) => {
-                allEvents.push({
-                  id: `material-${material.material_id}`,
-                  title: `${jobData.job_title}: ${material.material_title}`,
-                  start: material.material_duedate.toString().split("T")[0],
-                  color: jobColor,
-                  order: 2,
-                  allDay: true,
-                  display: "list-item",
-                  extendedProps: {
-                    type: "material",
-                    status: material.material_status,
-                    itemId: material.material_id,
-                    description: material.material_description,
-                    contacts: material.assigned_users,
-                  },
-                });
-              });
-            });
-          });
-
-          setEvents(allEvents);
-        }
+        setEvents(allEvents);
       } catch (error) {
         console.error("Failed to fetch job details:", error);
       }
     };
 
-    fetchJobDetails();
+    fetchAllJobDetails();
   }, [selectedJobId, jobs, activePhaseColors, activeJobColors]);
 
   const renderEventContent = (eventInfo: EventContentArg) => {

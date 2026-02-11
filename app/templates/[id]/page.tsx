@@ -11,12 +11,13 @@ import CardFrame from "@/components/CardFrame";
 import TemplatePhaseCard, {
   TemplatePhaseData,
 } from "../_components/TemplatePhaseCard";
-import { UserView } from "@/app/types/views";
 import {
   createLocalDate,
   formatToDateString,
   getCurrentBusinessDate,
 } from "@/app/utils";
+import { useTemplate, useUpdateTemplate } from "@/app/hooks/use-templates";
+import { useNonClients } from "@/app/hooks/use-users";
 
 export default function EditTemplatePage() {
   const { id } = useParams<{ id: string }>();
@@ -24,10 +25,8 @@ export default function EditTemplatePage() {
   const { data: session, status } = useSession();
   const [templateName, setTemplateName] = useState("");
   const [phases, setPhases] = useState<TemplatePhaseData[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [contacts, setContacts] = useState<UserView[]>([]);
   const [previewStartDate, setPreviewStartDate] = useState(() =>
     formatToDateString(getCurrentBusinessDate(new Date())),
   );
@@ -35,66 +34,52 @@ export default function EditTemplatePage() {
   const canAccess =
     session?.user?.type === "Owner" || session?.user?.type === "Admin";
 
+  const {
+    data: templateData,
+    isLoading: loading,
+    error: fetchError,
+  } = useTemplate(canAccess ? id : null);
+  const { data: contacts = [] } = useNonClients();
+  const updateTemplate = useUpdateTemplate(id);
+
+  // Populate form when template data arrives
   useEffect(() => {
-    if (!canAccess) return;
+    if (templateData) {
+      setTemplateName(templateData.template_name);
 
-    const fetchTemplate = async () => {
-      try {
-        const res = await fetch(`/api/templates/${id}`);
-        if (!res.ok) {
-          router.push("/templates");
-          return;
-        }
-        const data = await res.json();
-        setTemplateName(data.template_name);
+      const loadedPhases: TemplatePhaseData[] = templateData.phases.map(
+        (phase: any) => ({
+          tempId: `phase-${phase.template_phase_id}`,
+          title: phase.phase_title,
+          description: phase.phase_description || "",
+          tasks: phase.tasks.map((task: any) => ({
+            tempId: `task-${task.template_task_id}`,
+            title: task.task_title,
+            duration: task.task_duration,
+            offset: task.task_offset,
+            description: task.task_description || "",
+            contacts: task.contacts || [],
+          })),
+          materials: phase.materials.map((material: any) => ({
+            tempId: `material-${material.template_material_id}`,
+            title: material.material_title,
+            offset: material.material_offset,
+            description: material.material_description || "",
+            contacts: material.contacts || [],
+          })),
+        }),
+      );
 
-        const loadedPhases: TemplatePhaseData[] = data.phases.map(
-          (phase: any) => ({
-            tempId: `phase-${phase.template_phase_id}`,
-            title: phase.phase_title,
-            description: phase.phase_description || "",
-            tasks: phase.tasks.map((task: any) => ({
-              tempId: `task-${task.template_task_id}`,
-              title: task.task_title,
-              duration: task.task_duration,
-              offset: task.task_offset,
-              description: task.task_description || "",
-              contacts: task.contacts || [],
-            })),
-            materials: phase.materials.map((material: any) => ({
-              tempId: `material-${material.template_material_id}`,
-              title: material.material_title,
-              offset: material.material_offset,
-              description: material.material_description || "",
-              contacts: material.contacts || [],
-            })),
-          }),
-        );
+      setPhases(loadedPhases);
+    }
+  }, [templateData]);
 
-        setPhases(loadedPhases);
-      } catch (err) {
-        console.error("Error fetching template:", err);
-        router.push("/templates");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchContacts = async () => {
-      try {
-        const res = await fetch("/api/users/non-clients");
-        if (res.ok) {
-          const data = await res.json();
-          setContacts(data);
-        }
-      } catch (err) {
-        console.error("Error fetching contacts:", err);
-      }
-    };
-
-    fetchTemplate();
-    fetchContacts();
-  }, [id, canAccess, router]);
+  // Redirect on fetch error
+  useEffect(() => {
+    if (fetchError) {
+      router.push("/templates");
+    }
+  }, [fetchError, router]);
 
   if (status === "loading") return null;
 
@@ -173,21 +158,11 @@ export default function EditTemplatePage() {
         })),
       };
 
-      const res = await fetch(`/api/templates/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        router.push("/templates");
-      } else {
-        const data = await res.json();
-        setError(data.error || "Failed to update template");
-      }
-    } catch (err) {
+      await updateTemplate.mutateAsync(payload);
+      router.push("/templates");
+    } catch (err: any) {
       console.error("Error updating template:", err);
-      setError("Failed to update template");
+      setError(err.message || "Failed to update template");
     } finally {
       setIsSubmitting(false);
     }

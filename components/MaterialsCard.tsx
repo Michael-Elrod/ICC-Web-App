@@ -19,6 +19,10 @@ interface MaterialsCardProps {
     newStatus: string,
   ) => void;
   onDelete: (id: number) => Promise<void>;
+  onEdit?: (
+    materialId: number,
+    updates: MaterialUpdatePayload,
+  ) => Promise<void>;
   userType?: string;
   renderAddButton?: () => React.ReactNode;
   renderAddingForm?: () => React.ReactNode;
@@ -29,6 +33,7 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
   contacts,
   onStatusUpdate,
   onDelete,
+  onEdit,
   userType,
   renderAddButton,
   renderAddingForm,
@@ -168,26 +173,10 @@ const MaterialsCard: React.FC<MaterialsCardProps> = ({
       hasChanges = true;
     }
 
-    if (hasChanges) {
+    if (hasChanges && onEdit) {
       try {
-        const jobId = window.location.pathname.split("/")[2];
-        const response = await fetch(
-          `/api/jobs/${jobId}/materials/${materialId}`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(changes),
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to update material");
-        }
-
+        await onEdit(materialId, changes);
         setActiveModal(null);
-        window.location.reload();
       } catch (error) {
         console.error("Error updating material:", error);
       }

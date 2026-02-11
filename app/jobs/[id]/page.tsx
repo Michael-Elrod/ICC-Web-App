@@ -36,6 +36,25 @@ import {
   Tab,
   FloorPlan,
 } from "../../types/views";
+import { useJobDetail } from "@/app/hooks/use-jobs";
+import { useNonClients } from "@/app/hooks/use-users";
+import {
+  useCloseJob,
+  useDeleteJob,
+  useUploadFloorplan,
+  useDeleteFloorplan,
+  useUpdateJob,
+  useUpdatePhase,
+  useUpdateItemStatus,
+  useCreateTask,
+  useDeleteTask,
+  useCreateMaterial,
+  useDeleteMaterial,
+  useCreateNote,
+  useDeleteNote,
+  useUpdateTask,
+  useUpdateMaterial,
+} from "@/app/hooks/use-job-mutations";
 
 export default function JobDetailPage() {
   const { data: session } = useSession();
@@ -46,9 +65,6 @@ export default function JobDetailPage() {
   const [editStartDate, setEditStartDate] = useState("");
   const [activeTab, setActiveTab] = useState("Overview");
   const [searchQuery, setSearchQuery] = useState("");
-  const [job, setJob] = useState<JobDetailView | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [showCloseModal, setShowCloseModal] = useState(false);
@@ -61,45 +77,63 @@ export default function JobDetailPage() {
   const [activeModal, setActiveModal] = useState<"edit" | "floorplan" | null>(
     null,
   );
-  const [contacts, setContacts] = useState<UserView[]>([]);
   const [collapsedPhases, setCollapsedPhases] = useState<Set<number>>(
     new Set(),
   );
   const hasAdminAccess =
     session?.user?.type === "Owner" || session?.user?.type === "Admin";
 
-  const handleJobClose = async () => {
-    try {
-      const response = await fetch(`/api/jobs/${id}/close`, {
-        method: "POST",
+  // Queries
+  const { data: job, isLoading: loading, error: queryError } = useJobDetail(id);
+  const { data: contacts = [] } = useNonClients();
+
+  // Mutations
+  const closeJob = useCloseJob(id);
+  const deleteJob = useDeleteJob(id);
+  const uploadFloorplan = useUploadFloorplan(id);
+  const deleteFloorplan = useDeleteFloorplan(id);
+  const updateJob = useUpdateJob(id);
+  const updatePhase = useUpdatePhase(id);
+  const updateItemStatus = useUpdateItemStatus(id);
+  const createTask = useCreateTask(id);
+  const deleteTask = useDeleteTask(id);
+  const createMaterial = useCreateMaterial(id);
+  const deleteMaterial = useDeleteMaterial(id);
+  const createNote = useCreateNote(id);
+  const deleteNote = useDeleteNote(id);
+  const updateTask = useUpdateTask(id);
+  const updateMaterial = useUpdateMaterial(id);
+
+  const error = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : "An error occurred"
+    : null;
+
+  // Set collapsed phases when job loads
+  useEffect(() => {
+    if (job) {
+      setCollapsedPhases((prev) => {
+        if (prev.size === 0) {
+          return new Set(job.phases.map((phase) => phase.id));
+        }
+        return prev;
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to close job");
-      }
-
-      router.push("/jobs");
-    } catch (error) {
-      console.error("Error closing job:", error);
-      setError("Failed to close job");
     }
+  }, [job]);
+
+  const handleJobClose = async () => {
+    closeJob.mutate(undefined, {
+      onSuccess: () => router.push("/jobs"),
+      onError: (error) => console.error("Error closing job:", error),
+    });
   };
 
   const handleJobDelete = async () => {
-    try {
-      const response = await fetch(`/api/jobs/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete job");
-      }
-
-      router.push("/jobs");
-    } catch (error) {
-      console.error("Error deleting job:", error);
-      setError("Failed to delete job");
-    }
+    deleteJob.mutate(undefined, {
+      onSuccess: () => router.push("/jobs"),
+      onError: (error) => console.error("Error deleting job:", error),
+    });
   };
 
   const FloorplanUploadModal = ({
@@ -110,18 +144,15 @@ export default function JobDetailPage() {
     onClose: () => void;
   }) => {
     const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
-    const [uploading, setUploading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [uploadError, setUploadError] = useState<string | null>(null);
 
     const handleUpload = async () => {
       if (!selectedFiles) return;
 
-      setUploading(true);
-      setError(null);
+      setUploadError(null);
       const formData = new FormData();
 
       try {
-        // Validate files before upload
         const filesArray = Array.from(selectedFiles);
         validateFiles(filesArray);
 
@@ -129,23 +160,18 @@ export default function JobDetailPage() {
           formData.append("files", file);
         });
 
-        const response = await fetch(`/api/jobs/${id}/floorplan`, {
-          method: "POST",
-          body: formData,
+        uploadFloorplan.mutate(formData, {
+          onSuccess: () => onClose(),
+          onError: (error) =>
+            setUploadError(
+              error instanceof Error ? error.message : "Upload failed",
+            ),
         });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Upload failed");
-        }
-
-        onClose();
-        window.location.reload();
       } catch (error) {
-        setError(error instanceof Error ? error.message : "Upload failed");
+        setUploadError(
+          error instanceof Error ? error.message : "Upload failed",
+        );
         console.error("Error uploading floorplans:", error);
-      } finally {
-        setUploading(false);
       }
     };
 
@@ -181,14 +207,16 @@ export default function JobDetailPage() {
               multiple
               onChange={(e) => {
                 setSelectedFiles(e.target.files);
-                setError(null);
+                setUploadError(null);
               }}
               className="w-full p-2 border border-gray-300 rounded"
             />
             <p className="mt-2 text-sm text-gray-500">
               Accepted formats: JPEG, PNG, GIF, PDF (max 5MB per file)
             </p>
-            {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+            {uploadError && (
+              <p className="mt-2 text-sm text-red-500">{uploadError}</p>
+            )}
           </div>
 
           <div className="flex justify-end gap-3">
@@ -200,10 +228,10 @@ export default function JobDetailPage() {
             </button>
             <button
               onClick={handleUpload}
-              disabled={!selectedFiles || uploading}
+              disabled={!selectedFiles || uploadFloorplan.isPending}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-blue-300"
             >
-              {uploading ? "Uploading..." : "Upload"}
+              {uploadFloorplan.isPending ? "Uploading..." : "Upload"}
             </button>
           </div>
         </div>
@@ -232,46 +260,23 @@ export default function JobDetailPage() {
   };
 
   const confirmRemoveCurrent = async () => {
-    try {
-      if (!selectedFloorplanId) {
-        console.error("No floorplan ID selected");
-        return;
-      }
-
-      const response = await fetch(
-        `/api/jobs/${id}/floorplan?floorplanId=${selectedFloorplanId}`,
-        {
-          method: "DELETE",
-        },
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to remove floorplan");
-      }
-
-      setShowRemoveModal(false);
-      window.location.reload();
-    } catch (error) {
-      console.error("Error removing floorplan:", error);
+    if (!selectedFloorplanId) {
+      console.error("No floorplan ID selected");
+      return;
     }
+
+    deleteFloorplan.mutate(selectedFloorplanId, {
+      onSuccess: () => setShowRemoveModal(false),
+      onError: (error) => console.error("Error removing floorplan:", error),
+    });
   };
 
   const confirmRemoveAll = async () => {
-    try {
-      const response = await fetch(`/api/jobs/${id}/floorplan`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to remove all floorplans");
-      }
-
-      setShowRemoveAllModal(false);
-      window.location.reload();
-    } catch (error) {
-      console.error("Error removing all floorplans:", error);
-    }
+    deleteFloorplan.mutate(undefined, {
+      onSuccess: () => setShowRemoveAllModal(false),
+      onError: (error) =>
+        console.error("Error removing all floorplans:", error),
+    });
   };
 
   const handleJobCopy = (
@@ -296,7 +301,6 @@ export default function JobDetailPage() {
       floorplans: copyOptions.floorplans ? job.floorplans : [],
     };
 
-    console.log("Saving job data with floorplans:", jobDataForCopy);
     localStorage.setItem("jobToCopy", JSON.stringify(jobDataForCopy));
     router.push("/jobs/new?copy=true");
   };
@@ -312,209 +316,23 @@ export default function JobDetailPage() {
     },
   ) => {
     try {
-      let updatedPhase: PhaseView | null = null;
-      let otherUpdatedPhases: PhaseView[] = [];
-
-      const getLatestDate = (
-        tasks: TaskView[],
-        materials: MaterialView[],
-      ): string => {
-        let latestDate = new Date(-8640000000000000);
-
-        tasks.forEach((task) => {
-          const taskStart = createLocalDate(task.task_startdate);
-          const taskEnd = addBusinessDays(taskStart, task.task_duration - 1);
-          if (taskEnd > latestDate) {
-            latestDate = taskEnd;
-          }
-        });
-
-        materials.forEach((material) => {
-          const materialDate = createLocalDate(material.material_duedate);
-          if (materialDate > latestDate) {
-            latestDate = materialDate;
-          }
-        });
-
-        return formatToDateString(latestDate);
-      };
-
-      const getEarliestDate = (
-        tasks: TaskView[],
-        materials: MaterialView[],
-      ): string => {
-        let earliestDate = new Date(8640000000000000);
-
-        tasks.forEach((task) => {
-          const taskStart = createLocalDate(task.task_startdate);
-          if (taskStart < earliestDate) {
-            earliestDate = taskStart;
-          }
-        });
-
-        materials.forEach((material) => {
-          const materialDate = createLocalDate(material.material_duedate);
-          if (materialDate < earliestDate) {
-            earliestDate = materialDate;
-          }
-        });
-
-        return formatToDateString(earliestDate);
-      };
-
-      setJob((prevJob) => {
-        if (!prevJob) return null;
-
-        const phaseIndex = prevJob.phases.findIndex((p) => p.id === phaseId);
-        if (phaseIndex === -1) return prevJob;
-
-        const updatedPhases = [...prevJob.phases];
-        const currentPhase: PhaseView = {
-          ...updatedPhases[phaseIndex],
-          tasks: [...updatedPhases[phaseIndex].tasks],
-          materials: [...updatedPhases[phaseIndex].materials],
-          notes: [...updatedPhases[phaseIndex].notes],
-        };
-
-        if (updates.title !== currentPhase.name) {
-          currentPhase.name = updates.title;
-        }
-
-        if (updates.daysDiff) {
-          currentPhase.tasks = currentPhase.tasks.map((task) => {
-            const newDate = formatToDateString(
-              addBusinessDays(
-                createLocalDate(task.task_startdate),
-                updates.daysDiff!,
-              ),
-            );
-
-            return {
-              ...task,
-              task_startdate: newDate,
-            };
-          });
-
-          currentPhase.materials = currentPhase.materials.map((material) => {
-            const newDate = formatToDateString(
-              addBusinessDays(
-                createLocalDate(material.material_duedate),
-                updates.daysDiff!,
-              ),
-            );
-
-            return {
-              ...material,
-              material_duedate: newDate,
-            };
-          });
-        }
-
-        if (updates.extend > 0) {
-          currentPhase.tasks = currentPhase.tasks.map((task) => {
-            const newDuration = task.task_duration + (updates.extend - 1);
-            return {
-              ...task,
-              task_duration: newDuration,
-            };
-          });
-
-          currentPhase.materials = currentPhase.materials.map((material) => {
-            const newDate = formatToDateString(
-              addBusinessDays(
-                createLocalDate(material.material_duedate),
-                updates.extend,
-              ),
-            );
-
-            return {
-              ...material,
-              material_duedate: newDate,
-            };
-          });
-        }
-
-        const { startDate, endDate } = calculatePhaseDates(
-          currentPhase.tasks,
-          currentPhase.materials,
-        );
-        currentPhase.startDate = startDate;
-        currentPhase.endDate = endDate;
-        updatedPhases[phaseIndex] = currentPhase;
-
-        if (updates.extendFuturePhases && updates.extend > 0) {
-          for (let i = phaseIndex + 1; i < updatedPhases.length; i++) {
-            const phase: PhaseView = {
-              ...updatedPhases[i],
-              tasks: [...updatedPhases[i].tasks],
-              materials: [...updatedPhases[i].materials],
-              notes: [...updatedPhases[i].notes],
-            };
-
-            phase.tasks = phase.tasks.map((task) => {
-              const newDate = formatToDateString(
-                addBusinessDays(
-                  createLocalDate(task.task_startdate),
-                  updates.extend,
-                ),
-              );
-
-              return {
-                ...task,
-                task_startdate: newDate,
-              };
-            });
-
-            phase.materials = phase.materials.map((material) => {
-              const newDate = formatToDateString(
-                addBusinessDays(
-                  createLocalDate(material.material_duedate),
-                  updates.extend,
-                ),
-              );
-
-              return {
-                ...material,
-                material_duedate: newDate,
-              };
-            });
-
-            phase.startDate = getEarliestDate(phase.tasks, phase.materials);
-            phase.endDate = getLatestDate(phase.tasks, phase.materials);
-            updatedPhases[i] = phase;
-          }
-        }
-
-        updatedPhase = currentPhase;
-        otherUpdatedPhases = updates.extendFuturePhases
-          ? updatedPhases.slice(phaseIndex + 1)
-          : [];
-
-        return {
-          ...prevJob,
-          phases: updatedPhases,
-        };
-      });
-
-      if (!updatedPhase) {
-        throw new Error("Failed to update phase: Phase data is null");
-      }
-
-      const phase = updatedPhase as PhaseView;
-
-      await fetch(`/api/jobs/${params.id}/phases/${phaseId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: phase.name,
-          startDate: phase.startDate,
-          extend: updates.extend,
-          extendFuturePhases: updates.extendFuturePhases,
-          daysDiff: updates.daysDiff,
-        }),
-      });
-
-      window.location.reload();
+      updatePhase.mutate(
+        {
+          phaseId,
+          updates: {
+            title: updates.title,
+            startDate: updates.startDate,
+            extend: updates.extend,
+            extendFuturePhases: updates.extendFuturePhases,
+            daysDiff: updates.daysDiff,
+          },
+        },
+        {
+          onError: (error) => {
+            console.error("Error updating phase:", error);
+          },
+        },
+      );
     } catch (error) {
       console.error("Error updating phase:", error);
       throw error;
@@ -523,93 +341,14 @@ export default function JobDetailPage() {
 
   const handleTaskDelete = async (taskId: number) => {
     try {
-      const response = await fetch(`/api/jobs/${id}/tasks/${taskId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete task");
-      }
-
-      setJob((prevJob) => {
-        if (!prevJob) return null;
-
-        const phaseWithTask = prevJob.phases.find((phase) =>
-          phase.tasks.some((task) => task.task_id === taskId),
-        );
-
-        if (!phaseWithTask) {
-          console.error("Task not found in any phase");
-          return prevJob;
-        }
-
-        const updatedPhases = prevJob.phases.map((phase) => {
-          if (phase.id === phaseWithTask.id) {
-            const updatedTasks = phase.tasks.filter(
-              (task) => task.task_id !== taskId,
-            );
-
-            let phaseStart =
-              phase.tasks.length > 0
-                ? createLocalDate(phase.tasks[0].task_startdate)
-                : phase.materials.length > 0
-                  ? createLocalDate(phase.materials[0].material_duedate)
-                  : new Date();
-
-            let phaseEnd = new Date(phaseStart);
-
-            updatedTasks.forEach((task) => {
-              const taskStart = createLocalDate(task.task_startdate);
-              const taskEnd = createLocalDate(task.task_startdate);
-              taskEnd.setDate(taskEnd.getDate() + task.task_duration);
-
-              if (taskStart < phaseStart) phaseStart = taskStart;
-              if (taskEnd > phaseEnd) phaseEnd = taskEnd;
-            });
-
-            phase.materials.forEach((material) => {
-              const materialDate = createLocalDate(material.material_duedate);
-              if (materialDate < phaseStart) phaseStart = materialDate;
-              if (materialDate > phaseEnd) phaseEnd = materialDate;
-            });
-
-            const newStartDate = formatToDateString(phaseStart);
-            const newEndDate = formatToDateString(phaseEnd);
-
-            if (newStartDate !== phase.startDate) {
-              fetch(`/api/jobs/${id}/phases/${phase.id}`, {
-                method: "PATCH",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  startDate: newStartDate,
-                }),
-              }).catch((error) => {
-                console.error("Error updating phase dates:", error);
-              });
-            }
-
-            return {
-              ...phase,
-              tasks: updatedTasks,
-              startDate: newStartDate,
-              endDate: newEndDate,
-            };
-          }
-          return phase;
-        });
-
-        const newStatusCounts = calculateStatusCounts(updatedPhases);
-        const newDateRange = calculateDateRange(updatedPhases);
-
-        return {
-          ...prevJob,
-          phases: updatedPhases,
-          dateRange: newDateRange,
-          ...newStatusCounts,
-        };
-      });
+      deleteTask.mutate(
+        { taskId },
+        {
+          onError: (error) => {
+            console.error("Error deleting task:", error);
+          },
+        },
+      );
     } catch (error) {
       console.error("Error deleting task:", error);
       throw error;
@@ -618,94 +357,10 @@ export default function JobDetailPage() {
 
   const handleMaterialDelete = async (materialId: number) => {
     try {
-      const response = await fetch(`/api/jobs/${id}/materials/${materialId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete material");
-      }
-
-      setJob((prevJob) => {
-        if (!prevJob) return null;
-
-        const phaseWithMaterial = prevJob.phases.find((phase) =>
-          phase.materials.some(
-            (material) => material.material_id === materialId,
-          ),
-        );
-
-        if (!phaseWithMaterial) {
-          console.error("Material not found in any phase");
-          return prevJob;
-        }
-
-        const updatedPhases = prevJob.phases.map((phase) => {
-          if (phase.id === phaseWithMaterial.id) {
-            const updatedMaterials = phase.materials.filter(
-              (material) => material.material_id !== materialId,
-            );
-
-            let phaseStart =
-              phase.tasks.length > 0
-                ? createLocalDate(phase.tasks[0].task_startdate)
-                : updatedMaterials.length > 0
-                  ? createLocalDate(updatedMaterials[0].material_duedate)
-                  : new Date();
-
-            let phaseEnd = new Date(phaseStart);
-
-            phase.tasks.forEach((task) => {
-              const taskStart = createLocalDate(task.task_startdate);
-              const taskEnd = createLocalDate(task.task_startdate);
-              taskEnd.setDate(taskEnd.getDate() + task.task_duration);
-
-              if (taskStart < phaseStart) phaseStart = taskStart;
-              if (taskEnd > phaseEnd) phaseEnd = taskEnd;
-            });
-
-            updatedMaterials.forEach((material) => {
-              const materialDate = createLocalDate(material.material_duedate);
-              if (materialDate < phaseStart) phaseStart = materialDate;
-              if (materialDate > phaseEnd) phaseEnd = materialDate;
-            });
-
-            const newStartDate = formatToDateString(phaseStart);
-            const newEndDate = formatToDateString(phaseEnd);
-
-            if (newStartDate !== phase.startDate) {
-              fetch(`/api/jobs/${id}/phases/${phase.id}`, {
-                method: "PATCH",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  startDate: newStartDate,
-                }),
-              }).catch((error) => {
-                console.error("Error updating phase dates:", error);
-              });
-            }
-
-            return {
-              ...phase,
-              materials: updatedMaterials,
-              startDate: newStartDate,
-              endDate: newEndDate,
-            };
-          }
-          return phase;
-        });
-
-        const newStatusCounts = calculateStatusCounts(updatedPhases);
-        const newDateRange = calculateDateRange(updatedPhases);
-
-        return {
-          ...prevJob,
-          phases: updatedPhases,
-          dateRange: newDateRange,
-          ...newStatusCounts,
-        };
+      deleteMaterial.mutate(materialId, {
+        onError: (error) => {
+          console.error("Error deleting material:", error);
+        },
       });
     } catch (error) {
       console.error("Error deleting material:", error);
@@ -713,158 +368,31 @@ export default function JobDetailPage() {
     }
   };
 
-  const calculateDateRange = (phases: PhaseView[]): string => {
-    if (!phases.length) return "";
-
-    let startDate = createLocalDate("9999-12-31");
-    let endDate = createLocalDate("0001-01-01");
-    let isFirst = true;
-
-    phases.forEach((phase) => {
-      phase.tasks.forEach((task) => {
-        const taskStart = createLocalDate(task.task_startdate);
-        const taskEnd = createLocalDate(task.task_startdate);
-        taskEnd.setDate(taskEnd.getDate() + task.task_duration);
-
-        if (isFirst || taskStart < startDate) {
-          startDate = taskStart;
-          isFirst = false;
-        }
-        if (taskEnd > endDate) endDate = taskEnd;
-      });
-
-      phase.materials.forEach((material) => {
-        const materialDate = createLocalDate(material.material_duedate);
-        if (isFirst || materialDate < startDate) {
-          startDate = materialDate;
-          isFirst = false;
-        }
-        if (materialDate > endDate) endDate = materialDate;
-      });
-    });
-
-    const fmt: Intl.DateTimeFormatOptions = {
-      month: "numeric",
-      day: "numeric",
-      year: "2-digit",
-    };
-    return `${startDate.toLocaleDateString("en-US", fmt)} - ${endDate.toLocaleDateString("en-US", fmt)}`;
-  };
-
   const handleStatusUpdate = async (
-    id: number,
+    itemId: number,
     type: "task" | "material",
     newStatus: string,
   ) => {
-    try {
-      // Make API call
-      const response = await fetch(`/api/jobs/${params.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+    updateItemStatus.mutate(
+      { id: itemId, type, newStatus },
+      {
+        onError: (error) => {
+          console.error("Error updating status:", error);
         },
-        body: JSON.stringify({ id, type, newStatus }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update status");
-      }
-
-      // Update local state
-      setJob((prevJob) => {
-        if (!prevJob) return null;
-
-        // Update tasks or materials in all phases
-        const updatedPhases = prevJob.phases.map((phase) => ({
-          ...phase,
-          tasks:
-            type === "task"
-              ? phase.tasks.map((task) =>
-                  task.task_id === id
-                    ? { ...task, task_status: newStatus }
-                    : task,
-                )
-              : phase.tasks,
-          materials:
-            type === "material"
-              ? phase.materials.map((material) =>
-                  material.material_id === id
-                    ? { ...material, material_status: newStatus }
-                    : material,
-                )
-              : phase.materials,
-        }));
-
-        // Update the overall tasks and materials arrays
-        const updatedTasks =
-          type === "task"
-            ? prevJob.tasks.map((task) =>
-                task.task_id === id
-                  ? { ...task, task_status: newStatus }
-                  : task,
-              )
-            : prevJob.tasks;
-
-        const updatedMaterials =
-          type === "material"
-            ? prevJob.materials.map((material) =>
-                material.material_id === id
-                  ? { ...material, material_status: newStatus }
-                  : material,
-              )
-            : prevJob.materials;
-
-        // Recalculate all status counts
-        const newStatusCounts = calculateStatusCounts(updatedPhases);
-
-        return {
-          ...prevJob,
-          phases: updatedPhases,
-          tasks: updatedTasks,
-          materials: updatedMaterials,
-          ...newStatusCounts,
-        };
-      });
-    } catch (error) {
-      console.error("Error updating status:", error);
-    }
+      },
+    );
   };
 
   const handleNoteDelete = async (phaseId: number, noteTimestamp: string) => {
     try {
-      const response = await fetch(`/api/jobs/${id}/phases/${phaseId}/notes`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
+      deleteNote.mutate(
+        { phaseId, created_at: noteTimestamp },
+        {
+          onError: (error) => {
+            console.error("Error deleting note:", error);
+          },
         },
-        body: JSON.stringify({ created_at: noteTimestamp }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete note");
-      }
-
-      // Update local state
-      setJob((prevJob) => {
-        if (!prevJob) return null;
-
-        const updatedPhases = prevJob.phases.map((phase) => {
-          if (phase.id === phaseId) {
-            return {
-              ...phase,
-              notes: phase.notes.filter(
-                (note) => note.created_at !== noteTimestamp,
-              ),
-            };
-          }
-          return phase;
-        });
-
-        return {
-          ...prevJob,
-          phases: updatedPhases,
-        };
-      });
+      );
     } catch (error) {
       console.error("Error deleting note:", error);
       throw error;
@@ -872,185 +400,36 @@ export default function JobDetailPage() {
   };
 
   const handleTaskCreate = async (phaseId: number, newTask: FormTask) => {
-    try {
-      const response = await fetch(`/api/jobs/${id}/phases/${phaseId}/tasks`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+    return new Promise<any>((resolve, reject) => {
+      createTask.mutate(
+        { phaseId, task: newTask },
+        {
+          onSuccess: (data) => resolve(data),
+          onError: (error) => {
+            console.error("Error creating task:", error);
+            reject(error);
+          },
         },
-        body: JSON.stringify(newTask),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create task");
-      }
-
-      const createdTask = await response.json();
-
-      setJob((prevJob) => {
-        if (!prevJob) return null;
-
-        const updatedPhases = prevJob.phases.map((phase) => {
-          if (phase.id === phaseId) {
-            const updatedTasks = [...phase.tasks, createdTask].sort((a, b) =>
-              compareDateStrings(a.task_startdate, b.task_startdate),
-            );
-
-            let latestEndDate = createLocalDate(phase.startDate);
-
-            updatedTasks.forEach((task) => {
-              const taskStart = createLocalDate(task.task_startdate);
-              const taskEnd = addBusinessDays(taskStart, task.task_duration);
-
-              if (taskEnd > latestEndDate) {
-                latestEndDate = taskEnd;
-              }
-            });
-
-            phase.materials.forEach((material) => {
-              const materialDate = createLocalDate(material.material_duedate);
-              if (materialDate > latestEndDate) {
-                latestEndDate = materialDate;
-              }
-            });
-
-            return {
-              ...phase,
-              tasks: updatedTasks,
-              endDate: formatToDateString(latestEndDate),
-            };
-          }
-          return phase;
-        });
-
-        const newStatusCounts = calculateStatusCounts(updatedPhases);
-        const newDateRange = calculateDateRange(updatedPhases);
-
-        return {
-          ...prevJob,
-          phases: updatedPhases,
-          dateRange: newDateRange,
-          ...newStatusCounts,
-        };
-      });
-
-      return createdTask;
-    } catch (error) {
-      console.error("Error creating task:", error);
-      throw error;
-    }
+      );
+    });
   };
 
   const handleMaterialCreate = async (
     phaseId: number,
     newMaterial: FormMaterial,
   ) => {
-    try {
-      const response = await fetch(
-        `/api/jobs/${id}/phases/${phaseId}/materials`,
+    return new Promise<any>((resolve, reject) => {
+      createMaterial.mutate(
+        { phaseId, material: newMaterial },
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+          onSuccess: (data) => resolve(data),
+          onError: (error) => {
+            console.error("Error creating material:", error);
+            reject(error);
           },
-          body: JSON.stringify(newMaterial),
         },
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to create material");
-      }
-
-      const createdMaterial = await response.json();
-
-      setJob((prevJob) => {
-        if (!prevJob) return null;
-
-        const updatedPhases = prevJob.phases.map((phase) => {
-          if (phase.id === phaseId) {
-            const updatedMaterials = [...phase.materials, createdMaterial].sort(
-              (a, b) =>
-                compareDateStrings(a.material_duedate, b.material_duedate),
-            );
-
-            let latestEndDate = createLocalDate(phase.startDate);
-
-            phase.tasks.forEach((task) => {
-              const taskStart = createLocalDate(task.task_startdate);
-              const taskEnd = addBusinessDays(taskStart, task.task_duration);
-
-              if (taskEnd > latestEndDate) {
-                latestEndDate = taskEnd;
-              }
-            });
-
-            updatedMaterials.forEach((material) => {
-              const materialDate = createLocalDate(material.material_duedate);
-              if (materialDate > latestEndDate) {
-                latestEndDate = materialDate;
-              }
-            });
-
-            return {
-              ...phase,
-              materials: updatedMaterials,
-              endDate: formatToDateString(latestEndDate),
-            };
-          }
-          return phase;
-        });
-
-        const newStatusCounts = calculateStatusCounts(updatedPhases);
-        const newDateRange = calculateDateRange(updatedPhases);
-
-        return {
-          ...prevJob,
-          phases: updatedPhases,
-          dateRange: newDateRange,
-          ...newStatusCounts,
-        };
-      });
-
-      return createdMaterial;
-    } catch (error) {
-      console.error("Error creating material:", error);
-      throw error;
-    }
-  };
-
-  const calculateStatusCounts = (phases: PhaseView[]) => {
-    let overdue = 0;
-    let nextSevenDays = 0;
-    let sevenDaysPlus = 0;
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const sevenDaysFromNow = new Date(today);
-    sevenDaysFromNow.setDate(today.getDate() + 7);
-
-    phases.forEach((phase) => {
-      phase.tasks.forEach((task) => {
-        if (task.task_status != "Complete") {
-          const dueDate = createLocalDate(task.task_startdate);
-          dueDate.setDate(dueDate.getDate() + task.task_duration);
-
-          if (dueDate < today) overdue++;
-          else if (dueDate <= sevenDaysFromNow) nextSevenDays++;
-          else sevenDaysPlus++;
-        }
-      });
-
-      phase.materials.forEach((material) => {
-        if (material.material_status != "Complete") {
-          const dueDate = createLocalDate(material.material_duedate);
-
-          if (dueDate < today) overdue++;
-          else if (dueDate <= sevenDaysFromNow) nextSevenDays++;
-          else sevenDaysPlus++;
-        }
-      });
     });
-
-    return { overdue, nextSevenDays, sevenDaysPlus };
   };
 
   useEffect(() => {
@@ -1059,30 +438,6 @@ export default function JobDetailPage() {
       setEditStartDate(job.job_startdate.split("T")[0]);
     }
   }, [activeModal, job]);
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch("/api/users");
-        if (!response.ok) throw new Error("Failed to fetch users");
-        const data = await response.json();
-
-        const transformedUsers: UserView[] = data.map((user: any) => ({
-          user_id: user.user_id,
-          first_name: user.user_first_name,
-          last_name: user.user_last_name,
-          user_email: user.user_email,
-          user_phone: user.user_phone || "",
-        }));
-
-        setContacts(transformedUsers);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-
-    fetchUsers();
-  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -1099,110 +454,6 @@ export default function JobDetailPage() {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [activeModal]);
-
-  useEffect(() => {
-    const fetchJobDetails = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/jobs/${id}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch job details");
-        }
-        const data = await response.json();
-
-        const transformedTasks = data.job.tasks.map(
-          (task: any): TaskView => ({
-            task_id: task.task_id,
-            phase_id: task.phase_id,
-            task_title: task.task_title,
-            task_startdate: String(task.task_startdate).split("T")[0],
-            task_duration: task.task_duration,
-            task_status: task.task_status,
-            task_description: task.task_description,
-            users: task.users.map((user: any) => ({
-              user_id: user.user_id,
-              first_name: user.user_first_name,
-              last_name: user.user_last_name,
-              user_email: user.user_email,
-              user_phone: user.user_phone || "",
-            })),
-          }),
-        );
-
-        const transformedMaterials = data.job.materials.map(
-          (material: any): MaterialView => ({
-            material_id: material.material_id,
-            phase_id: material.phase_id,
-            material_title: material.material_title,
-            material_duedate: String(material.material_duedate).split("T")[0],
-            material_status: material.material_status,
-            material_description: material.material_description,
-            users: material.users.map((user: any) => ({
-              user_id: user.user_id,
-              first_name: user.user_first_name,
-              last_name: user.user_last_name,
-              user_email: user.user_email,
-              user_phone: user.user_phone || "",
-            })),
-          }),
-        );
-
-        const transformedFloorplans =
-          data.job.floorplans?.map(
-            (floorplan: any): FloorPlan => ({
-              url: floorplan.floorplan_url,
-              name: `Floor Plan ${floorplan.floorplan_id}`,
-            }),
-          ) || [];
-
-        const transformedJob: JobDetailView = {
-          id: data.job.job_id,
-          jobName: data.job.job_title,
-          job_startdate: data.job.job_startdate,
-          dateRange: data.job.date_range,
-          tasks: transformedTasks,
-          materials: transformedMaterials,
-          floorplans: transformedFloorplans,
-          phases: data.job.phases.map(
-            (phase: any): PhaseView => ({
-              id: phase.id,
-              name: phase.name,
-              startDate: phase.startDate,
-              endDate: phase.endDate,
-              color: phase.color,
-              description: phase.description,
-              tasks: transformedTasks.filter(
-                (task: TaskView) => task.phase_id === phase.id,
-              ),
-              materials: transformedMaterials.filter(
-                (material: MaterialView) => material.phase_id === phase.id,
-              ),
-              notes: phase.notes || [],
-            }),
-          ),
-          overdue: data.job.overdue,
-          nextSevenDays: data.job.nextSevenDays,
-          sevenDaysPlus: data.job.sevenDaysPlus,
-          contacts: data.job.contacts || [],
-          status: data.job.job_status,
-          location: data.job.job_location || null,
-          description: data.job.job_description || null,
-          client: data.job.client || null,
-        };
-
-        setJob(transformedJob);
-        setCollapsedPhases(
-          new Set(transformedJob.phases.map((phase) => phase.id)),
-        );
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchJobDetails();
-  }, [id]);
 
   const getFilteredPhases = () => {
     if (!job) return [];
@@ -1272,24 +523,10 @@ export default function JobDetailPage() {
     }
 
     if (hasChanges) {
-      try {
-        const response = await fetch(`/api/jobs/${id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(changes),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to update job");
-        }
-
-        setActiveModal(null);
-        window.location.reload();
-      } catch (error) {
-        console.error("Error updating job:", error);
-      }
+      updateJob.mutate(changes, {
+        onSuccess: () => setActiveModal(null),
+        onError: (error) => console.error("Error updating job:", error),
+      });
     } else {
       setActiveModal(null);
     }
@@ -1349,6 +586,12 @@ export default function JobDetailPage() {
               onTaskCreate={handleTaskCreate}
               onMaterialCreate={handleMaterialCreate}
               onNoteDelete={handleNoteDelete}
+              onTaskEdit={async (taskId, updates) => {
+                await updateTask.mutateAsync({ taskId, updates });
+              }}
+              onMaterialEdit={async (materialId, updates) => {
+                await updateMaterial.mutateAsync({ materialId, updates });
+              }}
               jobStartDate={job.job_startdate}
               onPhaseUpdate={handlePhaseUpdate}
               userType={session?.user?.type}
@@ -1394,10 +637,10 @@ export default function JobDetailPage() {
       const urlParts = floorplan.url.split("/");
       const fileNamePart = urlParts[urlParts.length - 1];
       const matches = fileNamePart.match(/job-\d+-(\d+)/);
-      const id = matches ? parseInt(matches[1]) : index;
+      const fpId = matches ? parseInt(matches[1]) : index;
 
       return {
-        id,
+        id: fpId,
         url: floorplan.url,
         name: floorplan.name,
       };

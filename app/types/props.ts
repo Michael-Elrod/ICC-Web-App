@@ -1,6 +1,12 @@
 // props.ts
 
-import { FormPhase, FormMaterial, FormTask } from "./database";
+import {
+  FormPhase,
+  FormMaterial,
+  FormTask,
+  TaskUpdatePayload,
+  MaterialUpdatePayload,
+} from "./database";
 import { UserView, PhaseView } from "./views";
 
 export interface DetailPhaseCardProps {
@@ -57,6 +63,11 @@ export interface DetailPhaseCardProps {
   onTaskCreate: (phaseId: number, task: FormTask) => Promise<any>;
   onMaterialCreate: (phaseId: number, material: FormMaterial) => Promise<any>;
   onNoteDelete: (phaseId: number, noteTimestamp: string) => Promise<void>;
+  onTaskEdit?: (taskId: number, updates: TaskUpdatePayload) => Promise<void>;
+  onMaterialEdit?: (
+    materialId: number,
+    updates: MaterialUpdatePayload,
+  ) => Promise<void>;
   jobStartDate: string;
   onPhaseUpdate: (
     phaseId: number,

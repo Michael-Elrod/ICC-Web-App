@@ -2,63 +2,32 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import CardFrame from "@/components/CardFrame";
 import { FaEdit, FaTrash } from "react-icons/fa";
-
-interface Template {
-  template_id: number;
-  template_name: string;
-}
+import { useTemplates, useDeleteTemplate } from "@/app/hooks/use-templates";
 
 export default function TemplatesPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: templates = [], isLoading } = useTemplates();
+  const deleteTemplate = useDeleteTemplate();
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
   const canAccess =
     session?.user?.type === "Owner" || session?.user?.type === "Admin";
 
-  useEffect(() => {
-    if (!canAccess) return;
-    fetchTemplates();
-  }, [canAccess]);
-
-  const fetchTemplates = async () => {
-    try {
-      const res = await fetch("/api/templates");
-      if (res.ok) {
-        const data = await res.json();
-        setTemplates(data);
-      }
-    } catch (error) {
-      console.error("Error fetching templates:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDelete = async () => {
     if (!deleteId) return;
-    setDeleting(true);
-    try {
-      const res = await fetch(`/api/templates/${deleteId}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setTemplates(templates.filter((t) => t.template_id !== deleteId));
-      }
-    } catch (error) {
-      console.error("Error deleting template:", error);
-    } finally {
-      setDeleting(false);
-      setDeleteId(null);
-    }
+    deleteTemplate.mutate(deleteId, {
+      onSuccess: () => setDeleteId(null),
+      onError: (error) => {
+        console.error("Error deleting template:", error);
+        setDeleteId(null);
+      },
+    });
   };
 
   if (status === "loading") return null;
@@ -85,7 +54,7 @@ export default function TemplatesPage() {
         </button>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <CardFrame>
           <div className="animate-pulse space-y-3">
             {[1, 2, 3].map((i) => (
@@ -145,16 +114,16 @@ export default function TemplatesPage() {
               <button
                 onClick={() => setDeleteId(null)}
                 className="px-4 py-2 text-zinc-600 dark:text-zinc-400"
-                disabled={deleting}
+                disabled={deleteTemplate.isPending}
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
-                disabled={deleting}
+                disabled={deleteTemplate.isPending}
                 className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded disabled:opacity-50"
               >
-                {deleting ? "Deleting..." : "Delete"}
+                {deleteTemplate.isPending ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>

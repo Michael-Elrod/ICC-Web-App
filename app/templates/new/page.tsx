@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import DatePicker from "react-datepicker";
@@ -11,12 +11,17 @@ import CardFrame from "@/components/CardFrame";
 import TemplatePhaseCard, {
   TemplatePhaseData,
 } from "../_components/TemplatePhaseCard";
-import { UserView } from "@/app/types/views";
 import {
   createLocalDate,
   formatToDateString,
   getCurrentBusinessDate,
 } from "@/app/utils";
+import { useNonClients } from "@/app/hooks/use-users";
+import {
+  useTemplates,
+  useTemplate,
+  useCreateTemplate,
+} from "@/app/hooks/use-templates";
 
 export default function NewTemplatePage() {
   const router = useRouter();
@@ -25,50 +30,21 @@ export default function NewTemplatePage() {
   const [phases, setPhases] = useState<TemplatePhaseData[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [contacts, setContacts] = useState<UserView[]>([]);
-  const [existingTemplates, setExistingTemplates] = useState<
-    { template_id: number; template_name: string }[]
-  >([]);
+  const [copyTemplateId, setCopyTemplateId] = useState<string | null>(null);
   const [previewStartDate, setPreviewStartDate] = useState(() =>
     formatToDateString(getCurrentBusinessDate(new Date())),
   );
 
-  useEffect(() => {
-    const fetchContacts = async () => {
-      try {
-        const res = await fetch("/api/users/non-clients");
-        if (res.ok) {
-          const data = await res.json();
-          setContacts(data);
-        }
-      } catch (err) {
-        console.error("Error fetching contacts:", err);
-      }
-    };
-    const fetchTemplates = async () => {
-      try {
-        const res = await fetch("/api/templates");
-        if (res.ok) {
-          const data = await res.json();
-          setExistingTemplates(data);
-        }
-      } catch (err) {
-        console.error("Error fetching templates:", err);
-      }
-    };
-    fetchContacts();
-    fetchTemplates();
-  }, []);
+  const { data: contacts = [] } = useNonClients();
+  const { data: existingTemplates = [] } = useTemplates();
+  const { data: copyTemplateData } = useTemplate(copyTemplateId);
+  const createTemplate = useCreateTemplate();
 
-  const handleCopyTemplate = async (templateId: string) => {
-    if (!templateId) return;
-    try {
-      const res = await fetch(`/api/templates/${templateId}`);
-      if (!res.ok) return;
-      const data = await res.json();
-      setTemplateName(`Copy of ${data.template_name}`);
+  useEffect(() => {
+    if (copyTemplateData && copyTemplateId) {
+      setTemplateName(`Copy of ${copyTemplateData.template_name}`);
       setPhases(
-        data.phases.map((phase: any, pi: number) => ({
+        copyTemplateData.phases.map((phase: any, pi: number) => ({
           tempId: `phase-${Date.now()}-${pi}`,
           title: phase.phase_title,
           description: phase.phase_description || "",
@@ -89,9 +65,12 @@ export default function NewTemplatePage() {
           })),
         })),
       );
-    } catch (err) {
-      console.error("Error copying template:", err);
     }
+  }, [copyTemplateData, copyTemplateId]);
+
+  const handleCopyTemplate = (templateId: string) => {
+    if (!templateId) return;
+    setCopyTemplateId(templateId);
   };
 
   const canAccess =
@@ -162,21 +141,11 @@ export default function NewTemplatePage() {
         })),
       };
 
-      const res = await fetch("/api/templates", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        router.push("/templates");
-      } else {
-        const data = await res.json();
-        setError(data.error || "Failed to create template");
-      }
-    } catch (err) {
+      await createTemplate.mutateAsync(payload);
+      router.push("/templates");
+    } catch (err: any) {
       console.error("Error creating template:", err);
-      setError("Failed to create template");
+      setError(err.message || "Failed to create template");
     } finally {
       setIsSubmitting(false);
     }

@@ -19,6 +19,7 @@ interface TasksCardProps {
     newStatus: string,
   ) => void;
   onDelete: (id: number) => Promise<void>;
+  onEdit?: (taskId: number, updates: TaskUpdatePayload) => Promise<void>;
   userType?: string;
   renderAddButton?: () => React.ReactNode;
   renderAddingForm?: () => React.ReactNode;
@@ -29,6 +30,7 @@ const TasksCard: React.FC<TasksCardProps> = ({
   contacts,
   onStatusUpdate,
   onDelete,
+  onEdit,
   userType,
   renderAddButton,
   renderAddingForm,
@@ -186,23 +188,10 @@ const TasksCard: React.FC<TasksCardProps> = ({
       hasChanges = true;
     }
 
-    if (hasChanges) {
+    if (hasChanges && onEdit) {
       try {
-        const jobId = window.location.pathname.split("/")[2];
-        const response = await fetch(`/api/jobs/${jobId}/tasks/${taskId}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(changes),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to update task");
-        }
-
+        await onEdit(taskId, changes);
         setActiveModal(null);
-        window.location.reload();
       } catch (error) {
         console.error("Error updating task:", error);
       }

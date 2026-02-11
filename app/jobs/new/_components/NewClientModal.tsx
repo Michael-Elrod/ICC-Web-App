@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { User, UserType } from "@/app/types/database";
 import { formatPhoneNumberInput } from "@/app/utils";
+import { useCreateClient } from "@/app/hooks/use-users";
 
 interface NewClientModalProps {
   isOpen: boolean;
@@ -23,6 +24,8 @@ export default function NewClientModal({
   const [attempted, setAttempted] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  const createClient = useCreateClient();
+
   const validateClientForm = () => {
     const errors: { [key: string]: string } = {};
     if (!firstName.trim()) errors.firstName = "First name is required";
@@ -42,24 +45,12 @@ export default function NewClientModal({
     if (Object.keys(newErrors).length === 0) {
       setIsLoading(true);
       try {
-        const response = await fetch("/api/users/clients", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            firstName,
-            lastName,
-            email: clientEmail,
-            phone: clientPhone.replace(/\D/g, ""),
-          }),
+        const newClient = await createClient.mutateAsync({
+          firstName,
+          lastName,
+          email: clientEmail,
+          phone: clientPhone.replace(/\D/g, ""),
         });
-
-        const newClient = await response.json();
-
-        if (!response.ok) {
-          throw new Error(newClient.error || "Failed to create client");
-        }
 
         const formattedClient: User = {
           user_id: newClient.user_id,

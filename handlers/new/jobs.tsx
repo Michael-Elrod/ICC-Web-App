@@ -7,13 +7,18 @@ import {
   getCurrentBusinessDate,
   addBusinessDays,
 } from "@/app/utils";
+import { apiFetch } from "@/app/lib/api-fetch";
 
 export const getJobTypes = async (): Promise<
   { template_id: number; template_name: string }[]
 > => {
-  const res = await fetch("/api/templates");
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    return await apiFetch<{ template_id: number; template_name: string }[]>(
+      "/api/templates",
+    );
+  } catch {
+    return [];
+  }
 };
 
 const calculatePhaseStartDate = (
@@ -61,9 +66,7 @@ export const handleCreateJob = async (
   setPhases: (phases: FormPhase[]) => void,
 ) => {
   try {
-    const res = await fetch(`/api/templates/${templateId}`);
-    if (!res.ok) throw new Error("Failed to load template");
-    const template = await res.json();
+    const template = await apiFetch<any>(`/api/templates/${templateId}`);
     const phases = template.phases;
 
     if (!Array.isArray(phases) || phases.length === 0) {

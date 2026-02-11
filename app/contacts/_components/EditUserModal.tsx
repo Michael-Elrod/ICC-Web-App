@@ -3,14 +3,13 @@
 import { useState, useEffect } from "react";
 import { User, UserType } from "@/app/types/database";
 import { formatPhoneNumberInput } from "@/app/utils";
+import { useUpdateUser, useDeleteUser } from "@/app/hooks/use-users";
 
 interface EditUserModalProps {
   isOpen: boolean;
   onClose: () => void;
   user: User | null;
   currentUserId?: string;
-  onUserUpdated: (updatedUser: User) => void;
-  onUserDeleted?: () => void;
 }
 
 export default function EditUserModal({
@@ -18,8 +17,6 @@ export default function EditUserModal({
   onClose,
   user,
   currentUserId,
-  onUserUpdated,
-  onUserDeleted,
 }: EditUserModalProps) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -30,6 +27,9 @@ export default function EditUserModal({
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const canDelete = user && user.user_id.toString() !== currentUserId;
+
+  const updateUser = useUpdateUser();
+  const deleteUser = useDeleteUser();
 
   useEffect(() => {
     if (user) {
@@ -61,16 +61,8 @@ export default function EditUserModal({
     }
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/users/${user?.user_id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete user");
-      }
-
+      await deleteUser.mutateAsync(user!.user_id);
       onClose();
-      onUserDeleted?.();
     } catch (error) {
       setErrors({
         submit:
@@ -89,24 +81,16 @@ export default function EditUserModal({
     if (Object.keys(newErrors).length === 0 && user) {
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/users/${user.user_id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+        await updateUser.mutateAsync({
+          userId: user.user_id,
+          data: {
             firstName,
             lastName,
             email,
             phone: phone.replace(/\D/g, ""),
             userType,
-          }),
+          },
         });
-
-        if (!response.ok) {
-          throw new Error("Failed to update user");
-        }
-
-        const updatedUser = await response.json();
-        onUserUpdated(updatedUser);
         handleClose();
       } catch (error) {
         setErrors({

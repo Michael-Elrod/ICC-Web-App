@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
 import { createLocalDate } from "@/app/utils";
+import { useCalendarStatusUpdate } from "@/app/hooks/use-calendar";
 
 export interface CalendarEvent {
   id: string;
@@ -65,6 +66,7 @@ export const EventPopup = ({
   >(null);
 
   const { data: sessionData } = useSession();
+  const statusMutation = useCalendarStatusUpdate();
 
   // Check if user has admin access
   const hasAdminAccess =
@@ -89,23 +91,14 @@ export const EventPopup = ({
     if (!selectedStatus) return;
 
     try {
-      const response = await fetch(
-        `/api/calendar?type=${event.type}&id=${event.itemId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status: selectedStatus }),
-        },
-      );
+      await statusMutation.mutateAsync({
+        type: event.type,
+        itemId: event.itemId,
+        status: selectedStatus,
+      });
 
-      if (response.ok) {
-        onStatusUpdate(event.itemId, event.type, selectedStatus);
-        onClose();
-      } else {
-        console.error("Failed to update status");
-      }
+      onStatusUpdate(event.itemId, event.type, selectedStatus);
+      onClose();
     } catch (error) {
       console.error("Error updating status:", error);
     }

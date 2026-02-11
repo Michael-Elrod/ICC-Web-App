@@ -28,6 +28,8 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
   onTaskCreate,
   onMaterialCreate,
   onNoteDelete,
+  onTaskEdit,
+  onMaterialEdit,
   jobStartDate,
   onPhaseUpdate,
   userType,
@@ -256,6 +258,7 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
                 contacts={contacts}
                 onStatusUpdate={onStatusUpdate}
                 onDelete={onTaskDelete}
+                onEdit={onTaskEdit}
                 userType={userType}
                 renderAddingForm={
                   isAddingTask
@@ -355,6 +358,7 @@ const PhaseCard: React.FC<DetailPhaseCardProps> = ({
                 contacts={contacts}
                 onStatusUpdate={onStatusUpdate}
                 onDelete={onMaterialDelete}
+                onEdit={onMaterialEdit}
                 userType={userType}
                 renderAddingForm={
                   isAddingMaterial

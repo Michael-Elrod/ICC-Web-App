@@ -1,6 +1,11 @@
 // InviteModal.tsx
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import {
+  useInviteCode,
+  useGenerateInviteCode,
+  useSendInviteEmail,
+} from "@/app/hooks/use-invite";
 
 interface InviteModalProps {
   isOpen: boolean;
@@ -8,16 +13,22 @@ interface InviteModalProps {
 }
 
 export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
-  const [inviteCode, setInviteCode] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
-  const [error, setError] = useState("");
-  const [emailError, setEmailError] = useState("");
   const [copySuccess, setCopySuccess] = useState(false);
   const [emailSuccess, setEmailSuccess] = useState(false);
   const [emailInput, setEmailInput] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [activeTab, setActiveTab] = useState<"code" | "email">("code");
+
+  const {
+    data: inviteData,
+    isLoading,
+    error: fetchError,
+  } = useInviteCode(isOpen);
+  const generateCode = useGenerateInviteCode();
+  const sendEmail = useSendInviteEmail();
+
+  const inviteCode = inviteData?.code || "";
+  const error = fetchError ? "Failed to fetch invite code" : "";
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(inviteCode);
@@ -25,37 +36,11 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
     setTimeout(() => setCopySuccess(false), 2000);
   };
 
-  const fetchCurrentCode = async () => {
-    setIsLoading(true);
-    setError("");
-    try {
-      const response = await fetch("/api/invite");
-      if (!response.ok) throw new Error("Failed to fetch code");
-      const data = await response.json();
-      setInviteCode(data.code);
-    } catch (err) {
-      setError("Failed to fetch invite code");
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const generateNewCode = async () => {
-    setIsGenerating(true);
-    setError("");
     try {
-      const response = await fetch("/api/invite", {
-        method: "POST",
-      });
-      if (!response.ok) throw new Error("Failed to generate code");
-      const data = await response.json();
-      setInviteCode(data.code);
+      await generateCode.mutateAsync();
     } catch (err) {
-      setError("Failed to generate new code");
       console.error(err);
-    } finally {
-      setIsGenerating(false);
     }
   };
 
@@ -72,37 +57,16 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
       return;
     }
 
-    setIsSendingEmail(true);
     setEmailError("");
     try {
-      const response = await fetch("/api/invite", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: emailInput }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to send invitation");
-      }
-
+      await sendEmail.mutateAsync(emailInput);
       setEmailSuccess(true);
       setEmailInput("");
       setTimeout(() => setEmailSuccess(false), 3000);
     } catch (err: any) {
       setEmailError(err.message || "Failed to send invitation email");
-    } finally {
-      setIsSendingEmail(false);
     }
   };
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchCurrentCode();
-    }
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -162,7 +126,7 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                         type="text"
                         value={inviteCode}
                         readOnly
-                        className="flex-1 p-2 border border-zinc-300 dark:border-zinc-600 
+                        className="flex-1 p-2 border border-zinc-300 dark:border-zinc-600
                           rounded-l-md bg-zinc-50 dark:bg-zinc-900"
                       />
                       <button
@@ -182,12 +146,12 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
 
                 <button
                   onClick={generateNewCode}
-                  disabled={isGenerating}
-                  className="w-full px-4 py-2 bg-blue-500 text-white rounded-md 
+                  disabled={generateCode.isPending}
+                  className="w-full px-4 py-2 bg-blue-500 text-white rounded-md
                     hover:bg-blue-600 transition-colors disabled:bg-blue-400
                     disabled:cursor-not-allowed flex items-center justify-center"
                 >
-                  {isGenerating ? (
+                  {generateCode.isPending ? (
                     <>
                       <svg
                         className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -241,8 +205,8 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                     placeholder="Email address to invite"
-                    className="w-full p-2 border border-zinc-300 dark:border-zinc-600 
-                      rounded-md bg-white dark:bg-zinc-800 focus:outline-none 
+                    className="w-full p-2 border border-zinc-300 dark:border-zinc-600
+                      rounded-md bg-white dark:bg-zinc-800 focus:outline-none
                       focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -255,19 +219,19 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
                     type="text"
                     value={inviteCode}
                     readOnly
-                    className="w-full p-2 border border-zinc-300 dark:border-zinc-600 
+                    className="w-full p-2 border border-zinc-300 dark:border-zinc-600
                       rounded-md bg-zinc-50 dark:bg-zinc-900 text-zinc-500"
                   />
                 </div>
 
                 <button
                   onClick={sendInviteEmail}
-                  disabled={isSendingEmail || !emailInput}
-                  className="w-full px-4 py-2 bg-blue-500 text-white rounded-md 
+                  disabled={sendEmail.isPending || !emailInput}
+                  className="w-full px-4 py-2 bg-blue-500 text-white rounded-md
                     hover:bg-blue-600 transition-colors disabled:bg-blue-400
                     disabled:cursor-not-allowed flex items-center justify-center"
                 >
-                  {isSendingEmail ? (
+                  {sendEmail.isPending ? (
                     <>
                       <svg
                         className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -303,7 +267,7 @@ export default function InviteModal({ isOpen, onClose }: InviteModalProps) {
         <div className="mt-6 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 rounded-md 
+            className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 rounded-md
               hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors"
           >
             Close

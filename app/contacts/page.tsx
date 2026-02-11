@@ -2,54 +2,24 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useSession } from "next-auth/react";
 import EditUserModal from "./_components/EditUserModal";
 import ContactCard from "@/components/ContactCard";
 import InviteModal from "./_components/InviteModal";
 import ContactsSkeleton from "./_components/ContactsSkeleton";
 import { User } from "@/app/types/database";
+import { useUsers } from "@/app/hooks/use-users";
 
 type FilterType = "all" | "workers" | "clients";
 
 export default function ContactsPage() {
   const { data: session } = useSession();
-  const [users, setUsers] = useState<User[]>([]);
+  const { data: users = [], isLoading, error } = useUsers();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-
-  useEffect(() => {
-    async function loadUsers() {
-      try {
-        const response = await fetch(`/api/users?t=${Date.now()}`, {
-          headers: {
-            "Cache-Control": "no-cache, no-store",
-            Pragma: "no-cache",
-          },
-          cache: "no-store",
-        });
-
-        if (!response.ok) throw new Error("Failed to load contacts");
-        const data = await response.json();
-        setUsers(data);
-      } catch (err) {
-        console.error("Error loading users:", err);
-        setError("Failed to load contacts");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadUsers();
-
-    const intervalId = setInterval(loadUsers, 60000);
-
-    return () => clearInterval(intervalId);
-  }, []);
 
   const filteredUsers = users.filter((user) => {
     const fullName =
@@ -68,14 +38,18 @@ export default function ContactsPage() {
     }
   });
 
-  if (loading) return <ContactsSkeleton />;
+  if (isLoading) return <ContactsSkeleton />;
 
   if (error)
     return (
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="bg-red-50 dark:bg-red-900 p-4 rounded-lg">
-            <p className="text-red-800 dark:text-red-200">{error}</p>
+            <p className="text-red-800 dark:text-red-200">
+              {error instanceof Error
+                ? error.message
+                : "Failed to load contacts"}
+            </p>
           </div>
         </div>
       </div>
@@ -167,18 +141,6 @@ export default function ContactsPage() {
         onClose={() => setSelectedUser(null)}
         user={selectedUser}
         currentUserId={session?.user?.id}
-        onUserUpdated={(updatedUser) => {
-          setUsers(
-            users.map((u) =>
-              u.user_id === updatedUser.user_id ? updatedUser : u,
-            ),
-          );
-          setSelectedUser(null);
-        }}
-        onUserDeleted={() => {
-          setUsers(users.filter((u) => u.user_id !== selectedUser?.user_id));
-          setSelectedUser(null);
-        }}
       />
       <InviteModal
         isOpen={isInviteModalOpen}

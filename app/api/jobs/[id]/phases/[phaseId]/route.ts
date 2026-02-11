@@ -9,6 +9,24 @@ import {
 import { RowDataPacket } from "mysql2/promise";
 import { withDb, withTransaction } from "@/app/lib/api-utils";
 
+/** Build a single UPDATE ... CASE WHEN for batch date updates */
+function buildBatchDateUpdate(
+  table: string,
+  idColumn: string,
+  dateColumn: string,
+  rows: { id: number; newDate: string }[],
+): { query: string; values: any[] } | null {
+  if (rows.length === 0) return null;
+  const ids = rows.map((r) => r.id);
+  const cases = rows.map(() => `WHEN ${idColumn} = ? THEN ?`).join(" ");
+  const values = rows.flatMap((r) => [r.id, r.newDate]);
+  values.push(...ids);
+  return {
+    query: `UPDATE ${table} SET ${dateColumn} = CASE ${cases} END WHERE ${idColumn} IN (${ids.map(() => "?").join(",")})`,
+    values,
+  };
+}
+
 export const PATCH = withDb(async (connection, request, params) => {
   const phaseId = parseInt(params.phaseId);
   if (isNaN(phaseId)) {
@@ -40,72 +58,103 @@ export const PATCH = withDb(async (connection, request, params) => {
     }
 
     if (body.extend > 0) {
-      const [currentTasks] = await connection.query<RowDataPacket[]>(
-        `SELECT task_id FROM task WHERE phase_id = ?`,
-        [phaseId],
+      // Batch update: increment all task durations in one query (no SELECT needed)
+      await connection.query(
+        "UPDATE task SET task_duration = task_duration + ? WHERE phase_id = ?",
+        [body.extend, phaseId],
       );
 
-      for (const task of currentTasks) {
-        await connection.query(
-          "UPDATE task SET task_duration = task_duration + ? WHERE task_id = ?",
-          [body.extend, task.task_id],
-        );
-      }
-
+      // Batch update: shift material due dates (need SELECT for date calculation in JS)
       const [currentMaterials] = await connection.query<RowDataPacket[]>(
         `SELECT material_id, material_duedate FROM material WHERE phase_id = ?`,
         [phaseId],
       );
 
-      for (const material of currentMaterials) {
-        const newDate = addBusinessDays(
-          createLocalDate(formatToDateString(material.material_duedate)),
-          body.extend,
-        );
-        await connection.query(
-          "UPDATE material SET material_duedate = ? WHERE material_id = ?",
-          [formatToDateString(newDate), material.material_id],
-        );
+      const materialUpdates = currentMaterials.map((m) => ({
+        id: m.material_id as number,
+        newDate: formatToDateString(
+          addBusinessDays(
+            createLocalDate(formatToDateString(m.material_duedate)),
+            body.extend,
+          ),
+        ),
+      }));
+
+      const materialBatch = buildBatchDateUpdate(
+        "material",
+        "material_id",
+        "material_duedate",
+        materialUpdates,
+      );
+      if (materialBatch) {
+        await connection.query(materialBatch.query, materialBatch.values);
       }
     }
 
     if (body.extendFuturePhases && body.extend > 0) {
-      const [futureTasks] = await connection.query<RowDataPacket[]>(
-        `SELECT task_id, task_startdate FROM task t
-         JOIN phase p ON t.phase_id = p.phase_id
-         WHERE p.phase_id > ?`,
-        [phaseId],
+      // Fetch future tasks and materials in parallel
+      const [[futureTasks], [futureMaterials]] = await Promise.all([
+        connection.query<RowDataPacket[]>(
+          `SELECT task_id, task_startdate FROM task t
+           JOIN phase p ON t.phase_id = p.phase_id
+           WHERE p.phase_id > ?`,
+          [phaseId],
+        ),
+        connection.query<RowDataPacket[]>(
+          `SELECT material_id, material_duedate FROM material m
+           JOIN phase p ON m.phase_id = p.phase_id
+           WHERE p.phase_id > ?`,
+          [phaseId],
+        ),
+      ]);
+
+      // Compute new dates in JS, then batch update
+      const taskUpdates = futureTasks.map((t) => ({
+        id: t.task_id as number,
+        newDate: formatToDateString(
+          addBusinessDays(
+            createLocalDate(formatToDateString(t.task_startdate)),
+            body.extend,
+          ),
+        ),
+      }));
+
+      const futMaterialUpdates = futureMaterials.map((m) => ({
+        id: m.material_id as number,
+        newDate: formatToDateString(
+          addBusinessDays(
+            createLocalDate(formatToDateString(m.material_duedate)),
+            body.extend,
+          ),
+        ),
+      }));
+
+      const taskBatch = buildBatchDateUpdate(
+        "task",
+        "task_id",
+        "task_startdate",
+        taskUpdates,
+      );
+      const matBatch = buildBatchDateUpdate(
+        "material",
+        "material_id",
+        "material_duedate",
+        futMaterialUpdates,
       );
 
-      for (const task of futureTasks) {
-        const newDate = addBusinessDays(
-          createLocalDate(formatToDateString(task.task_startdate)),
-          body.extend,
-        );
-        await connection.query(
-          "UPDATE task SET task_startdate = ? WHERE task_id = ?",
-          [formatToDateString(newDate), task.task_id],
-        );
+      // Run batch updates + future phase recalculation
+      const batchPromises: Promise<any>[] = [];
+      if (taskBatch) {
+        batchPromises.push(connection.query(taskBatch.query, taskBatch.values));
+      }
+      if (matBatch) {
+        batchPromises.push(connection.query(matBatch.query, matBatch.values));
+      }
+      if (batchPromises.length > 0) {
+        await Promise.all(batchPromises);
       }
 
-      const [futureMaterials] = await connection.query<RowDataPacket[]>(
-        `SELECT material_id, material_duedate FROM material m
-         JOIN phase p ON m.phase_id = p.phase_id
-         WHERE p.phase_id > ?`,
-        [phaseId],
-      );
-
-      for (const material of futureMaterials) {
-        const newDate = addBusinessDays(
-          createLocalDate(formatToDateString(material.material_duedate)),
-          body.extend,
-        );
-        await connection.query(
-          "UPDATE material SET material_duedate = ? WHERE material_id = ?",
-          [formatToDateString(newDate), material.material_id],
-        );
-      }
-
+      // Recalculate future phase start dates from their updated items
       const [futurePhases] = await connection.query<RowDataPacket[]>(
         `SELECT DISTINCT p.phase_id,
           LEAST(
@@ -120,11 +169,19 @@ export const PATCH = withDb(async (connection, request, params) => {
         [phaseId],
       );
 
-      for (const phase of futurePhases) {
-        await connection.query(
-          "UPDATE phase SET phase_startdate = ? WHERE phase_id = ?",
-          [phase.earliest_date, phase.phase_id],
-        );
+      const phaseUpdates = futurePhases.map((p) => ({
+        id: p.phase_id as number,
+        newDate: p.earliest_date as string,
+      }));
+
+      const phaseBatch = buildBatchDateUpdate(
+        "phase",
+        "phase_id",
+        "phase_startdate",
+        phaseUpdates,
+      );
+      if (phaseBatch) {
+        await connection.query(phaseBatch.query, phaseBatch.values);
       }
     }
 

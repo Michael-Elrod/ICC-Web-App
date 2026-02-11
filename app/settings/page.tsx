@@ -8,6 +8,7 @@ import { useSession, signOut } from "next-auth/react";
 import PasswordChangeModal from "./_components/PasswordModal";
 import SettingsSkeleton from "./_components/SettingsSkeleton";
 import { formatPhoneNumberInput } from "@/app/utils";
+import { useUpdateSettings, useChangePassword } from "@/app/hooks/use-settings";
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -58,6 +59,9 @@ const SettingsForm: React.FC = () => {
     session?.user.notificationPref ?? "email",
   );
 
+  const updateSettings = useUpdateSettings();
+  const changePassword = useChangePassword();
+
   const hasChanges =
     firstName !== (session?.user.firstName ?? "") ||
     lastName !== (session?.user.lastName ?? "") ||
@@ -90,19 +94,7 @@ const SettingsForm: React.FC = () => {
         notificationPref: formData.get("notificationPref"),
       };
 
-      const response = await fetch("/api/settings", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to update profile");
-      }
+      await updateSettings.mutateAsync(updatedData);
 
       await updateSession({
         ...session,
@@ -145,22 +137,10 @@ const SettingsForm: React.FC = () => {
     newPassword: string,
   ) => {
     try {
-      const response = await fetch("/api/settings/password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-        }),
+      await changePassword.mutateAsync({
+        currentPassword,
+        newPassword,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error);
-      }
 
       setSuccessMessage("Password updated successfully");
     } catch (error) {

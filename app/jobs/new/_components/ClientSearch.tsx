@@ -1,7 +1,8 @@
 // ClientSearch.tsx
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { User } from "@/app/types/database";
+import { useClients } from "@/app/hooks/use-users";
 
 interface Props {
   onClientSelect: (client: User | null) => void;
@@ -13,10 +14,9 @@ export default function ClientSearchSelect({
   selectedClient,
 }: Props) {
   const [search, setSearch] = useState("");
-  const [allClients, setAllClients] = useState<User[]>([]);
-  const [filteredClients, setFilteredClients] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+  const { data: allClients = [], isLoading: loading } = useClients();
 
   const getInputClassName = (fieldName: string) => {
     const baseClass = "mt-1 block w-full border rounded-md shadow-sm p-2";
@@ -26,24 +26,6 @@ export default function ClientSearchSelect({
 
     return `${baseClass} ${normalClass} ${darkModeClass}`;
   };
-
-  const fetchAllClients = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/users/clients");
-      const data = await response.json();
-      setAllClients(data);
-      setFilteredClients(data);
-    } catch (error) {
-      console.error("Error fetching clients:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAllClients();
-  }, [selectedClient]);
 
   useEffect(() => {
     if (selectedClient) {
@@ -70,9 +52,9 @@ export default function ClientSearchSelect({
     };
   }, []);
 
-  useEffect(() => {
+  const filteredClients = useMemo(() => {
     if (search.trim()) {
-      const filtered = allClients.filter((client) => {
+      return allClients.filter((client) => {
         const fullName =
           `${client.user_first_name} ${client.user_last_name}`.toLowerCase();
         const searchTerm = search.toLowerCase();
@@ -83,10 +65,8 @@ export default function ClientSearchSelect({
           (client.user_phone && client.user_phone.includes(searchTerm))
         );
       });
-      setFilteredClients(filtered);
-    } else {
-      setFilteredClients(allClients);
     }
+    return allClients;
   }, [search, allClients]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -130,8 +110,8 @@ export default function ClientSearchSelect({
         {isOpen && (
           <div
             id="client-search-listbox"
-            className="absolute w-full mt-1 bg-white dark:bg-zinc-800 border 
-                       border-zinc-300 dark:border-zinc-600 rounded-md shadow-lg 
+            className="absolute w-full mt-1 bg-white dark:bg-zinc-800 border
+                       border-zinc-300 dark:border-zinc-600 rounded-md shadow-lg
                        max-h-32 overflow-auto z-50"
             role="listbox"
           >
@@ -139,7 +119,7 @@ export default function ClientSearchSelect({
               filteredClients.map((client) => (
                 <div
                   key={client.user_id}
-                  className="px-4 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 
+                  className="px-4 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-700
                            cursor-pointer text-zinc-900 dark:text-white"
                   onClick={() => {
                     onClientSelect(client);

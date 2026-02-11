@@ -2,11 +2,14 @@
 
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
+import React, { Suspense } from "react";
 import LargeJobFrame from "./LargeJobFrame";
 import JobListSkeleton from "./JobListSkeleton";
 import { useSearchParams } from "next/navigation";
-import { JobDetailView, TaskView, MaterialView } from "../../types/views";
+import { useJobList } from "@/app/hooks/use-jobs";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/app/lib/query-keys";
+import { useState } from "react";
 
 interface JobListProps {
   status: "active" | "closed";
@@ -25,102 +28,8 @@ function JobListContent({ status }: JobListProps) {
   const [searchQuery, setSearchQuery] = useState(
     searchParams?.get("search") || "",
   );
-  const [jobs, setJobs] = useState<JobDetailView[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const response = await fetch(
-          `/api/jobs?view=detailed&status=${status}`,
-        );
-        const data = await response.json();
-
-        const transformedJobs = data.jobs.map((job: any): JobDetailView => {
-          const transformedTasks = job.tasks.map((task: any) => ({
-            task_id: task.task_id,
-            phase_id: task.phase_id,
-            task_title: task.task_title,
-            task_startdate: task.task_startdate || "",
-            task_duration: task.task_duration || 0,
-            task_status: task.task_status,
-            task_description: task.task_description || "",
-            users: (task.users || []).map((user: any) => ({
-              user_id: user.user_id,
-              first_name: user.user_first_name,
-              last_name: user.user_last_name,
-              user_email: user.user_email,
-              user_phone: user.user_phone || "",
-            })),
-          }));
-
-          const transformedMaterials = job.materials.map((material: any) => ({
-            material_id: material.material_id,
-            phase_id: material.phase_id,
-            material_title: material.material_title,
-            material_duedate: material.material_duedate || "",
-            material_status: material.material_status,
-            material_description: material.material_description || "",
-            users: (material.users || []).map((user: any) => ({
-              user_id: user.user_id,
-              first_name: user.user_first_name,
-              last_name: user.user_last_name,
-              user_email: user.user_email,
-              user_phone: user.user_phone || "",
-            })),
-          }));
-
-          const transformedFloorplans =
-            job.floorplans?.map((floorplan: any) => ({
-              url: floorplan.url,
-              name: floorplan.name,
-            })) || [];
-
-          return {
-            id: job.job_id,
-            jobName: job.job_title,
-            job_startdate: job.job_startdate,
-            dateRange: job.date_range,
-            tasks: transformedTasks,
-            materials: transformedMaterials,
-            floorplans: transformedFloorplans,
-            phases: job.phases.map((phase: any) => ({
-              id: phase.id,
-              name: phase.name,
-              startDate: phase.startDate,
-              endDate: phase.endDate,
-              color: phase.color,
-              tasks: transformedTasks.filter(
-                (task: TaskView) => task.phase_id === phase.id,
-              ),
-              materials: transformedMaterials.filter(
-                (material: MaterialView) => material.phase_id === phase.id,
-              ),
-              notes: phase.notes || [],
-            })),
-            overdue: job.overdue,
-            nextSevenDays: job.nextSevenDays,
-            sevenDaysPlus: job.sevenDaysPlus,
-            contacts: (job.workers || []).map((w: any) => ({
-              user_id: w.user_id,
-              first_name: w.user_first_name,
-              last_name: w.user_last_name,
-              user_email: w.user_email,
-              user_phone: w.user_phone || "",
-            })),
-          };
-        });
-
-        setJobs(transformedJobs);
-      } catch (error) {
-        console.error("Failed to fetch jobs:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchJobs();
-  }, [status]);
+  const { data: jobs = [], isLoading } = useJobList(status);
+  const queryClient = useQueryClient();
 
   const searchTerms = searchQuery
     .split(",")
@@ -139,65 +48,25 @@ function JobListContent({ status }: JobListProps) {
       return status === "closed" ? -cmp : cmp;
     });
 
-  const handleStatusUpdate = (
+  const handleStatusUpdate = async (
     jobId: number,
     itemId: number,
     type: "task" | "material",
     newStatus: "Complete" | "Incomplete" | "In Progress",
-  ): void => {
-    setJobs((prevJobs) =>
-      prevJobs.map((job) => {
-        if (job.id !== jobId) return job;
-
-        const updatedTasks =
-          type === "task"
-            ? job.tasks.map((task) =>
-                task.task_id === itemId
-                  ? { ...task, task_status: newStatus }
-                  : task,
-              )
-            : job.tasks;
-
-        const updatedMaterials =
-          type === "material"
-            ? job.materials.map((material) =>
-                material.material_id === itemId
-                  ? { ...material, material_status: newStatus }
-                  : material,
-              )
-            : job.materials;
-
-        const updatedPhases = job.phases.map((phase) => ({
-          ...phase,
-          tasks:
-            type === "task"
-              ? phase.tasks.map((task) =>
-                  task.task_id === itemId
-                    ? { ...task, task_status: newStatus }
-                    : task,
-                )
-              : phase.tasks,
-          materials:
-            type === "material"
-              ? phase.materials.map((material) =>
-                  material.material_id === itemId
-                    ? { ...material, material_status: newStatus }
-                    : material,
-                )
-              : phase.materials,
-        }));
-
-        return {
-          ...job,
-          tasks: updatedTasks,
-          materials: updatedMaterials,
-          phases: updatedPhases,
-        };
-      }),
-    );
+  ): Promise<void> => {
+    try {
+      await fetch(`/api/jobs/${jobId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: itemId, type, newStatus }),
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.jobs.list(status) });
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
   };
 
-  if (loading) return <JobListSkeleton />;
+  if (isLoading) return <JobListSkeleton />;
 
   return (
     <div className="px-0 sm:px-4 md:px-0">

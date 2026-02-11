@@ -2,34 +2,17 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import JobFrame from "./_components/JobFrame";
 import Skeleton from "@/components/skeletons/Skeleton";
 import { useRouter } from "next/navigation";
-import { JobCardView } from "../types/views";
+import { useJobsOverview } from "@/app/hooks/use-jobs";
 
 export default function JobsPage() {
   const [localSearchQuery, setLocalSearchQuery] = useState("");
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
-  const [jobs, setJobs] = useState<JobCardView[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: jobs = [], isLoading } = useJobsOverview();
   const router = useRouter();
-
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const response = await fetch("/api/jobs?view=overview");
-        const data = await response.json();
-        setJobs(data.jobs);
-      } catch (error) {
-        console.error("Failed to fetch jobs:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchJobs();
-  }, []);
 
   const filteredJobs = jobs
     .filter((job) =>
@@ -60,7 +43,7 @@ export default function JobsPage() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <>
         <div className="mb-4 flex items-center space-x-4">
